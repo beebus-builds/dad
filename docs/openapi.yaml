@@ -1,0 +1,1223 @@
+openapi: 3.1.0
+info:
+  title: Shram Jagaran CMS API
+  version: 0.1.0
+  description: |
+    REST API for the Shram Jagaran digital transformation platform serving
+    Nepalese trade unions. Built with Go + Gin, backed by Neon PostgreSQL,
+    Redis cache, and Cloudflare R2 object storage.
+  contact:
+    name: Shram Jagaran Engineering
+    email: engineering@shramjagaran.np
+  license:
+    name: Proprietary
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development
+  - url: https://api.shramjagaran.np/api/v1
+    description: Production
+
+tags:
+  - name: Auth
+  - name: Members
+  - name: Complaints
+  - name: Events
+  - name: News
+  - name: Documents
+  - name: Donations
+  - name: Legal Cases
+  - name: Training
+  - name: Incidents
+  - name: Notifications
+  - name: Reports
+  - name: Branches
+  - name: Health
+
+security:
+  - bearerAuth: []
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Liveness check
+      security: []
+      responses:
+        '200':
+          description: OK
+
+  /branches:
+    get:
+      tags: [Branches]
+      summary: List active branches
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Branch' }
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new member account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterInput' }
+      responses:
+        '201':
+          description: Account created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResult' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Validation' }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login with email and password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginInput' }
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResult' }
+          headers:
+            Set-Cookie:
+              schema: { type: string }
+              description: Sets `sj_token` and `sj_refresh` cookies
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Exchange refresh token for a new pair
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken: { type: string }
+      responses:
+        '200':
+          description: New tokens
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResult' }
+
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Request a password reset email
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        '200': { description: Email sent if account exists }
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Clear auth cookies
+      responses:
+        '200': { description: Logged out }
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get the currently authenticated user
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+
+  /members:
+    get:
+      tags: [Members]
+      summary: List members (paginated)
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - in: query
+          name: search
+          schema: { type: string }
+        - in: query
+          name: branchId
+          schema: { type: string, format: uuid }
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [ACTIVE, INACTIVE, SUSPENDED, EXPIRED]
+        - in: query
+          name: tier
+          schema:
+            type: string
+            enum: [STANDARD, LIFETIME, HONORARY]
+      responses:
+        '200':
+          description: Paginated members
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedMember' }
+    post:
+      tags: [Members]
+      summary: Create a new member
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateMemberInput' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Member' }
+
+  /members/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Members]
+      summary: Get member by ID
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Member' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Members]
+      summary: Update member
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateMemberInput' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Member' }
+    delete:
+      tags: [Members]
+      summary: Soft-delete a member
+      responses:
+        '204': { description: Deleted }
+
+  /complaints:
+    get:
+      tags: [Complaints]
+      summary: List complaints
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [OPEN, IN_REVIEW, ESCALATED, RESOLVED, CLOSED]
+        - in: query
+          name: priority
+          schema:
+            type: string
+            enum: [LOW, MEDIUM, HIGH, URGENT]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedComplaint' }
+    post:
+      tags: [Complaints]
+      summary: File a complaint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateComplaintInput' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Complaint' }
+
+  /complaints/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Complaints]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Complaint' }
+    patch:
+      tags: [Complaints]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: { type: string }
+                priority: { type: string }
+                assignedTo: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Complaint' }
+
+  /complaints/stats:
+    get:
+      tags: [Complaints]
+      summary: Aggregate complaint counts by status
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: { type: integer }
+
+  /events:
+    get:
+      tags: [Events]
+      summary: List events
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: category
+          schema: { type: string }
+        - in: query
+          name: upcoming
+          schema: { type: boolean }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedEvent' }
+    post:
+      tags: [Events]
+      summary: Create an event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateEventInput' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Event' }
+
+  /events/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Events]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Event' }
+    patch:
+      tags: [Events]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateEventInput' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Event' }
+    delete:
+      tags: [Events]
+      responses:
+        '204': { description: Deleted }
+
+  /news:
+    get:
+      tags: [News]
+      summary: List news
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: category
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedNews' }
+    post:
+      tags: [News]
+      summary: Create a news article
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateNewsInput' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/News' }
+
+  /news/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [News]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/News' }
+    patch:
+      tags: [News]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateNewsInput' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/News' }
+    delete:
+      tags: [News]
+      responses:
+        '204': { description: Deleted }
+
+  /documents:
+    get:
+      tags: [Documents]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedDocument' }
+    post:
+      tags: [Documents]
+      summary: Register a document (file must already be uploaded to R2)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateDocumentInput' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Document' }
+
+  /documents/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    delete:
+      tags: [Documents]
+      responses:
+        '204': { description: Deleted }
+
+  /payments:
+    get:
+      tags: [Donations]
+      summary: List donations
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedDonation' }
+    post:
+      tags: [Donations]
+      summary: Record a donation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateDonationInput' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Donation' }
+
+  /payments/total:
+    get:
+      tags: [Donations]
+      summary: Sum of completed donations
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total: { type: number, format: double }
+
+  /legal-cases:
+    get:
+      tags: [Legal Cases]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedLegalCase' }
+    post:
+      tags: [Legal Cases]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateLegalInput' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LegalCase' }
+
+  /legal-cases/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Legal Cases]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LegalCase' }
+    patch:
+      tags: [Legal Cases]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: { type: string }
+                assignedAdvisor: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LegalCase' }
+
+  /training:
+    get:
+      tags: [Training]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedTraining' }
+    post:
+      tags: [Training]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateTrainingInput' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Training' }
+
+  /training/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    delete:
+      tags: [Training]
+      responses:
+        '204': { description: Deleted }
+
+  /incidents:
+    get:
+      tags: [Incidents]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedIncident' }
+    post:
+      tags: [Incidents]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateIncidentInput' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Incident' }
+
+  /notifications:
+    get:
+      tags: [Notifications]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Notification' }
+
+  /notifications/{id}/read:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    patch:
+      tags: [Notifications]
+      responses:
+        '204': { description: Marked read }
+
+  /notifications/read-all:
+    post:
+      tags: [Notifications]
+      responses:
+        '204': { description: All marked read }
+
+  /reports/dashboard:
+    get:
+      tags: [Reports]
+      summary: KPI dashboard snapshot
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DashboardStats' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    Page:
+      in: query
+      name: page
+      schema: { type: integer, minimum: 1, default: 1 }
+    PageSize:
+      in: query
+      name: pageSize
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid auth
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Insufficient permission
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Resource already exists
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Validation:
+      description: Validation failed
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: {}
+
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+
+    RegisterInput:
+      type: object
+      required: [fullName, email, phone, password]
+      properties:
+        fullName: { type: string, minLength: 2 }
+        email: { type: string, format: email }
+        phone: { type: string }
+        password: { type: string, minLength: 8 }
+
+    AuthResult:
+      type: object
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+        accessToken: { type: string }
+        refreshToken: { type: string }
+
+    User:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        fullName: { type: string }
+        phone: { type: string, nullable: true }
+        avatarUrl: { type: string, nullable: true }
+        role:
+          type: string
+          enum: [SUPER_ADMIN, NATIONAL_ADMIN, PROVINCE_ADMIN, DISTRICT_ADMIN, BRANCH_ADMIN, MEMBER, PUBLIC]
+        branchId: { type: string, format: uuid, nullable: true }
+        provinceCode: { type: string, nullable: true }
+        districtCode: { type: string, nullable: true }
+        isActive: { type: boolean }
+        lastLoginAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    Branch:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        nameNepali: { type: string, nullable: true }
+        provinceCode: { type: string }
+        districtCode: { type: string }
+        address: { type: string, nullable: true }
+        contactEmail: { type: string, nullable: true }
+        contactPhone: { type: string, nullable: true }
+        isActive: { type: boolean }
+
+    Member:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        membershipNumber: { type: string }
+        fullName: { type: string }
+        fullNameNepali: { type: string, nullable: true }
+        email: { type: string, nullable: true }
+        phone: { type: string }
+        dateOfBirth: { type: string, format: date, nullable: true }
+        gender:
+          type: string
+          enum: [MALE, FEMALE, OTHER]
+          nullable: true
+        citizenshipNumber: { type: string, nullable: true }
+        occupation: { type: string, nullable: true }
+        employer: { type: string, nullable: true }
+        address: { type: string, nullable: true }
+        branchId: { type: string, format: uuid }
+        tier:
+          type: string
+          enum: [STANDARD, LIFETIME, HONORARY]
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, SUSPENDED, EXPIRED]
+        joinedAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time, nullable: true }
+
+    CreateMemberInput:
+      type: object
+      required: [fullName, phone, branchId]
+      properties:
+        membershipNumber: { type: string }
+        fullName: { type: string, minLength: 2 }
+        fullNameNepali: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string }
+        dateOfBirth: { type: string, format: date }
+        gender: { type: string, enum: [MALE, FEMALE, OTHER] }
+        citizenshipNumber: { type: string }
+        occupation: { type: string }
+        employer: { type: string }
+        address: { type: string }
+        branchId: { type: string, format: uuid }
+        tier: { type: string, enum: [STANDARD, LIFETIME, HONORARY] }
+
+    Complaint:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        ticketNumber: { type: string }
+        title: { type: string }
+        description: { type: string }
+        category:
+          type: string
+          enum: [WAGES, WORKING_HOURS, SAFETY, HARASSMENT, TERMINATION, BENEFITS, OTHER]
+        priority:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, URGENT]
+        status:
+          type: string
+          enum: [OPEN, IN_REVIEW, ESCALATED, RESOLVED, CLOSED]
+        submittedBy: { type: string, format: uuid }
+        assignedTo: { type: string, format: uuid, nullable: true }
+        branchId: { type: string, format: uuid, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        resolvedAt: { type: string, format: date-time, nullable: true }
+
+    CreateComplaintInput:
+      type: object
+      required: [title, description, category, priority]
+      properties:
+        title: { type: string, minLength: 5 }
+        description: { type: string, minLength: 20 }
+        category:
+          type: string
+          enum: [WAGES, WORKING_HOURS, SAFETY, HARASSMENT, TERMINATION, BENEFITS, OTHER]
+        priority:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, URGENT]
+        branchId: { type: string, format: uuid }
+
+    Event:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        titleNepali: { type: string, nullable: true }
+        slug: { type: string }
+        description: { type: string }
+        category: { type: string }
+        status:
+          type: string
+          enum: [DRAFT, PUBLISHED, CANCELLED, COMPLETED]
+        startsAt: { type: string, format: date-time }
+        endsAt: { type: string, format: date-time }
+        location: { type: string }
+        capacity: { type: integer, nullable: true }
+        registeredCount: { type: integer }
+        coverImageUrl: { type: string, nullable: true }
+        branchId: { type: string, format: uuid, nullable: true }
+
+    CreateEventInput:
+      type: object
+      required: [title, description, category, startsAt, endsAt, location]
+      properties:
+        title: { type: string }
+        titleNepali: { type: string }
+        description: { type: string }
+        category:
+          type: string
+          enum: [MEETING, RALLY, TRAINING, WORKSHOP, CONFERENCE, OTHER]
+        startsAt: { type: string, format: date-time }
+        endsAt: { type: string, format: date-time }
+        location: { type: string }
+        capacity: { type: integer }
+        coverImageUrl: { type: string }
+        branchId: { type: string, format: uuid }
+
+    News:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        title: { type: string }
+        titleNepali: { type: string, nullable: true }
+        excerpt: { type: string }
+        content: { type: string }
+        coverImageUrl: { type: string, nullable: true }
+        category: { type: string }
+        status:
+          type: string
+          enum: [DRAFT, PUBLISHED, ARCHIVED]
+        authorId: { type: string, format: uuid }
+        tags:
+          type: array
+          items: { type: string }
+        views: { type: integer }
+        publishedAt: { type: string, format: date-time, nullable: true }
+
+    CreateNewsInput:
+      type: object
+      required: [title, excerpt, content, category]
+      properties:
+        title: { type: string }
+        titleNepali: { type: string }
+        excerpt: { type: string }
+        content: { type: string }
+        coverImageUrl: { type: string }
+        category:
+          type: string
+          enum: [ANNOUNCEMENT, POLICY, EVENT, PRESS_RELEASE, OTHER]
+        tags:
+          type: array
+          items: { type: string }
+
+    Document:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        description: { type: string, nullable: true }
+        fileUrl: { type: string }
+        fileType: { type: string }
+        fileSize: { type: integer, format: int64 }
+        category: { type: string }
+        visibility:
+          type: string
+          enum: [PUBLIC, MEMBERS, ADMIN]
+        uploadedBy: { type: string, format: uuid }
+
+    CreateDocumentInput:
+      type: object
+      required: [title, fileUrl, fileType, fileSize, category]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        fileUrl: { type: string }
+        fileType: { type: string }
+        fileSize: { type: integer }
+        category:
+          type: string
+          enum: [POLICY, LEGAL, REPORT, FORM, OTHER]
+        visibility: { type: string, enum: [PUBLIC, MEMBERS, ADMIN] }
+
+    Donation:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        receiptNumber: { type: string }
+        donorName: { type: string }
+        donorEmail: { type: string, nullable: true }
+        donorPhone: { type: string, nullable: true }
+        amount: { type: number, format: double }
+        currency: { type: string }
+        method:
+          type: string
+          enum: [CASH, BANK_TRANSFER, ESEWA, KHALTI, CARD]
+        purpose: { type: string, nullable: true }
+        status:
+          type: string
+          enum: [PENDING, COMPLETED, FAILED, REFUNDED]
+        createdAt: { type: string, format: date-time }
+
+    CreateDonationInput:
+      type: object
+      required: [donorName, amount, method]
+      properties:
+        donorName: { type: string }
+        donorEmail: { type: string, format: email }
+        donorPhone: { type: string }
+        amount: { type: number }
+        currency: { type: string, default: NPR }
+        method:
+          type: string
+          enum: [CASH, BANK_TRANSFER, ESEWA, KHALTI, CARD]
+        purpose: { type: string }
+
+    LegalCase:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        caseNumber: { type: string }
+        title: { type: string }
+        description: { type: string }
+        type:
+          type: string
+          enum: [FOREIGN_EMPLOYMENT, LABOR_DISPUTE, OSH, COLLECTIVE_BARGAINING, OTHER]
+        status:
+          type: string
+          enum: [INTAKE, ACTIVE, HEARING, RESOLVED, CLOSED]
+        memberId: { type: string, format: uuid, nullable: true }
+        assignedAdvisor: { type: string, format: uuid, nullable: true }
+        branchId: { type: string, format: uuid, nullable: true }
+        filedAt: { type: string, format: date-time }
+        nextHearingAt: { type: string, format: date-time, nullable: true }
+        resolvedAt: { type: string, format: date-time, nullable: true }
+
+    CreateLegalInput:
+      type: object
+      required: [title, description, type]
+      properties:
+        caseNumber: { type: string }
+        title: { type: string }
+        description: { type: string }
+        type: { type: string, enum: [FOREIGN_EMPLOYMENT, LABOR_DISPUTE, OSH, COLLECTIVE_BARGAINING, OTHER] }
+        memberId: { type: string, format: uuid }
+        assignedAdvisor: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        nextHearingAt: { type: string, format: date-time }
+
+    Training:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        titleNepali: { type: string, nullable: true }
+        description: { type: string }
+        startsAt: { type: string, format: date-time }
+        endsAt: { type: string, format: date-time }
+        location: { type: string }
+        trainer: { type: string, nullable: true }
+        capacity: { type: integer, nullable: true }
+        registeredCount: { type: integer }
+        status:
+          type: string
+          enum: [UPCOMING, ONGOING, COMPLETED]
+
+    CreateTrainingInput:
+      type: object
+      required: [title, description, startsAt, endsAt, location]
+      properties:
+        title: { type: string }
+        titleNepali: { type: string }
+        description: { type: string }
+        startsAt: { type: string, format: date-time }
+        endsAt: { type: string, format: date-time }
+        location: { type: string }
+        trainer: { type: string }
+        capacity: { type: integer }
+
+    Incident:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        incidentNumber: { type: string }
+        title: { type: string }
+        description: { type: string }
+        severity:
+          type: string
+          enum: [MINOR, MODERATE, SEVERE, FATAL]
+        occurredAt: { type: string, format: date-time }
+        location: { type: string }
+        workplaceName: { type: string, nullable: true }
+        reportedBy: { type: string, format: uuid }
+        status:
+          type: string
+          enum: [REPORTED, INVESTIGATING, RESOLVED]
+
+    CreateIncidentInput:
+      type: object
+      required: [title, description, occurredAt, location]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        severity: { type: string, enum: [MINOR, MODERATE, SEVERE, FATAL] }
+        occurredAt: { type: string, format: date-time }
+        location: { type: string }
+        workplaceName: { type: string }
+        branchId: { type: string, format: uuid }
+
+    Notification:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        title: { type: string }
+        body: { type: string }
+        type: { type: string, enum: [INFO, WARNING, SUCCESS, ERROR] }
+        link: { type: string, nullable: true }
+        isRead: { type: boolean }
+        createdAt: { type: string, format: date-time }
+
+    DashboardStats:
+      type: object
+      properties:
+        totalMembers: { type: integer }
+        activeMembers: { type: integer }
+        openComplaints: { type: integer }
+        resolvedComplaints: { type: integer }
+        upcomingEvents: { type: integer }
+        activeLegalCases: { type: integer }
+        totalDonations: { type: number, format: double }
+
+    Paginated:
+      type: object
+      properties:
+        data:
+          type: array
+          items: {}
+        meta:
+          type: object
+          properties:
+            page: { type: integer }
+            pageSize: { type: integer }
+            total: { type: integer }
+            totalPages: { type: integer }
+
+    PaginatedMember:
+      allOf:
+        - $ref: '#/components/schemas/Paginated'
+        - type: object
+          properties:
+            data:
+              type: array
+              items: { $ref: '#/components/schemas/Member' }
+
+    PaginatedComplaint:
+      allOf:
+        - $ref: '#/components/schemas/Paginated'
+        - type: object
+          properties:
+            data:
+              type: array
+              items: { $ref: '#/components/schemas/Complaint' }
+
+    PaginatedEvent:
+      allOf:
+        - $ref: '#/components/schemas/Paginated'
+        - type: object
+          properties:
+            data:
+              type: array
+              items: { $ref: '#/components/schemas/Event' }
+
+    PaginatedNews:
+      allOf:
+        - $ref: '#/components/schemas/Paginated'
+        - type: object
+          properties:
+            data:
+              type: array
+              items: { $ref: '#/components/schemas/News' }
+
+    PaginatedDocument:
+      allOf:
+        - $ref: '#/components/schemas/Paginated'
+        - type: object
+          properties:
+            data:
+              type: array
+              items: { $ref: '#/components/schemas/Document' }
+
+    PaginatedDonation:
+      allOf:
+        - $ref: '#/components/schemas/Paginated'
+        - type: object
+          properties:
+            data:
+              type: array
+              items: { $ref: '#/components/schemas/Donation' }
+
+    PaginatedLegalCase:
+      allOf:
+        - $ref: '#/components/schemas/Paginated'
+        - type: object
+          properties:
+            data:
+              type: array
+              items: { $ref: '#/components/schemas/LegalCase' }
+
+    PaginatedTraining:
+      allOf:
+        - $ref: '#/components/schemas/Paginated'
+        - type: object
+          properties:
+            data:
+              type: array
+              items: { $ref: '#/components/schemas/Training' }
+
+    PaginatedIncident:
+      allOf:
+        - $ref: '#/components/schemas/Paginated'
+        - type: object
+          properties:
+            data:
+              type: array
+              items: { $ref: '#/components/schemas/Incident' }

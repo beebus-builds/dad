@@ -79,8 +79,14 @@ type CORSConfig struct {
 }
 
 func Load() (*Config, error) {
-	_ = godotenv.Load()
+	// Try .env in: current dir, then parent dir (project root), then grandparent.
+	// godotenv.Load silently continues if a file is missing, so this lets you
+	// run the binary from either the project root or `backend/`.
+	_ = godotenv.Load(".env")
+	_ = godotenv.Load("../.env")
+	_ = godotenv.Load("../../.env")
 	_ = godotenv.Load(".env.local")
+	_ = godotenv.Load("../.env.local")
 
 	cfg := &Config{
 		App: AppConfig{

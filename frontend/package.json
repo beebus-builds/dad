@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "dotenv -e ../.env -- next dev",
+    "build": "dotenv -e ../.env -- next build",
+    "start": "dotenv -e ../.env -- next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
@@ -54,6 +54,7 @@
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.19",
+    "dotenv-cli": "^7.4.4",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.5",
     "postcss": "^8.4.39",

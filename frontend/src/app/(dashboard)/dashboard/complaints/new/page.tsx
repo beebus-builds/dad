@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,8 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { PermissionGate } from "@/components/auth/permission-gate";
 import { PERMISSIONS } from "@/lib/rbac";
 import { complaintSchema, type ComplaintInput } from "@/lib/validations";
+import { complaintService } from "@/services/complaints-service";
+import { ApiError } from "@/lib/api-client";
 
 const CATEGORIES = [
   "WAGES",
@@ -35,15 +38,26 @@ const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "URGENT"] as const;
 
 export default function NewComplaintPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const {
     register,
     handleSubmit,
     setValue,
     watch,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<ComplaintInput>({
     resolver: zodResolver(complaintSchema),
     defaultValues: { category: "WAGES", priority: "MEDIUM" },
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (payload: ComplaintInput) => complaintService.create(payload),
+    onSuccess: (complaint) => {
+      toast.success(`Complaint ${complaint.ticketNumber} filed`);
+      queryClient.invalidateQueries({ queryKey: ["complaints"] });
+      router.push("/dashboard/complaints");
+    },
+    onError: (err: ApiError) => toast.error(err.message || "Failed to file complaint"),
   });
 
   return (
@@ -59,11 +73,7 @@ export default function NewComplaintPage() {
           }
         />
         <form
-          onSubmit={handleSubmit(async () => {
-            await new Promise((r) => setTimeout(r, 700));
-            toast.success("Complaint filed successfully");
-            router.push("/dashboard/complaints");
-          })}
+          onSubmit={handleSubmit((values) => createMutation.mutate(values))}
           className="grid gap-6 lg:grid-cols-3"
           noValidate
         >
@@ -127,8 +137,8 @@ export default function NewComplaintPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+              <Button type="submit" className="w-full" disabled={createMutation.isPending}>
+                {createMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                 Submit complaint
               </Button>
               <p className="text-xs text-muted-foreground">

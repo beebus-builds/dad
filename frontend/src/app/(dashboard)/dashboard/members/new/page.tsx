@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -22,26 +23,39 @@ import { PermissionGate } from "@/components/auth/permission-gate";
 import { PERMISSIONS } from "@/lib/rbac";
 import { memberSchema, type MemberInput } from "@/lib/validations";
 import { MEMBERSHIP_TIERS } from "@/lib/constants";
-
-const BRANCHES = [
-  { id: "branch-1", name: "Kathmandu Central" },
-  { id: "branch-2", name: "Pokhara" },
-  { id: "branch-3", name: "Biratnagar" },
-  { id: "branch-4", name: "Birgunj" },
-  { id: "branch-5", name: "Butwal" },
-];
+import { memberService } from "@/services/members-service";
+import { branchService } from "@/services/branches-service";
+import { ApiError } from "@/lib/api-client";
 
 export default function NewMemberPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const {
     register,
     handleSubmit,
     setValue,
     watch,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<MemberInput>({
     resolver: zodResolver(memberSchema),
     defaultValues: { tier: "STANDARD", branchId: "" },
+  });
+
+  const { data: branches = [] } = useQuery({
+    queryKey: ["branches"],
+    queryFn: () => branchService.list(),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (payload: MemberInput) => memberService.create(payload),
+    onSuccess: (member) => {
+      toast.success(`Member ${member.membershipNumber} created`);
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      router.push("/dashboard/members");
+    },
+    onError: (err: ApiError) => {
+      toast.error(err.message || "Failed to create member");
+    },
   });
 
   return (
@@ -57,11 +71,7 @@ export default function NewMemberPage() {
           }
         />
         <form
-          onSubmit={handleSubmit(async () => {
-            await new Promise((r) => setTimeout(r, 700));
-            toast.success("Member created successfully");
-            router.push("/dashboard/members");
-          })}
+          onSubmit={handleSubmit((values) => createMutation.mutate(values))}
           className="grid gap-6 lg:grid-cols-3"
           noValidate
         >
@@ -90,7 +100,7 @@ export default function NewMemberPage() {
                   <Input id="email" type="email" {...register("email")} />
                 </Field>
                 <Field id="phone" label="Phone *" error={errors.phone?.message}>
-                  <Input id="phone" type="tel" {...register("phone")} />
+                  <Input id="phone" type="tel" placeholder="98XXXXXXXX" {...register("phone")} />
                 </Field>
                 <Field
                   id="citizenshipNumber"
@@ -106,7 +116,7 @@ export default function NewMemberPage() {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Work & Address</CardTitle>
+                <CardTitle>Work &amp; Address</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-4 sm:grid-cols-2">
                 <Field id="occupation" label="Occupation" error={errors.occupation?.message}>
@@ -139,7 +149,7 @@ export default function NewMemberPage() {
                       <SelectValue placeholder="Select branch" />
                     </SelectTrigger>
                     <SelectContent>
-                      {BRANCHES.map((b) => (
+                      {branches.map((b) => (
                         <SelectItem key={b.id} value={b.id}>
                           {b.name}
                         </SelectItem>
@@ -170,8 +180,12 @@ export default function NewMemberPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={createMutation.isPending}
+                >
+                  {createMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                   Save Member
                 </Button>
               </CardContent>

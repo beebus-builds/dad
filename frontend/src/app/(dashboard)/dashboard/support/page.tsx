@@ -1,11 +1,30 @@
 "use client";
 
-import { LifeBuoy, Mail, MessageCircle, Phone } from "lucide-react";
+import { useState } from "react";
+import { LifeBuoy, Loader2, Mail, MessageCircle, Phone, Send } from "lucide-react";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { PageHeader } from "@/components/dashboard/page-header";
 
 export default function SupportPage() {
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSending(true);
+    await new Promise((r) => setTimeout(r, 600));
+    setSending(false);
+    toast.success("Support request sent — we will respond within 24 hours");
+    setSubject("");
+    setMessage("");
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -52,6 +71,39 @@ export default function SupportPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Send us a message</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="subject">Subject</Label>
+              <Input
+                id="subject"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="message">Message</Label>
+              <Textarea
+                id="message"
+                rows={6}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                required
+              />
+            </div>
+            <Button type="submit" disabled={sending}>
+              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              Send message
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

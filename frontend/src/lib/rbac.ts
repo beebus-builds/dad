@@ -1,0 +1,163 @@
+export const ROLES = {
+  SUPER_ADMIN: "SUPER_ADMIN",
+  NATIONAL_ADMIN: "NATIONAL_ADMIN",
+  PROVINCE_ADMIN: "PROVINCE_ADMIN",
+  DISTRICT_ADMIN: "DISTRICT_ADMIN",
+  BRANCH_ADMIN: "BRANCH_ADMIN",
+  MEMBER: "MEMBER",
+  PUBLIC: "PUBLIC",
+} as const;
+
+export type Role = (typeof ROLES)[keyof typeof ROLES];
+
+export const PERMISSIONS = {
+  MEMBERS_READ: "members:read",
+  MEMBERS_WRITE: "members:write",
+  MEMBERS_DELETE: "members:delete",
+  COMPLAINTS_READ: "complaints:read",
+  COMPLAINTS_WRITE: "complaints:write",
+  COMPLAINTS_RESOLVE: "complaints:resolve",
+  EVENTS_READ: "events:read",
+  EVENTS_WRITE: "events:write",
+  EVENTS_PUBLISH: "events:publish",
+  NEWS_READ: "news:read",
+  NEWS_WRITE: "news:write",
+  NEWS_PUBLISH: "news:publish",
+  DOCUMENTS_READ: "documents:read",
+  DOCUMENTS_WRITE: "documents:write",
+  DONATIONS_READ: "donations:read",
+  DONATIONS_WRITE: "donations:write",
+  LEGAL_READ: "legal:read",
+  LEGAL_WRITE: "legal:write",
+  TRAINING_READ: "training:read",
+  TRAINING_WRITE: "training:write",
+  INCIDENTS_READ: "incidents:read",
+  INCIDENTS_WRITE: "incidents:write",
+  REPORTS_VIEW: "reports:view",
+  SETTINGS_MANAGE: "settings:manage",
+  AUDIT_VIEW: "audit:view",
+  USERS_MANAGE: "users:manage",
+} as const;
+
+export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
+
+export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
+  SUPER_ADMIN: Object.values(PERMISSIONS),
+  NATIONAL_ADMIN: [
+    PERMISSIONS.MEMBERS_READ,
+    PERMISSIONS.MEMBERS_WRITE,
+    PERMISSIONS.MEMBERS_DELETE,
+    PERMISSIONS.COMPLAINTS_READ,
+    PERMISSIONS.COMPLAINTS_WRITE,
+    PERMISSIONS.COMPLAINTS_RESOLVE,
+    PERMISSIONS.EVENTS_READ,
+    PERMISSIONS.EVENTS_WRITE,
+    PERMISSIONS.EVENTS_PUBLISH,
+    PERMISSIONS.NEWS_READ,
+    PERMISSIONS.NEWS_WRITE,
+    PERMISSIONS.NEWS_PUBLISH,
+    PERMISSIONS.DOCUMENTS_READ,
+    PERMISSIONS.DOCUMENTS_WRITE,
+    PERMISSIONS.DONATIONS_READ,
+    PERMISSIONS.DONATIONS_WRITE,
+    PERMISSIONS.LEGAL_READ,
+    PERMISSIONS.LEGAL_WRITE,
+    PERMISSIONS.TRAINING_READ,
+    PERMISSIONS.TRAINING_WRITE,
+    PERMISSIONS.INCIDENTS_READ,
+    PERMISSIONS.INCIDENTS_WRITE,
+    PERMISSIONS.REPORTS_VIEW,
+    PERMISSIONS.AUDIT_VIEW,
+    PERMISSIONS.USERS_MANAGE,
+  ],
+  PROVINCE_ADMIN: [
+    PERMISSIONS.MEMBERS_READ,
+    PERMISSIONS.MEMBERS_WRITE,
+    PERMISSIONS.COMPLAINTS_READ,
+    PERMISSIONS.COMPLAINTS_WRITE,
+    PERMISSIONS.COMPLAINTS_RESOLVE,
+    PERMISSIONS.EVENTS_READ,
+    PERMISSIONS.EVENTS_WRITE,
+    PERMISSIONS.NEWS_READ,
+    PERMISSIONS.NEWS_WRITE,
+    PERMISSIONS.DOCUMENTS_READ,
+    PERMISSIONS.DOCUMENTS_WRITE,
+    PERMISSIONS.DONATIONS_READ,
+    PERMISSIONS.LEGAL_READ,
+    PERMISSIONS.LEGAL_WRITE,
+    PERMISSIONS.TRAINING_READ,
+    PERMISSIONS.INCIDENTS_READ,
+    PERMISSIONS.INCIDENTS_WRITE,
+    PERMISSIONS.REPORTS_VIEW,
+  ],
+  DISTRICT_ADMIN: [
+    PERMISSIONS.MEMBERS_READ,
+    PERMISSIONS.MEMBERS_WRITE,
+    PERMISSIONS.COMPLAINTS_READ,
+    PERMISSIONS.COMPLAINTS_WRITE,
+    PERMISSIONS.EVENTS_READ,
+    PERMISSIONS.EVENTS_WRITE,
+    PERMISSIONS.NEWS_READ,
+    PERMISSIONS.DOCUMENTS_READ,
+    PERMISSIONS.LEGAL_READ,
+    PERMISSIONS.INCIDENTS_READ,
+    PERMISSIONS.INCIDENTS_WRITE,
+    PERMISSIONS.REPORTS_VIEW,
+  ],
+  BRANCH_ADMIN: [
+    PERMISSIONS.MEMBERS_READ,
+    PERMISSIONS.MEMBERS_WRITE,
+    PERMISSIONS.COMPLAINTS_READ,
+    PERMISSIONS.COMPLAINTS_WRITE,
+    PERMISSIONS.EVENTS_READ,
+    PERMISSIONS.NEWS_READ,
+    PERMISSIONS.DOCUMENTS_READ,
+    PERMISSIONS.INCIDENTS_READ,
+    PERMISSIONS.INCIDENTS_WRITE,
+  ],
+  MEMBER: [
+    PERMISSIONS.COMPLAINTS_READ,
+    PERMISSIONS.COMPLAINTS_WRITE,
+    PERMISSIONS.EVENTS_READ,
+    PERMISSIONS.NEWS_READ,
+    PERMISSIONS.DOCUMENTS_READ,
+    PERMISSIONS.LEGAL_READ,
+    PERMISSIONS.TRAINING_READ,
+  ],
+  PUBLIC: [PERMISSIONS.NEWS_READ, PERMISSIONS.EVENTS_READ],
+};
+
+export const ROLE_LABELS: Record<Role, string> = {
+  SUPER_ADMIN: "Super Admin",
+  NATIONAL_ADMIN: "National Admin",
+  PROVINCE_ADMIN: "Province Admin",
+  DISTRICT_ADMIN: "District Admin",
+  BRANCH_ADMIN: "Branch Admin",
+  MEMBER: "Member",
+  PUBLIC: "Public",
+};
+
+export function hasPermission(role: Role | undefined, permission: Permission): boolean {
+  if (!role) return false;
+  const perms = ROLE_PERMISSIONS[role] ?? [];
+  return perms.includes(permission);
+}
+
+export function hasAnyPermission(role: Role | undefined, permissions: Permission[]): boolean {
+  return permissions.some((p) => hasPermission(role, p));
+}
+
+export function hasAllPermissions(role: Role | undefined, permissions: Permission[]): boolean {
+  return permissions.every((p) => hasPermission(role, p));
+}
+
+export function isAdminRole(role: Role | undefined): boolean {
+  if (!role) return false;
+  return [
+    ROLES.SUPER_ADMIN,
+    ROLES.NATIONAL_ADMIN,
+    ROLES.PROVINCE_ADMIN,
+    ROLES.DISTRICT_ADMIN,
+    ROLES.BRANCH_ADMIN,
+  ].includes(role as typeof ROLES.SUPER_ADMIN);
+}

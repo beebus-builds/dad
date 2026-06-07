@@ -1,0 +1,22 @@
+# Go
+bin/
+tmp/
+*.test
+*.out
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Env
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db

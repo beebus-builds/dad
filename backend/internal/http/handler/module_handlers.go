@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -397,33 +398,57 @@ func (h *Handlers) Health(c *gin.Context) {
 }
 
 func (h *Handlers) BranchesList(c *gin.Context) {
-	rows, err := h.DB.Query(c.Request.Context(), `SELECT id,name,name_nepali,province_code,district_code,address,contact_email,contact_phone,is_active,created_at,updated_at FROM branches WHERE deleted_at IS NULL AND is_active=TRUE ORDER BY name`)
+	list, err := h.Branches.List(c.Request.Context())
 	if err != nil {
 		handleErr(c, err)
 		return
 	}
-	defer rows.Close()
-	out := []gin.H{}
-	for rows.Next() {
-		var (
-			id, name, provinceCode, districtCode string
-			nameNepali, address, contactEmail, contactPhone *string
-			isActive bool
-			createdAt, updatedAt interface{}
-		)
-		if err := rows.Scan(&id, &name, &nameNepali, &provinceCode, &districtCode, &address, &contactEmail, &contactPhone, &isActive, &createdAt, &updatedAt); err != nil {
-			handleErr(c, err)
-			return
-		}
-		out = append(out, gin.H{
-			"id": id, "name": name, "nameNepali": nameNepali,
-			"provinceCode": provinceCode, "districtCode": districtCode,
-			"address": address, "contactEmail": contactEmail, "contactPhone": contactPhone,
-			"isActive":  isActive,
-			"createdAt": createdAt, "updatedAt": updatedAt,
-		})
+	response.OK(c, list)
+}
+
+func (h *Handlers) CreateBranch(c *gin.Context) {
+	var in usecase.CreateBranchInput
+	if err := c.ShouldBindJSON(&in); err != nil {
+		response.Error(c, 422, "VALIDATION", err.Error())
+		return
 	}
-	response.OK(c, out)
+	b, err := h.Branches.Create(c.Request.Context(), in)
+	if err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.Created(c, b)
+}
+
+func (h *Handlers) GetBranch(c *gin.Context) {
+	b, err := h.Branches.Get(c.Request.Context(), c.Param("id"))
+	if err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.OK(c, b)
+}
+
+func (h *Handlers) UpdateBranch(c *gin.Context) {
+	var in usecase.UpdateBranchInput
+	if err := c.ShouldBindJSON(&in); err != nil {
+		response.Error(c, 422, "VALIDATION", err.Error())
+		return
+	}
+	b, err := h.Branches.Update(c.Request.Context(), c.Param("id"), in)
+	if err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.OK(c, b)
+}
+
+func (h *Handlers) DeleteBranch(c *gin.Context) {
+	if err := h.Branches.Delete(c.Request.Context(), c.Param("id")); err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.OK(c, gin.H{"message": "branch deleted"})
 }
 
 func (h *Handlers) ReportsDashboard(c *gin.Context) {
@@ -466,5 +491,50 @@ func (h *Handlers) ReportsDashboard(c *gin.Context) {
 		return
 	}
 	stats["totalDonations"] = totalDonations
+
+	monthlyRows, err := h.DB.Query(ctx, `
+		SELECT to_char(date_trunc('month', created_at), 'YYYY-MM') AS month,
+			COUNT(*) FILTER (WHERE deleted_at IS NULL) AS members,
+			0 AS complaints
+		FROM members WHERE created_at >= NOW() - INTERVAL '12 months'
+		GROUP BY month ORDER BY month`)
+	if err == nil {
+		defer monthlyRows.Close()
+		type mg struct {
+			Month      string `json:"month"`
+			Members    int    `json:"members"`
+			Complaints int    `json:"complaints"`
+		}
+		mth := make([]mg, 0, 12)
+		for monthlyRows.Next() {
+			m := mg{}
+			if monthlyRows.Scan(&m.Month, &m.Members, &m.Complaints) == nil {
+				mth = append(mth, m)
+			}
+		}
+		stats["monthlyGrowth"] = mth
+	}
+
+	activityRows, err := h.DB.Query(ctx, `SELECT id, action, resource, created_at FROM audit_logs ORDER BY created_at DESC LIMIT 10`)
+	if err == nil {
+		defer activityRows.Close()
+		type act struct {
+			ID      string `json:"id"`
+			Type    string `json:"type"`
+			Message string `json:"message"`
+			At      string `json:"at"`
+		}
+		acts := make([]act, 0, 10)
+		for activityRows.Next() {
+			a := act{}
+			var ts interface{}
+			if activityRows.Scan(&a.ID, &a.Type, &a.Message, &ts) == nil {
+				a.At = fmt.Sprintf("%v", ts)
+				acts = append(acts, a)
+			}
+		}
+		stats["recentActivity"] = acts
+	}
+
 	response.OK(c, stats)
 }

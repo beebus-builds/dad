@@ -4,12 +4,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/shramjagaran/cms-backend/internal/config"
 	"github.com/shramjagaran/cms-backend/internal/domain/rbac"
+	"github.com/shramjagaran/cms-backend/internal/domain/repository"
 	"github.com/shramjagaran/cms-backend/internal/http/handler"
 	"github.com/shramjagaran/cms-backend/internal/http/middleware"
 	"github.com/shramjagaran/cms-backend/pkg/jwt"
 )
 
-func New(cfg *config.Config, h *handler.Handlers, jm *jwt.Manager) *gin.Engine {
+func New(cfg *config.Config, h *handler.Handlers, jm *jwt.Manager, auditRepo repository.AuditLogRepository) *gin.Engine {
 	if cfg.App.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -33,7 +34,7 @@ func New(cfg *config.Config, h *handler.Handlers, jm *jwt.Manager) *gin.Engine {
 		}
 
 		authed := api.Group("")
-		authed.Use(middleware.Auth(jm))
+		authed.Use(middleware.Auth(jm), middleware.Audit(auditRepo))
 		{
 			authed.GET("/auth/me", h.Me)
 			authed.POST("/auth/logout", h.Logout)
@@ -42,6 +43,20 @@ func New(cfg *config.Config, h *handler.Handlers, jm *jwt.Manager) *gin.Engine {
 			authed.POST("/notifications/read-all", h.MarkAllRead)
 			authed.GET("/reports/dashboard", h.ReportsDashboard)
 		}
+
+		api.Group("/users").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermUsersManage)).
+			GET("", h.ListUsers).GET("/:id", h.GetUser)
+		api.Group("/users").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermUsersManage)).
+			POST("", h.CreateUser).PATCH("/:id", h.UpdateUser).DELETE("/:id", h.DeactivateUser)
+
+		api.Group("/branches").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermBranchesManage)).
+			GET("", h.BranchesList).GET("/:id", h.GetBranch)
+		api.Group("/branches").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermBranchesManage)).
+			POST("", h.CreateBranch).PATCH("/:id", h.UpdateBranch).DELETE("/:id", h.DeleteBranch)
+
+		authed.GET("/audit-logs", h.ListAuditLogs)
+		authed.GET("/settings", h.GetOrganisationSettings)
+		authed.PUT("/settings", h.UpdateOrganisationSettings)
 
 		api.Group("/members").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermMembersRead)).
 			GET("", h.ListMembers).GET("/:id", h.GetMember)
@@ -87,6 +102,17 @@ func New(cfg *config.Config, h *handler.Handlers, jm *jwt.Manager) *gin.Engine {
 			GET("", h.ListIncidents)
 		api.Group("/incidents").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermIncidentsWrite)).
 			POST("", h.CreateIncident)
+
+		public := api.Group("/public")
+		{
+			public.GET("/search", h.PublicSearch)
+			public.GET("/news/:slug", h.PublicGetNewsBySlug)
+			public.POST("/events/:id/register", h.PublicRegisterForEvent)
+			public.POST("/members/apply", h.PublicMemberApply)
+			public.GET("/members/:id", h.PublicGetMemberProfile)
+			public.POST("/donations", h.PublicCreateDonation)
+			public.POST("/contact", h.PublicContactSubmit)
+		}
 	}
 
 	return r

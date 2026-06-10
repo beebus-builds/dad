@@ -156,4 +156,84 @@ func (s *AuthService) Logout(_ context.Context, _ string) error {
 	return nil
 }
 
+type CreateUserInput struct {
+	FullName string `json:"fullName"`
+	Email    string `json:"email"`
+	Phone    string `json:"phone"`
+	Password string `json:"password"`
+	Role     string `json:"role"`
+	BranchID string `json:"branchId"`
+}
+
+func (s *AuthService) CreateUser(ctx context.Context, in CreateUserInput) (*entity.User, error) {
+	if strings.TrimSpace(in.FullName) == "" || strings.TrimSpace(in.Email) == "" {
+		return nil, apperror.New(422, "VALIDATION", "fullName and email are required")
+	}
+	existing, _ := s.users.GetByEmail(ctx, strings.ToLower(in.Email))
+	if existing != nil {
+		return nil, apperror.New(409, "CONFLICT", "email already in use")
+	}
+	hash, err := password.Hash(in.Password)
+	if err != nil {
+		return nil, err
+	}
+	branchPtr := strPtr(in.BranchID)
+	u := &entity.User{
+		ID:           uuid.NewString(),
+		Email:        strings.ToLower(in.Email),
+		PasswordHash: hash,
+		FullName:     in.FullName,
+		Phone:        strPtr(in.Phone),
+		Role:         in.Role,
+		BranchID:     branchPtr,
+		IsActive:     true,
+	}
+	if err := s.users.Create(ctx, u); err != nil {
+		return nil, err
+	}
+	return u, nil
+}
+
+type UpdateUserInput struct {
+	FullName *string `json:"fullName"`
+	Phone    *string `json:"phone"`
+	Role     *string `json:"role"`
+	BranchID *string `json:"branchId"`
+	IsActive *bool   `json:"isActive"`
+}
+
+func (s *AuthService) UpdateUser(ctx context.Context, id string, in UpdateUserInput) (*entity.User, error) {
+	u, err := s.users.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if in.FullName != nil {
+		u.FullName = *in.FullName
+	}
+	if in.Phone != nil {
+		u.Phone = in.Phone
+	}
+	if in.Role != nil {
+		u.Role = *in.Role
+	}
+	if in.BranchID != nil {
+		u.BranchID = in.BranchID
+	}
+	if in.IsActive != nil {
+		u.IsActive = *in.IsActive
+	}
+	if err := s.users.Update(ctx, id, u); err != nil {
+		return nil, err
+	}
+	return u, nil
+}
+
+func (s *AuthService) DeactivateUser(ctx context.Context, id string) error {
+	return s.users.Deactivate(ctx, id)
+}
+
+func (s *AuthService) ListUsers(ctx context.Context, opts repository.ListUsersOptions) ([]entity.User, int, error) {
+	return s.users.List(ctx, opts)
+}
+
 var _ = time.Now

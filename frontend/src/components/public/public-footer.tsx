@@ -1,28 +1,45 @@
-import Link from "next/link";
+"use client";
+
+import { Link } from "@/lib/i18n-navigation";
+import { useTranslations } from "next-intl";
 import { env } from "@/lib/env";
 
-const FOOTER_LINKS = {
-  Organisation: [
-    { href: "/about", label: "About Us" },
-    { href: "/leadership", label: "Leadership" },
-    { href: "/branches", label: "Our Branches" },
-    { href: "/careers", label: "Careers" },
-  ],
-  Services: [
-    { href: "/legal", label: "Legal Aid" },
-    { href: "/training", label: "Training Programs" },
-    { href: "/migrant-support", label: "Migrant Worker Support" },
-    { href: "/incidents/report", label: "Report Incident" },
-  ],
-  Resources: [
-    { href: "/labour-act", label: "Labour Act" },
-    { href: "/documents", label: "Documents" },
-    { href: "/faq", label: "FAQs" },
-    { href: "/contact", label: "Contact Support" },
-  ],
-};
+type FooterSection = { heading: string; items: { href: string; label: string }[] };
 
 export function PublicFooter() {
+  const t = useTranslations("footer");
+  const tCommon = useTranslations("common");
+
+  const sections: FooterSection[] = [
+    {
+      heading: t("organisation"),
+      items: [
+        { href: "/about", label: t("aboutUs") },
+        { href: "/leadership", label: t("leadership") },
+        { href: "/branches", label: t("branches") },
+        { href: "/careers", label: t("careers") },
+      ],
+    },
+    {
+      heading: t("services"),
+      items: [
+        { href: "/legal", label: t("legalAid") },
+        { href: "/training", label: t("training") },
+        { href: "/migrant-support", label: t("migrantSupport") },
+        { href: "/incidents/report", label: t("reportIncident") },
+      ],
+    },
+    {
+      heading: t("resources"),
+      items: [
+        { href: "/labour-act", label: t("labourAct") },
+        { href: "/documents", label: t("documents") },
+        { href: "/faq", label: t("faqs") },
+        { href: "/contact", label: t("contactSupport") },
+      ],
+    },
+  ];
+
   return (
     <footer className="border-t bg-muted/30">
       <div className="container py-12">
@@ -32,19 +49,17 @@ export function PublicFooter() {
               <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-gradient-to-br from-union-red to-govt-blue text-sm font-bold text-white">
                 SJ
               </span>
-              <span className="text-base font-semibold">{env.appName}</span>
+              <span className="text-base font-semibold">{tCommon("appName")}</span>
             </div>
-            <p className="mt-4 text-sm text-muted-foreground">
-              Empowering Nepalese workers through unity, advocacy and digital transformation.
-            </p>
+            <p className="mt-4 text-sm text-muted-foreground">{t("tagline")}</p>
           </div>
-          {Object.entries(FOOTER_LINKS).map(([heading, items]) => (
-            <nav key={heading} aria-labelledby={`footer-${heading}`}>
-              <h2 id={`footer-${heading}`} className="text-sm font-semibold">
-                {heading}
+          {sections.map((section) => (
+            <nav key={section.heading} aria-labelledby={`footer-${section.heading}`}>
+              <h2 id={`footer-${section.heading}`} className="text-sm font-semibold">
+                {section.heading}
               </h2>
               <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-                {items.map((it) => (
+                {section.items.map((it) => (
                   <li key={it.href}>
                     <Link href={it.href} className="hover:text-foreground hover:underline">
                       {it.label}
@@ -56,16 +71,16 @@ export function PublicFooter() {
           ))}
         </div>
         <div className="mt-10 flex flex-col gap-3 border-t pt-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} {env.appName}. All rights reserved.</p>
+          <p>{t("copyright", { year: new Date().getFullYear(), appName: tCommon("appName") })}</p>
           <div className="flex gap-4">
             <Link href="/privacy" className="hover:underline">
-              Privacy
+              {t("privacy")}
             </Link>
             <Link href="/terms" className="hover:underline">
-              Terms
+              {t("terms")}
             </Link>
             <Link href="/accessibility" className="hover:underline">
-              Accessibility
+              {t("accessibility")}
             </Link>
           </div>
         </div>

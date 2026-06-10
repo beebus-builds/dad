@@ -27,6 +27,7 @@ const (
 	PermSettingsManage  = "settings:manage"
 	PermAuditView       = "audit:view"
 	PermUsersManage     = "users:manage"
+	PermBranchesManage  = "branches:manage"
 )
 
 func PermissionsForRole(role string) []string {
@@ -42,7 +43,7 @@ func PermissionsForRole(role string) []string {
 			PermLegalRead, PermLegalWrite,
 			PermTrainingRead, PermTrainingWrite,
 			PermIncidentsRead, PermIncidentsWrite,
-			PermReportsView, PermSettingsManage, PermAuditView, PermUsersManage,
+			PermReportsView, PermSettingsManage, PermAuditView, PermUsersManage, PermBranchesManage,
 		}
 	case "NATIONAL_ADMIN":
 		return []string{
@@ -55,7 +56,7 @@ func PermissionsForRole(role string) []string {
 			PermLegalRead, PermLegalWrite,
 			PermTrainingRead, PermTrainingWrite,
 			PermIncidentsRead, PermIncidentsWrite,
-			PermReportsView, PermAuditView, PermUsersManage,
+			PermReportsView, PermAuditView, PermUsersManage, PermBranchesManage,
 		}
 	case "PROVINCE_ADMIN":
 		return []string{

@@ -88,6 +88,87 @@ func (h *Handlers) Me(c *gin.Context) {
 	response.OK(c, u)
 }
 
+func (h *Handlers) ListUsers(c *gin.Context) {
+	page, size := listOpts(c)
+	opts := repository.ListUsersOptions{
+		Page: page, PageSize: size,
+		Search:   c.Query("search"),
+		Role:     c.Query("role"),
+		BranchID: c.Query("branchId"),
+	}
+	list, total, err := h.Auth.ListUsers(c.Request.Context(), opts)
+	if err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.Paginated(c, list, response.Pagination{
+		Page: page, PageSize: size, Total: total, TotalPages: totalPages(total, size),
+	})
+}
+
+func (h *Handlers) CreateUser(c *gin.Context) {
+	var in usecase.CreateUserInput
+	if err := c.ShouldBindJSON(&in); err != nil {
+		response.Error(c, 422, "VALIDATION", err.Error())
+		return
+	}
+	u, err := h.Auth.CreateUser(c.Request.Context(), in)
+	if err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.Created(c, u)
+}
+
+func (h *Handlers) GetUser(c *gin.Context) {
+	u, err := h.Auth.Me(c.Request.Context(), c.Param("id"))
+	if err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.OK(c, u)
+}
+
+func (h *Handlers) UpdateUser(c *gin.Context) {
+	var in usecase.UpdateUserInput
+	if err := c.ShouldBindJSON(&in); err != nil {
+		response.Error(c, 422, "VALIDATION", err.Error())
+		return
+	}
+	u, err := h.Auth.UpdateUser(c.Request.Context(), c.Param("id"), in)
+	if err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.OK(c, u)
+}
+
+func (h *Handlers) DeactivateUser(c *gin.Context) {
+	if err := h.Auth.DeactivateUser(c.Request.Context(), c.Param("id")); err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.OK(c, gin.H{"message": "user deactivated"})
+}
+
+func (h *Handlers) ListAuditLogs(c *gin.Context) {
+	page, size := listOpts(c)
+	opts := repository.ListAuditOptions{
+		Page: page, PageSize: size,
+		UserID:   c.Query("userId"),
+		Resource: c.Query("resource"),
+		Action:   c.Query("action"),
+	}
+	list, total, err := h.AuditLog.List(c.Request.Context(), opts)
+	if err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.Paginated(c, list, response.Pagination{
+		Page: page, PageSize: size, Total: total, TotalPages: totalPages(total, size),
+	})
+}
+
 func setAuthCookies(c *gin.Context, access, refresh string) {
 	secure := c.Request.TLS != nil
 	c.SetSameSite(http.SameSiteLaxMode)

@@ -105,6 +105,7 @@ export type News = {
   publishedAt?: string;
   author: { id: string; name: string };
   tags?: string[];
+  views: number;
 };
 
 export type DocumentItem = {

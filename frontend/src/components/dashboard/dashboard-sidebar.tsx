@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, Link } from "@/lib/i18n-navigation";
 import {
   BarChart3,
   Bell,
@@ -17,9 +16,13 @@ import {
   Newspaper,
   Settings,
   Shield,
+  UserCog,
   Users,
+  Building2,
+  ScrollText,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -29,52 +32,75 @@ import { PERMISSIONS, type Permission } from "@/lib/rbac";
 
 type NavItem = {
   href: string;
-  label: string;
+  key:
+    | "dashboard"
+    | "reports"
+    | "notifications"
+    | "members"
+    | "complaints"
+    | "events"
+    | "news"
+    | "documents"
+    | "legalCases"
+    | "training"
+    | "incidents"
+    | "donations"
+    | "users"
+    | "branches"
+    | "auditLog"
+    | "myProfile"
+    | "settings"
+    | "support";
   icon: LucideIcon;
   permission?: Permission;
 };
 
-type NavSection = { heading: string; items: NavItem[] };
+type NavSection = { headingKey: "overview" | "operations" | "labour" | "account"; items: NavItem[] };
 
 const SECTIONS: NavSection[] = [
   {
-    heading: "Overview",
+    headingKey: "overview",
     items: [
-      { href: "/dashboard", label: "Dashboard", icon: Home },
-      { href: "/dashboard/reports", label: "Reports", icon: BarChart3, permission: PERMISSIONS.REPORTS_VIEW },
-      { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
+      { href: "/dashboard", key: "dashboard", icon: Home },
+      { href: "/dashboard/audit-log", key: "auditLog", icon: ScrollText, permission: PERMISSIONS.AUDIT_VIEW },
+      { href: "/dashboard/reports", key: "reports", icon: BarChart3, permission: PERMISSIONS.REPORTS_VIEW },
+      { href: "/dashboard/notifications", key: "notifications", icon: Bell },
     ],
   },
   {
-    heading: "Operations",
+    headingKey: "operations",
     items: [
-      { href: "/dashboard/members", label: "Members", icon: Users, permission: PERMISSIONS.MEMBERS_READ },
-      { href: "/dashboard/complaints", label: "Complaints", icon: MessageSquareWarning, permission: PERMISSIONS.COMPLAINTS_READ },
-      { href: "/dashboard/events", label: "Events", icon: Calendar, permission: PERMISSIONS.EVENTS_READ },
-      { href: "/dashboard/news", label: "News", icon: Newspaper, permission: PERMISSIONS.NEWS_READ },
-      { href: "/dashboard/documents", label: "Documents", icon: FileText, permission: PERMISSIONS.DOCUMENTS_READ },
+      { href: "/dashboard/members", key: "members", icon: Users, permission: PERMISSIONS.MEMBERS_READ },
+      { href: "/dashboard/users", key: "users", icon: UserCog, permission: PERMISSIONS.USERS_MANAGE },
+      { href: "/dashboard/branches", key: "branches", icon: Building2, permission: PERMISSIONS.BRANCHES_MANAGE },
+      { href: "/dashboard/complaints", key: "complaints", icon: MessageSquareWarning, permission: PERMISSIONS.COMPLAINTS_READ },
+      { href: "/dashboard/events", key: "events", icon: Calendar, permission: PERMISSIONS.EVENTS_READ },
+      { href: "/dashboard/news", key: "news", icon: Newspaper, permission: PERMISSIONS.NEWS_READ },
+      { href: "/dashboard/documents", key: "documents", icon: FileText, permission: PERMISSIONS.DOCUMENTS_READ },
     ],
   },
   {
-    heading: "Labour",
+    headingKey: "labour",
     items: [
-      { href: "/dashboard/legal-cases", label: "Legal Cases", icon: Gavel, permission: PERMISSIONS.LEGAL_READ },
-      { href: "/dashboard/training", label: "Training", icon: GraduationCap, permission: PERMISSIONS.TRAINING_READ },
-      { href: "/dashboard/incidents", label: "OSH Incidents", icon: Shield, permission: PERMISSIONS.INCIDENTS_READ },
-      { href: "/dashboard/donations", label: "Donations", icon: HandHeart, permission: PERMISSIONS.DONATIONS_READ },
+      { href: "/dashboard/legal-cases", key: "legalCases", icon: Gavel, permission: PERMISSIONS.LEGAL_READ },
+      { href: "/dashboard/training", key: "training", icon: GraduationCap, permission: PERMISSIONS.TRAINING_READ },
+      { href: "/dashboard/incidents", key: "incidents", icon: Shield, permission: PERMISSIONS.INCIDENTS_READ },
+      { href: "/dashboard/donations", key: "donations", icon: HandHeart, permission: PERMISSIONS.DONATIONS_READ },
     ],
   },
   {
-    heading: "Account",
+    headingKey: "account",
     items: [
-      { href: "/dashboard/profile", label: "My Profile", icon: Briefcase },
-      { href: "/dashboard/settings", label: "Settings", icon: Settings, permission: PERMISSIONS.SETTINGS_MANAGE },
-      { href: "/dashboard/support", label: "Support", icon: LifeBuoy },
+      { href: "/dashboard/profile", key: "myProfile", icon: Briefcase },
+      { href: "/dashboard/settings", key: "settings", icon: Settings, permission: PERMISSIONS.SETTINGS_MANAGE },
+      { href: "/dashboard/support", key: "support", icon: LifeBuoy },
     ],
   },
 ];
 
 export function DashboardSidebar() {
+  const t = useTranslations("dashboard.sidebar");
+  const tCommon = useTranslations("common");
   const pathname = usePathname();
   const can = useAuthStore((s) => s.can);
 
@@ -85,7 +111,7 @@ export function DashboardSidebar() {
           <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-gradient-to-br from-union-red to-govt-blue text-sm font-bold text-white">
             SJ
           </span>
-          <span className="text-sm">{env.appName}</span>
+          <span className="text-sm">{tCommon("appName")}</span>
         </Link>
       </div>
       <ScrollArea className="flex-1">
@@ -96,9 +122,9 @@ export function DashboardSidebar() {
             );
             if (visibleItems.length === 0) return null;
             return (
-              <div key={section.heading} className="space-y-1">
+              <div key={section.headingKey} className="space-y-1">
                 <p className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {section.heading}
+                  {t(section.headingKey)}
                 </p>
                 {visibleItems.map((item) => {
                   const Icon = item.icon;
@@ -118,7 +144,7 @@ export function DashboardSidebar() {
                       )}
                     >
                       <Icon className="h-4 w-4" />
-                      {item.label}
+                      {t(item.key)}
                     </Link>
                   );
                 })}

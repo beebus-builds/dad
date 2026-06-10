@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { Bell, LogOut, Search, Settings, User as UserIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Link } from "@/lib/i18n-navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,10 +17,23 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/stores/auth-store";
 import { useLogout } from "@/hooks/use-auth";
-import { ROLE_LABELS } from "@/lib/rbac";
 import { getInitials } from "@/lib/utils";
+import { LocaleSwitcher } from "@/components/i18n/locale-switcher";
+
+const ROLE_KEYS = {
+  SUPER_ADMIN: "SUPER_ADMIN",
+  NATIONAL_ADMIN: "NATIONAL_ADMIN",
+  PROVINCE_ADMIN: "PROVINCE_ADMIN",
+  DISTRICT_ADMIN: "DISTRICT_ADMIN",
+  BRANCH_ADMIN: "BRANCH_ADMIN",
+  MEMBER: "MEMBER",
+  PUBLIC: "PUBLIC",
+} as const;
 
 export function DashboardHeader() {
+  const t = useTranslations("dashboard.header");
+  const tCommon = useTranslations("common");
+  const tRoles = useTranslations("roles");
   const user = useAuthStore((s) => s.user);
   const logout = useLogout();
 
@@ -27,7 +41,7 @@ export function DashboardHeader() {
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur sm:px-6">
       <form className="flex-1 max-w-xl">
         <label htmlFor="dashboard-search" className="sr-only">
-          Search
+          {tCommon("search")}
         </label>
         <div className="relative">
           <Search
@@ -37,13 +51,14 @@ export function DashboardHeader() {
           <Input
             id="dashboard-search"
             type="search"
-            placeholder="Search members, complaints, events…"
+            placeholder={t("searchPlaceholder")}
             className="pl-9"
           />
         </div>
       </form>
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" aria-label="Notifications" className="relative">
+        <LocaleSwitcher />
+        <Button variant="ghost" size="icon" aria-label={t("notificationsAria")} className="relative">
           <Bell className="h-5 w-5" />
           <span className="absolute right-2 top-2 inline-flex h-2 w-2 rounded-full bg-union-red" />
         </Button>
@@ -61,7 +76,7 @@ export function DashboardHeader() {
               <div className="hidden text-left sm:block">
                 <div className="text-sm font-medium">{user?.fullName ?? "Guest"}</div>
                 <div className="text-xs text-muted-foreground">
-                  {user ? ROLE_LABELS[user.role] : ""}
+                  {user ? tRoles(ROLE_KEYS[user.role as keyof typeof ROLE_KEYS]) : ""}
                 </div>
               </div>
             </Button>
@@ -71,24 +86,24 @@ export function DashboardHeader() {
               <div className="font-medium">{user?.fullName}</div>
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="mt-1">
-                  {user ? ROLE_LABELS[user.role] : ""}
+                  {user ? tRoles(ROLE_KEYS[user.role as keyof typeof ROLE_KEYS]) : ""}
                 </Badge>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href="/dashboard/profile">
-                <UserIcon className="h-4 w-4" /> Profile
+                <UserIcon className="h-4 w-4" /> {tCommon("profile")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href="/dashboard/settings">
-                <Settings className="h-4 w-4" /> Settings
+                <Settings className="h-4 w-4" /> {tCommon("settings")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => logout.mutate()} className="text-destructive">
-              <LogOut className="h-4 w-4" /> Sign out
+              <LogOut className="h-4 w-4" /> {tCommon("signOut")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

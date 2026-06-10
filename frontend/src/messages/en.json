@@ -1,0 +1,1113 @@
+{
+  "common": {
+    "appName": "Shram Jagaran",
+    "tagline": "Workers' Awakening",
+    "search": "Search…",
+    "loading": "Loading…",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "view": "View",
+    "actions": "Actions",
+    "status": "Status",
+    "all": "All",
+    "yes": "Yes",
+    "no": "No",
+    "submit": "Submit",
+    "send": "Send",
+    "add": "Add",
+    "close": "Close",
+    "open": "Open",
+    "filter": "Filter",
+    "export": "Export",
+    "previous": "Previous",
+    "next": "Next",
+    "total": "Total",
+    "showing": "Showing {from}-{to} of {total}",
+    "noResults": "No results found",
+    "error": "An error occurred",
+    "tryAgain": "Try again",
+    "language": "Language",
+    "english": "English",
+    "nepali": "नेपाली",
+    "skipToContent": "Skip to main content",
+    "noPermission": "Access denied",
+    "noPermissionDesc": "You don't have permission to view this resource. Contact your administrator if you believe this is a mistake.",
+    "fieldRequired": "This field is required",
+    "signOut": "Sign out",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "news": "News",
+    "events": "Events",
+    "legal": "Legal Aid",
+    "membership": "Membership",
+    "contact": "Contact",
+    "dashboard": "Dashboard",
+    "signIn": "Sign in",
+    "joinNow": "Join Now"
+  },
+  "footer": {
+    "tagline": "Empowering Nepalese workers through unity, advocacy and digital transformation.",
+    "organisation": "Organisation",
+    "services": "Services",
+    "resources": "Resources",
+    "legalLinks": "Legal",
+    "aboutUs": "About Us",
+    "leadership": "Leadership",
+    "branches": "Our Branches",
+    "careers": "Careers",
+    "legalAid": "Legal Aid",
+    "training": "Training Programs",
+    "migrantSupport": "Migrant Worker Support",
+    "reportIncident": "Report Incident",
+    "labourAct": "Labour Act",
+    "documents": "Documents",
+    "faqs": "FAQs",
+    "contactSupport": "Contact Support",
+    "copyright": "© {year} {appName}. All rights reserved.",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "accessibility": "Accessibility"
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your union account",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "forgotPassword": "Forgot password?",
+      "noAccount": "Don't have an account?",
+      "register": "Create one",
+      "error": "Invalid email or password"
+    },
+    "register": {
+      "title": "Join the movement",
+      "subtitle": "Create your union membership account",
+      "fullName": "Full name",
+      "email": "Email",
+      "phone": "Phone",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "branch": "Branch",
+      "submit": "Create account",
+      "submitting": "Creating account…",
+      "hasAccount": "Already a member?",
+      "signIn": "Sign in",
+      "error": "Could not create account"
+    },
+    "forgot": {
+      "title": "Reset your password",
+      "subtitle": "We'll email you a reset link",
+      "email": "Email",
+      "submit": "Send reset link",
+      "submitting": "Sending…",
+      "backToLogin": "Back to sign in",
+      "success": "If an account exists, a reset link has been sent."
+    },
+    "quote": "Solidarity is not a feeling of vague sympathy. It is a firm determination to commit oneself to the common good.",
+    "quoteAuthor": "— Voice of Nepalese Workers"
+  },
+  "home": {
+    "hero": {
+      "badge": "Shram Jagaran · Workers' Awakening",
+      "title": "The unified digital home of Nepalese trade unions.",
+      "subtitle": "Membership, complaints, events, legal aid and labour advocacy — managed in one secure, modern platform built for every branch, district and province across Nepal.",
+      "primaryCta": "Become a Member",
+      "secondaryCta": "Request Legal Aid"
+    },
+    "stats": {
+      "members": "Active Members",
+      "branches": "Branches Nationwide",
+      "districts": "Districts Covered",
+      "cases": "Cases Resolved"
+    },
+    "services": {
+      "heading": "What we deliver",
+      "subheading": "End-to-end services covering every stage of a worker's union journey.",
+      "protection": {
+        "title": "Workplace Protection",
+        "description": "File complaints, track resolutions and access OSH guidance — all with full audit trails."
+      },
+      "legal": {
+        "title": "Legal Aid Network",
+        "description": "Connect with vetted labour advocates for foreign employment, disputes and collective bargaining."
+      },
+      "training": {
+        "title": "Worker Training",
+        "description": "Register for skills, safety and rights training delivered nationwide."
+      },
+      "advocacy": {
+        "title": "Voice & Advocacy",
+        "description": "Share stories, mobilise action and stay informed on labour policy changes."
+      },
+      "migrant": {
+        "title": "Migrant Support",
+        "description": "Resources, rescue coordination and case tracking for Nepalese migrant workers overseas."
+      },
+      "branch": {
+        "title": "Branch Management",
+        "description": "Powerful admin tools for province, district and branch leadership."
+      }
+    },
+    "modules": {
+      "badge": "Specialised Modules",
+      "heading": "Built around real Nepalese labour challenges.",
+      "description": "From foreign employment grievances to OSH incidents, our modules are aligned to Nepal Labour Act 2017 and the country's evolving workforce realities.",
+      "items": {
+        "foreign": "Foreign Employment Cases",
+        "dispute": "Labour Disputes",
+        "osh": "Occupational Safety Incidents",
+        "bargaining": "Collective Bargaining",
+        "aid": "Legal Aid Requests",
+        "migrant": "Migrant Worker Support",
+        "knowledge": "Labour Act Knowledge Base"
+      }
+    },
+    "cta": {
+      "title": "Stand with Nepal's workforce. Power their voice with technology.",
+      "description": "Whether you're a worker seeking support, a union leader managing thousands, or a donor backing the movement — Shram Jagaran is the platform that scales with you.",
+      "join": "Join Today",
+      "donate": "Donate"
+    }
+  },
+  "about": {
+    "title": "About Shram Jagaran",
+    "intro": "Shram Jagaran means \"Workers' Awakening\" in Nepali. We are a national federation of trade unions committed to defending the rights, dignity and welfare of Nepalese workers — at home and abroad.",
+    "mission": {
+      "title": "Our mission",
+      "body": "To unite, empower and represent every Nepalese worker through collective bargaining, legal aid, training, and policy advocacy."
+    },
+    "vision": {
+      "title": "Our vision",
+      "body": "A Nepal where every worker is informed, protected, and fairly compensated for their labour."
+    },
+    "history": {
+      "title": "Our history",
+      "body": "Founded in 2008, Shram Jagaran has grown to over 80 branches across all 77 districts, representing more than 120,000 active members in every sector of the economy."
+    }
+  },
+  "contact": {
+    "title": "Get in touch",
+    "subtitle": "We respond to every message within two working days.",
+    "name": "Your name",
+    "email": "Email",
+    "phone": "Phone (optional)",
+    "subject": "Subject",
+    "message": "Message",
+    "send": "Send message",
+    "sending": "Sending…",
+    "success": "Thank you — we'll be in touch soon.",
+    "office": "Head office",
+    "address": "Putalisadak, Kathmandu 44600, Nepal",
+    "phoneLabel": "Phone",
+    "emailLabel": "Email"
+  },
+  "news": {
+    "title": "News & Updates",
+    "subtitle": "Announcements, policy briefs and press releases from the federation.",
+    "readMore": "Read more",
+    "noArticles": "No articles published yet.",
+    "backToNews": "← Back to News",
+    "publishedAt": "Published on {date}",
+    "views": "{count} views",
+    "share": "Share",
+    "categories": {
+      "ANNOUNCEMENT": "Announcement",
+      "POLICY": "Policy",
+      "EVENT": "Event",
+      "PRESS_RELEASE": "Press Release",
+      "OTHER": "Other"
+    }
+  },
+  "events": {
+    "title": "Events Calendar",
+    "subtitle": "Meetings, rallies, training and conferences across Nepal.",
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "register": "Register",
+    "registered": "Registered",
+    "noEvents": "No events scheduled yet.",
+    "registerDialog": {
+      "title": "Register for {eventTitle}",
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "Your full name",
+      "email": "Email",
+      "emailPlaceholder": "your@email.com",
+      "phone": "Phone",
+      "phonePlaceholder": "98XXXXXXXX",
+      "submit": "Register",
+      "success": "You are registered for this event!",
+      "error": "Registration failed. Please try again."
+    },
+    "categories": {
+      "MEETING": "Meeting",
+      "RALLY": "Rally",
+      "TRAINING": "Training",
+      "WORKSHOP": "Workshop",
+      "CONFERENCE": "Conference",
+      "OTHER": "Other"
+    }
+  },
+  "legal": {
+    "title": "Legal Aid",
+    "subtitle": "Free legal support for union members in labour disputes, foreign employment and OSH cases.",
+    "request": "Request legal aid",
+    "call": "Hotline: 1145",
+    "areas": {
+      "foreign": "Foreign Employment Disputes",
+      "labour": "Labour Disputes",
+      "osh": "Occupational Safety",
+      "bargaining": "Collective Bargaining",
+      "other": "Other Matters"
+    }
+  },
+  "membership": {
+    "title": "Become a Member",
+    "subtitle": "Join over 120,000 workers who have made Shram Jagaran stronger.",
+    "benefits": "Member benefits",
+    "benefitItems": {
+      "legal": "Free legal aid",
+      "training": "Discounted training programmes",
+      "insurance": "Group insurance options",
+      "voice": "A voice in union policy",
+      "news": "Weekly newsletter and SMS alerts"
+    },
+    "tiers": {
+      "STANDARD": "Standard",
+      "LIFETIME": "Lifetime",
+      "HONORARY": "Honorary"
+    },
+    "cta": "Apply now",
+    "applyForm": {
+      "title": "Membership Application",
+      "subtitle": "Fill in your details to apply for membership.",
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "Your full name",
+      "email": "Email",
+      "emailPlaceholder": "your@email.com",
+      "phone": "Phone",
+      "phonePlaceholder": "98XXXXXXXX",
+      "address": "Address",
+      "addressPlaceholder": "Your current address",
+      "occupation": "Occupation",
+      "occupationPlaceholder": "e.g. Construction Worker",
+      "employer": "Employer",
+      "employerPlaceholder": "Company name",
+      "submit": "Submit Application",
+      "success": "Your membership application has been submitted! We will contact you soon.",
+      "error": "Application failed. Please try again."
+    }
+  },
+  "donate": {
+    "title": "Support our work",
+    "subtitle": "Your contribution powers legal aid, training, and emergency support for workers in need.",
+    "amount": "Amount (NPR)",
+    "name": "Your name",
+    "email": "Email",
+    "phone": "Phone",
+    "purpose": "Purpose (optional)",
+    "method": "Payment method",
+    "submit": "Donate",
+    "submitting": "Processing…",
+    "methods": {
+      "ESEWA": "eSewa",
+      "KHALTI": "Khalti",
+      "BANK_TRANSFER": "Bank Transfer",
+      "CARD": "Card"
+    }
+  },
+  "dashboard": {
+    "sidebar": {
+      "overview": "Overview",
+      "operations": "Operations",
+      "labour": "Labour",
+      "account": "Account",
+      "dashboard": "Dashboard",
+      "reports": "Reports",
+      "notifications": "Notifications",
+      "members": "Members",
+      "complaints": "Complaints",
+      "events": "Events",
+      "news": "News",
+      "documents": "Documents",
+      "legalCases": "Legal Cases",
+      "training": "Training",
+      "incidents": "OSH Incidents",
+      "donations": "Donations",
+      "users": "Users",
+      "branches": "Branches",
+      "auditLog": "Audit Log",
+      "myProfile": "My Profile",
+      "settings": "Settings",
+      "support": "Support"
+    },
+    "header": {
+      "searchPlaceholder": "Search members, complaints, events…",
+      "notificationsAria": "Notifications"
+    },
+    "home": {
+      "welcome": "Welcome back, {name}",
+      "subtitle": "Here's what's happening across the federation today.",
+      "stats": {
+        "members": "Active Members",
+        "openComplaints": "Open Complaints",
+        "upcomingEvents": "Upcoming Events",
+        "donationsThisMonth": "Donations this month"
+      }
+    }
+  },
+  "members": {
+    "list": {
+      "title": "Members",
+      "subtitle": "Manage union membership across all branches and provinces.",
+      "add": "Add Member",
+      "exportCsv": "Export CSV",
+      "search": "Search by name, ID or phone…",
+      "allStatuses": "All statuses",
+      "moreFilters": "More filters",
+      "loading": "Loading members…",
+      "deleted": "Member deleted",
+      "deleteFailed": "Failed to delete member",
+      "noData": "No data to export",
+      "noResults": "No members match your search",
+      "noResultsDesc": "Try adjusting your filters or adding a new member.",
+      "headers": {
+        "member": "Member",
+        "membershipNumber": "Membership #",
+        "branch": "Branch",
+        "tier": "Tier",
+        "status": "Status",
+        "joined": "Joined",
+        "actions": "Actions"
+      },
+      "view": "View",
+      "confirmDelete": "Delete this member?"
+    },
+    "detail": {
+      "title": "Member Profile",
+      "information": "Member Information",
+      "membership": "Membership details",
+      "activity": "Activity",
+      "activityEmpty": "Payments, complaints, and document history will appear here once the relevant backend endpoints return data.",
+      "back": "Back to members",
+      "gender": "Gender",
+      "joined": "Joined",
+      "expires": "Expires"
+    },
+    "new": {
+      "title": "Add New Member",
+      "subtitle": "Register a new union member with full identity and branch assignment.",
+      "identity": "Identity",
+      "work": "Work & Address",
+      "membership": "Membership",
+      "fields": {
+        "fullName": "Full Name",
+        "fullNameNepali": "Full Name (Nepali)",
+        "email": "Email",
+        "phone": "Phone",
+        "citizenshipNumber": "Citizenship #",
+        "dateOfBirth": "Date of Birth",
+        "occupation": "Occupation",
+        "employer": "Employer",
+        "address": "Address",
+        "branch": "Branch",
+        "tier": "Membership Tier"
+      },
+      "placeholders": {
+        "phone": "98XXXXXXXX",
+        "fullNameNepali": "राम बहादुर"
+      },
+      "save": "Save Member",
+      "selectBranch": "Select branch"
+    },
+    "tier": {
+      "STANDARD": "Standard",
+      "LIFETIME": "Lifetime",
+      "HONORARY": "Honorary"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "INACTIVE": "Inactive",
+      "SUSPENDED": "Suspended",
+      "EXPIRED": "Expired"
+    },
+    "gender": {
+      "MALE": "Male",
+      "FEMALE": "Female",
+      "OTHER": "Other"
+    }
+  },
+  "complaints": {
+    "list": {
+      "title": "Complaints",
+      "subtitle": "Track grievances raised by members and resolve them across branches.",
+      "new": "File complaint",
+      "search": "Search ticket or title…",
+      "noResults": "No complaints found",
+      "loading": "Loading complaints…",
+      "moreFilters": "More filters",
+      "tabs": {
+        "all": "All",
+        "open": "Open",
+        "inReview": "In Review",
+        "escalated": "Escalated",
+        "resolved": "Resolved"
+      },
+      "headers": {
+        "ticket": "Ticket",
+        "title": "Title",
+        "category": "Category",
+        "priority": "Priority",
+        "status": "Status",
+        "submittedBy": "Submitted by",
+        "filed": "Filed",
+        "actions": "Actions"
+      }
+    },
+    "detail": {
+      "description": "Description",
+      "timeline": "Timeline",
+      "addUpdate": "Add update",
+      "updateHint": "Comment posting and resolution workflows will be wired to the backend in a follow-up update.",
+      "postUpdate": "Post update",
+      "attach": "Attach file",
+      "markResolved": "Mark Resolved",
+      "assignedTo": "Assigned To",
+      "member": "Member",
+      "viewProfile": "View profile",
+      "back": "Back",
+      "filedBy": "Filed by {name} on {date}",
+      "unknown": "Unknown",
+      "unassigned": "Unassigned",
+      "pending": "Pending assignment",
+      "legalAdvisor": "Legal advisor",
+      "filed": "Filed",
+      "marked": "Marked as {status}",
+      "assignedToName": "Assigned to {name}",
+      "awaitingAssignment": "Awaiting assignment",
+      "filedComplaint": "Filed complaint",
+      "currentStatus": "Current status",
+      "priority": "Priority",
+      "category": "Category",
+      "lastUpdated": "Last updated",
+      "resolved": "Resolved",
+      "attachments": "Attachments"
+    },
+    "new": {
+      "title": "File a Complaint",
+      "subtitle": "Help us understand the issue. All complaints are tracked with full audit trails.",
+      "details": "Complaint Details",
+      "classification": "Classification",
+      "fields": {
+        "title": "Title",
+        "description": "Description",
+        "category": "Category",
+        "priority": "Priority",
+        "branch": "Branch"
+      },
+      "submit": "Submit complaint",
+      "submitHint": "Urgent complaints are notified to province leadership within 1 hour.",
+      "created": "Complaint {ticket} filed",
+      "createFailed": "Failed to file complaint"
+    },
+    "status": {
+      "OPEN": "Open",
+      "IN_REVIEW": "In Review",
+      "ESCALATED": "Escalated",
+      "RESOLVED": "Resolved",
+      "CLOSED": "Closed"
+    },
+    "priority": {
+      "LOW": "Low",
+      "MEDIUM": "Medium",
+      "HIGH": "High",
+      "URGENT": "Urgent"
+    },
+    "category": {
+      "WAGES": "Wages",
+      "WORKING_HOURS": "Working Hours",
+      "SAFETY": "Safety",
+      "HARASSMENT": "Harassment",
+      "TERMINATION": "Termination",
+      "BENEFITS": "Benefits",
+      "OTHER": "Other"
+    }
+  },
+  "eventsAdmin": {
+    "list": {
+      "title": "Events",
+      "subtitle": "Plan, publish and monitor union events across Nepal.",
+      "new": "Create Event",
+      "allStatuses": "All statuses",
+      "loading": "Loading events…",
+      "empty": "No events yet",
+      "emptyDesc": "Create your first event to start building the calendar.",
+      "manage": "Manage",
+      "registered": "{count} / {capacity}",
+      "deleted": "Event deleted",
+      "deleteConfirm": "Delete this event?",
+      "statuses": {
+        "DRAFT": "Draft",
+        "PUBLISHED": "Published",
+        "CANCELLED": "Cancelled",
+        "COMPLETED": "Completed"
+      },
+      "categories": {
+        "MEETING": "Meeting",
+        "RALLY": "Rally",
+        "TRAINING": "Training",
+        "WORKSHOP": "Workshop",
+        "CONFERENCE": "Conference",
+        "OTHER": "Other"
+      }
+    },
+    "new": {
+      "title": "Create Event",
+      "subtitle": "Plan a new union event, meeting, rally or workshop.",
+      "details": "Event details",
+      "classification": "Classification",
+      "fields": {
+        "title": "Title",
+        "titleNepali": "Title (Nepali)",
+        "description": "Description",
+        "category": "Category",
+        "startsAt": "Starts at",
+        "endsAt": "Ends at",
+        "location": "Location",
+        "capacity": "Capacity"
+      },
+      "submit": "Create event",
+      "created": "Event created",
+      "createFailed": "Failed to create event"
+    },
+    "detail": {
+      "back": "Back to events",
+      "registration": "Registration",
+      "registered": "Registered",
+      "unlimited": "Unlimited capacity",
+      "capacityUsed": "{pct}% capacity used",
+      "statusControls": "Status controls",
+      "publish": "Publish",
+      "published": "Published",
+      "cancel": "Cancel event",
+      "editEvent": "Edit event",
+      "deleteEvent": "Delete event",
+      "updated": "Event updated",
+      "deleted": "Event deleted",
+      "viewRegistrations": "View registrations",
+      "until": "Until {date}",
+      "slug": "Slug"
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "PUBLISHED": "Published",
+      "CANCELLED": "Cancelled",
+      "COMPLETED": "Completed"
+    }
+  },
+  "newsAdmin": {
+    "list": {
+      "title": "News & Updates",
+      "subtitle": "Publish announcements, policy briefs, and press releases.",
+      "new": "New article",
+      "search": "Search title or slug…",
+      "allStatuses": "All statuses",
+      "loading": "Loading articles…",
+      "empty": "No articles yet",
+      "emptyDesc": "Create your first article to populate the public news page.",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this article?",
+      "deleted": "Article deleted",
+      "headers": {
+        "title": "Title",
+        "category": "Category",
+        "status": "Status",
+        "author": "Author",
+        "published": "Published",
+        "actions": "Actions"
+      }
+    },
+    "new": {
+      "title": "New article",
+      "subtitle": "Publish an announcement, policy brief, or press release.",
+      "details": "Article",
+      "classification": "Classification",
+      "fields": {
+        "title": "Title",
+        "titleNepali": "Title (Nepali)",
+        "excerpt": "Excerpt",
+        "content": "Content",
+        "category": "Category"
+      },
+      "content": "Content",
+      "excerpt": "Excerpt",
+      "coverImage": "Cover image URL",
+      "tags": "Tags (comma separated)",
+      "publish": "Publish article",
+      "saveDraft": "Save as draft",
+      "created": "Article created",
+      "createFailed": "Failed to create article",
+      "submitHint": "Drafts are saved automatically and can be reviewed before publishing.",
+      "categories": {
+        "ANNOUNCEMENT": "Announcement",
+        "POLICY": "Policy",
+        "EVENT": "Event",
+        "PRESS_RELEASE": "Press Release",
+        "OTHER": "Other"
+      }
+    },
+    "detail": {
+      "back": "Back to news",
+      "author": "Author",
+      "publication": "Publication",
+      "published": "Published {date}",
+      "notPublished": "Not yet published",
+      "updated": "Article updated",
+      "deleted": "Article deleted",
+      "publishNow": "Publish now",
+      "published2": "Published",
+      "archive": "Archive",
+      "deleteArticle": "Delete article",
+      "editArticle": "Edit article",
+      "slug": "Slug",
+      "deleteConfirm": "Delete this article?"
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "PUBLISHED": "Published",
+      "ARCHIVED": "Archived"
+    }
+  },
+  "documents": {
+    "list": {
+      "title": "Documents",
+      "subtitle": "Policies, legal templates, forms and union reports.",
+      "upload": "Upload document",
+      "search": "Search documents…",
+      "allCategories": "All categories",
+      "noResults": "No documents found",
+      "loading": "Loading…",
+      "delete": "Delete this document?",
+      "deleted": "Document deleted",
+      "headers": {
+        "document": "Document",
+        "category": "Category",
+        "visibility": "Visibility",
+        "type": "Type",
+        "size": "Size",
+        "uploaded": "Uploaded",
+        "actions": "Actions"
+      },
+      "stats": {
+        "total": "Total",
+        "public": "Public",
+        "members": "Members only",
+        "admin": "Admin only"
+      }
+    },
+    "new": {
+      "title": "Upload document",
+      "subtitle": "Add a policy, legal template, report, or form to the library.",
+      "details": "Document details",
+      "classification": "Classification",
+      "fields": {
+        "title": "Title",
+        "description": "Description",
+        "fileUrl": "File URL",
+        "fileType": "File type",
+        "fileSize": "File size (bytes)",
+        "category": "Category",
+        "visibility": "Visibility"
+      },
+      "file": "File URL",
+      "category": "Category",
+      "visibility": "Visibility",
+      "description": "Description",
+      "submit": "Upload",
+      "submitHint": "Direct upload to R2 bucket — generate a signed URL or use the admin upload tool.",
+      "fileUrlPlaceholder": "https://r2.example.com/.../file.pdf",
+      "fileTypePlaceholder": "application/pdf",
+      "created": "Document uploaded",
+      "createFailed": "Failed to upload document"
+    },
+    "detail": {
+      "back": "Back to documents",
+      "download": "Download",
+      "notFound": "Document not found",
+      "notFoundDesc": "No document with id {id}",
+      "metadata": "Metadata",
+      "uploadedBy": "Uploaded by",
+      "uploadedOn": "Uploaded {date}",
+      "category": "Category",
+      "visibility": "Visibility",
+      "size": "Size",
+      "date": "Date"
+    },
+    "category": {
+      "POLICY": "Policy",
+      "LEGAL": "Legal",
+      "REPORT": "Report",
+      "FORM": "Form",
+      "OTHER": "Other"
+    },
+    "visibility": {
+      "PUBLIC": "Public",
+      "MEMBERS": "Members",
+      "ADMIN": "Admin"
+    },
+    "visibility": {
+      "PUBLIC": "Public",
+      "MEMBERS": "Members",
+      "ADMIN": "Admin"
+    }
+  },
+  "donations": {
+    "list": {
+      "title": "Donations",
+      "subtitle": "Track contributions from members, partners, and well-wishers.",
+      "search": "Search donor or receipt…",
+      "allMethods": "All methods",
+      "loading": "Loading donations…",
+      "noResults": "No donations yet",
+      "export": "Export",
+      "stats": {
+        "totalRaised": "Total raised",
+        "thisMonth": "This month",
+        "transactions": "transactions",
+        "average": "Average gift"
+      },
+      "headers": {
+        "receipt": "Receipt",
+        "donor": "Donor",
+        "amount": "Amount",
+        "method": "Method",
+        "purpose": "Purpose",
+        "date": "Date"
+      }
+    },
+    "new": {
+      "title": "Record Donation",
+      "subtitle": "Log a cash, bank, eSewa, Khalti or card contribution.",
+      "details": "Donor details",
+      "save": "Save",
+      "fields": {
+        "donorName": "Donor name",
+        "donorEmail": "Email",
+        "donorPhone": "Phone",
+        "amount": "Amount",
+        "currency": "Currency",
+        "method": "Method",
+        "purpose": "Purpose",
+        "date": "Date"
+      },
+      "submit": "Record donation",
+      "created": "Donation recorded",
+      "createFailed": "Failed to record donation",
+      "receiptHint": "A unique receipt number will be generated. The donor can use it for tax exemption."
+    },
+    "detail": {
+      "back": "Back to donations",
+      "details": "Donation details",
+      "donor": "Donor",
+      "notFound": "Donation not found",
+      "notFoundDesc": "No donation with id {id}",
+      "via": "via {method}",
+      "receiptNumber": "Receipt #",
+      "date": "Date",
+      "purpose": "Purpose"
+    },
+    "status": {
+      "PENDING": "Pending",
+      "COMPLETED": "Completed",
+      "FAILED": "Failed",
+      "REFUNDED": "Refunded"
+    },
+    "method": {
+      "CASH": "Cash",
+      "BANK_TRANSFER": "Bank Transfer",
+      "ESEWA": "eSewa",
+      "KHALTI": "Khalti",
+      "CARD": "Card"
+    }
+  },
+  "legalCases": {
+    "list": {
+      "title": "Legal Cases",
+      "subtitle": "Track foreign employment, OSH, bargaining and labour dispute cases.",
+      "new": "New case",
+      "allStatuses": "All statuses",
+      "loading": "Loading…",
+      "noResults": "No cases found",
+      "stats": {
+        "active": "Active",
+        "hearing": "In Hearing",
+        "resolved": "Resolved",
+        "intake": "Intake"
+      },
+      "headers": {
+        "caseNumber": "Case #",
+        "title": "Title",
+        "type": "Type",
+        "status": "Status",
+        "client": "Client",
+        "advisor": "Advisor",
+        "nextHearing": "Next Hearing"
+      }
+    },
+    "new": {
+      "title": "Open new legal case",
+      "subtitle": "Start a new case file for a member.",
+      "fields": {
+        "title": "Title",
+        "description": "Description",
+        "type": "Type",
+        "member": "Member"
+      },
+      "submit": "Open case"
+    },
+    "detail": {
+      "back": "Back to cases",
+      "notFound": "Case not found",
+      "notFoundDesc": "No case with id {id}"
+    },
+    "status": {
+      "INTAKE": "Intake",
+      "ACTIVE": "Active",
+      "HEARING": "Hearing",
+      "RESOLVED": "Resolved",
+      "CLOSED": "Closed"
+    },
+    "type": {
+      "FOREIGN_EMPLOYMENT": "Foreign Employment",
+      "LABOR_DISPUTE": "Labour Dispute",
+      "OSH": "Occupational Safety",
+      "COLLECTIVE_BARGAINING": "Collective Bargaining",
+      "OTHER": "Other"
+    }
+  },
+  "training": {
+    "list": {
+      "title": "Training Programmes",
+      "subtitle": "Skill-building and rights education for members across Nepal.",
+      "new": "Add programme",
+      "allStatuses": "All statuses",
+      "loading": "Loading…",
+      "noResults": "No training programmes",
+      "noResultsDesc": "Schedule a new programme to start enrolling members.",
+      "deleted": "Programme removed",
+      "removeConfirm": "Remove this programme?",
+      "registered": "{count}/{capacity} registered",
+      "headers": {
+        "remove": "Remove"
+      }
+    },
+    "new": {
+      "title": "Schedule training",
+      "subtitle": "Plan a new training session.",
+      "fields": {
+        "title": "Title",
+        "titleNepali": "Title (Nepali)",
+        "description": "Description",
+        "trainer": "Trainer",
+        "location": "Location",
+        "startsAt": "Starts at",
+        "endsAt": "Ends at",
+        "capacity": "Capacity"
+      },
+      "submit": "Save programme"
+    },
+    "detail": {
+      "back": "Back to training",
+      "notFound": "Training not found",
+      "notFoundDesc": "No training with id {id}"
+    },
+    "status": {
+      "UPCOMING": "Upcoming",
+      "ONGOING": "Ongoing",
+      "COMPLETED": "Completed"
+    }
+  },
+  "incidents": {
+    "list": {
+      "title": "OSH Incidents",
+      "subtitle": "Occupational safety and health incident registry.",
+      "new": "Report incident",
+      "loading": "Loading…",
+      "noResults": "No incidents reported",
+      "stats": {
+        "total": "Total",
+        "severe": "Severe / Fatal",
+        "investigating": "Investigating",
+        "resolved": "Resolved"
+      },
+      "headers": {
+        "incidentNumber": "Incident #",
+        "title": "Title",
+        "severity": "Severity",
+        "workplace": "Workplace",
+        "date": "Date",
+        "status": "Status"
+      }
+    },
+    "new": {
+      "title": "Report OSH incident",
+      "subtitle": "Document a workplace safety incident.",
+      "fields": {
+        "title": "Title",
+        "description": "Description",
+        "severity": "Severity",
+        "workplace": "Workplace",
+        "location": "Location",
+        "occurredAt": "Occurred at"
+      },
+      "submit": "Submit report",
+      "fatal": "Fatal incident — escalation required",
+      "fatalNotice": "A fatality must be reported to the Department of Labour within 48 hours."
+    },
+    "detail": {
+      "back": "Back to incidents",
+      "notFound": "Incident not found",
+      "notFoundDesc": "No incident with id {id}"
+    },
+    "severity": {
+      "MINOR": "Minor",
+      "MODERATE": "Moderate",
+      "SEVERE": "Severe",
+      "FATAL": "Fatal"
+    },
+    "status": {
+      "REPORTED": "Reported",
+      "INVESTIGATING": "Investigating",
+      "RESOLVED": "Resolved"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "Updates, alerts and assignments.",
+    "empty": "You're all caught up.",
+    "markRead": "Mark as read",
+    "markAllRead": "Mark all as read"
+  },
+  "profile": {
+    "title": "My Profile",
+    "subtitle": "Update your personal information.",
+    "accountDetails": "Account Details",
+    "fields": {
+      "fullName": "Full name",
+      "email": "Email",
+      "phone": "Phone",
+      "branch": "Branch",
+      "role": "Role"
+    },
+    "save": "Save changes"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account and preferences.",
+    "tabs": {
+      "organisation": "Organisation",
+      "branches": "Branches",
+      "security": "Security",
+      "integrations": "Integrations"
+    },
+    "organisation": {
+      "title": "Organisation profile",
+      "name": "Name",
+      "nameNepali": "Name (Nepali)",
+      "tagline": "Tagline",
+      "email": "Public email",
+      "phone": "Phone"
+    },
+    "branches": {
+      "title": "Branch management",
+      "description": "Manage 80+ branches across all 7 provinces.",
+      "manage": "Manage branches"
+    },
+    "security": {
+      "title": "Security & access",
+      "twoFactor": "Two-factor authentication",
+      "twoFactorDesc": "Require admin users to set up 2FA on login.",
+      "enforce": "Enforce",
+      "sessionTimeout": "Session timeout",
+      "sessionTimeoutDesc": "Automatically sign out idle users after 30 minutes.",
+      "configure": "Configure",
+      "auditLog": "Audit log retention",
+      "auditLogDesc": "Storing 2 years of audit data.",
+      "adjust": "Adjust"
+    },
+    "integrations": {
+      "title": "Integrations",
+      "connected": "Connected",
+      "notConfigured": "Not configured",
+      "manage": "Manage",
+      "connect": "Connect"
+    },
+    "language": "Language",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "notifications": "Notifications",
+    "emailNotifications": "Email notifications",
+    "smsNotifications": "SMS notifications"
+  },
+  "support": {
+    "title": "Support",
+    "subtitle": "Get help with the platform or report an issue.",
+    "helpline": "Helpline",
+    "helplineHours": "Sun–Fri · 9:00–18:00 NPT",
+    "emailTitle": "Email",
+    "emailResponse": "Response within 24 hours",
+    "liveChat": "Live chat",
+    "chatHours": "Available 9 am – 5 pm on working days.",
+    "startChat": "Start chat",
+    "sendMessage": "Send us a message",
+    "name": "Your name",
+    "email": "Email",
+    "subject": "Subject",
+    "message": "Describe your issue",
+    "send": "Send",
+    "sending": "Sending…",
+    "success": "Your message has been sent. We'll get back to you shortly."
+  },
+  "reports": {
+    "title": "Reports",
+    "subtitle": "Federation-wide analytics and trends.",
+    "exportPdf": "Export PDF",
+    "members": "Members",
+    "complaints": "Complaints",
+    "donations": "Donations",
+    "active": "active",
+    "resolved": "resolved",
+    "totalReceived": "total received",
+    "upcomingEvents": "Upcoming events",
+    "activeLegal": "Active legal cases",
+    "openComplaints": "Open complaints",
+    "resolvedComplaints": "Resolved complaints",
+    "monthlyGrowth": "Monthly growth",
+    "provincePerformance": "Province performance",
+    "provinceDataUnavailable": "Monthly growth data is not yet available.",
+    "lastUpdated": "Last updated {time}"
+  },
+  "roles": {
+    "SUPER_ADMIN": "Super Admin",
+    "NATIONAL_ADMIN": "National Admin",
+    "PROVINCE_ADMIN": "Province Admin",
+    "DISTRICT_ADMIN": "District Admin",
+    "BRANCH_ADMIN": "Branch Admin",
+    "MEMBER": "Member",
+    "PUBLIC": "Public"
+  }
+}

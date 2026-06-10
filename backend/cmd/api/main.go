@@ -83,6 +83,9 @@ func run() error {
 	incidentRepo := postgres.NewIncidentRepository(pool)
 	notifRepo := postgres.NewNotificationRepository(pool)
 	auditRepo := postgres.NewAuditLogRepository(pool)
+	pubEventRegRepo := postgres.NewPublicEventRegistrationRepository(pool)
+	memberAppRepo := postgres.NewMemberApplicationRepository(pool)
+	contactRepo := postgres.NewContactRepository(pool)
 
 	authSvc := usecase.NewAuthService(userRepo, auditRepo, nil)
 	memberSvc := usecase.NewMemberService(memberRepo)
@@ -95,8 +98,12 @@ func run() error {
 	trainingSvc := usecase.NewTrainingService(trainingRepo)
 	incidentSvc := usecase.NewIncidentService(incidentRepo)
 	notifSvc := usecase.NewNotificationService(notifRepo)
-
-	_ = branchRepo
+	pubEventSvc := usecase.NewPublicEventService(eventRepo, pubEventRegRepo)
+	memberAppSvc := usecase.NewMemberApplicationService(memberAppRepo)
+	contactSvc := usecase.NewContactService(contactRepo)
+	branchSvc := usecase.NewBranchService(branchRepo)
+	auditLogSvc := usecase.NewAuditLogService(auditRepo)
+	settingsSvc := usecase.NewSettingsService(pool)
 
 	handlers := &handler.Handlers{
 		Auth:          authSvc,
@@ -110,6 +117,12 @@ func run() error {
 		Training:      trainingSvc,
 		Incidents:     incidentSvc,
 		Notifications: notifSvc,
+		PublicEvents:  pubEventSvc,
+		MemberApps:    memberAppSvc,
+		Contact:       contactSvc,
+		Branches:      branchSvc,
+		AuditLog:      auditLogSvc,
+		Settings:      settingsSvc,
 		DB:            pool,
 		Cache:         c,
 	}
@@ -117,7 +130,7 @@ func run() error {
 	jm := jwtpkg.NewManager(cfg.JWT.Secret, cfg.JWT.AccessExpiresIn, cfg.JWT.RefreshExpiresIn, cfg.JWT.Issuer)
 	authSvc.SetJWTManager(jm)
 
-	r := router.New(cfg, handlers, jm)
+	r := router.New(cfg, handlers, jm, auditRepo)
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.HTTP.Port,

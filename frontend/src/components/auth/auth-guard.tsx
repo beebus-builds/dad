@@ -1,19 +1,21 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "@/lib/i18n-navigation";
 import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/stores/auth-store";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { isAuthenticated, isHydrated } = useAuthStore();
 
   useEffect(() => {
     if (isHydrated && !isAuthenticated) {
-      router.replace("/login");
+      const redirect = encodeURIComponent(pathname);
+      router.replace(`/login?redirect=${redirect}`);
     }
-  }, [isHydrated, isAuthenticated, router]);
+  }, [isHydrated, isAuthenticated, router, pathname]);
 
   if (!isHydrated || !isAuthenticated) {
     return (

@@ -18,6 +18,12 @@ type Handlers struct {
 	Training      *usecase.TrainingService
 	Incidents     *usecase.IncidentService
 	Notifications *usecase.NotificationService
+	PublicEvents  *usecase.PublicEventService
+	MemberApps    *usecase.MemberApplicationService
+	Contact       *usecase.ContactService
+	Branches      *usecase.BranchService
+	AuditLog      *usecase.AuditLogService
+	Settings      *usecase.SettingsService
 	DB            *pgxpool.Pool
 	Cache         *cache.Cache
 }

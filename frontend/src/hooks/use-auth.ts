@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/i18n-navigation";
 import Cookies from "js-cookie";
 import { toast } from "sonner";
 import { authService, type LoginPayload, type RegisterPayload } from "@/services/auth-service";

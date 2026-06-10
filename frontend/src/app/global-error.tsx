@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/lib/i18n-navigation";
 
 export default function GlobalError({
   error,
@@ -27,7 +29,7 @@ export default function GlobalError({
             <div className="flex justify-center gap-2">
               <Button onClick={reset}>Try again</Button>
               <Button variant="outline" asChild>
-                <a href="/">Go home</a>
+                <Link href="/">Go home</Link>
               </Button>
             </div>
             {error.digest && (

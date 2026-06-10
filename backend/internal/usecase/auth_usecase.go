@@ -2,7 +2,11 @@ package usecase
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -12,21 +16,41 @@ import (
 	"github.com/shramjagaran/cms-backend/internal/domain/repository"
 	"github.com/shramjagaran/cms-backend/pkg/apperror"
 	"github.com/shramjagaran/cms-backend/pkg/jwt"
+	"github.com/shramjagaran/cms-backend/pkg/mail"
 	"github.com/shramjagaran/cms-backend/pkg/password"
 	"github.com/shramjagaran/cms-backend/pkg/validator"
 )
 
-type AuthService struct {
-	users   repository.UserRepository
-	audit   repository.AuditLogRepository
-	jwtMgr  *jwt.Manager
+type Mailer interface {
+	SendHTML(to, subject, html string) error
+	PasswordResetHTML(to, resetLink, appName string) string
 }
 
-func NewAuthService(u repository.UserRepository, a repository.AuditLogRepository, j *jwt.Manager) *AuthService {
-	return &AuthService{users: u, audit: a, jwtMgr: j}
+type AuthService struct {
+	users      repository.UserRepository
+	audit      repository.AuditLogRepository
+	tokens     repository.PasswordResetTokenRepository
+	jwtMgr     *jwt.Manager
+	mailer     Mailer
+	frontendURL string
+	appName    string
+}
+
+func NewAuthService(u repository.UserRepository, a repository.AuditLogRepository, t repository.PasswordResetTokenRepository, j *jwt.Manager) *AuthService {
+	return &AuthService{users: u, audit: a, tokens: t, jwtMgr: j}
 }
 
 func (s *AuthService) SetJWTManager(j *jwt.Manager) { s.jwtMgr = j }
+
+func (s *AuthService) SetMailer(m Mailer, frontendURL, appName string) {
+	s.mailer = m
+	s.frontendURL = frontendURL
+	s.appName = appName
+}
+
+func (s *AuthService) SetTokenRepo(t repository.PasswordResetTokenRepository) {
+	s.tokens = t
+}
 
 type LoginInput struct {
 	Email    string `json:"email" binding:"required,email"`
@@ -141,8 +165,82 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*AuthRe
 }
 
 func (s *AuthService) ForgotPassword(ctx context.Context, email string) error {
-	_, _ = s.users.GetByEmail(ctx, strings.ToLower(email))
+	lower := strings.ToLower(email)
+	u, err := s.users.GetByEmail(ctx, lower)
+	if err != nil {
+		return nil
+	}
+	if u.IsActive == false {
+		return nil
+	}
+	if s.tokens == nil || s.mailer == nil {
+		return nil
+	}
+
+	raw, err := generateResetToken()
+	if err != nil {
+		return nil
+	}
+	hash := hashToken(raw)
+	expiresAt := time.Now().Add(1 * time.Hour)
+
+	if err := s.tokens.Create(ctx, u.ID, hash, expiresAt); err != nil {
+		return nil
+	}
+
+	locale := "ne"
+	resetLink := mail.BuildResetLink(s.frontendURL, raw, locale)
+	html := s.mailer.PasswordResetHTML(lower, resetLink, s.appName)
+	_ = s.mailer.SendHTML(lower, "Shram Jagaran — Password Reset", html)
 	return nil
+}
+
+func (s *AuthService) ResetPassword(ctx context.Context, rawToken, newPassword string) error {
+	if s.tokens == nil {
+		return apperror.New(500, "CONFIG", "password reset is not configured")
+	}
+	if !validator.IsStrongPassword(newPassword) {
+		return apperror.New(422, "VALIDATION", "password must be 8+ chars with uppercase and number")
+	}
+	hash := hashToken(rawToken)
+	tok, err := s.tokens.GetByTokenHash(ctx, hash)
+	if err != nil {
+		return apperror.New(400, "INVALID_TOKEN", "reset token is invalid or expired")
+	}
+	if tok.UsedAt != nil {
+		return apperror.New(400, "TOKEN_USED", "reset token has already been used")
+	}
+	if time.Now().After(tok.ExpiresAt) {
+		return apperror.New(400, "TOKEN_EXPIRED", "reset token has expired")
+	}
+	newHash, err := password.Hash(newPassword)
+	if err != nil {
+		return apperror.New(500, "INTERNAL", "failed to process password")
+	}
+	if err := s.users.UpdatePassword(ctx, tok.UserID, newHash); err != nil {
+		return err
+	}
+	if err := s.tokens.MarkUsed(ctx, tok.ID); err != nil {
+		return err
+	}
+	_ = s.audit.Create(ctx, &entity.AuditLog{
+		UserID: &tok.UserID, Action: "PASSWORD_RESET", Resource: "User",
+		ResourceID: &tok.UserID,
+	})
+	return nil
+}
+
+func generateResetToken() (string, error) {
+	buf := make([]byte, 32)
+	if _, err := rand.Read(buf); err != nil {
+		return "", fmt.Errorf("generate token: %w", err)
+	}
+	return hex.EncodeToString(buf), nil
+}
+
+func hashToken(token string) string {
+	h := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(h[:])
 }
 
 func derefStr(s *string) string {

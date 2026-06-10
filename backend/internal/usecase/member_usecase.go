@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"encoding/csv"
 	"fmt"
 	"strings"
 	"time"
@@ -11,6 +12,12 @@ import (
 	"github.com/shramjagaran/cms-backend/internal/domain/repository"
 	"github.com/shramjagaran/cms-backend/pkg/apperror"
 )
+
+type CSVImportResult struct {
+	Imported int      `json:"imported"`
+	Skipped  int      `json:"skipped"`
+	Errors   []string `json:"errors,omitempty"`
+}
 
 type MemberService struct {
 	repo repository.MemberRepository
@@ -117,6 +124,88 @@ func (s *MemberService) List(ctx context.Context, opts repository.ListMembersOpt
 		opts.PageSize = 20
 	}
 	return s.repo.List(ctx, opts)
+}
+
+func (s *MemberService) ImportCSV(ctx context.Context, reader *csv.Reader) (*CSVImportResult, error) {
+	records, err := reader.ReadAll()
+	if err != nil {
+		return nil, apperror.New(422, "INVALID_CSV", "Failed to read CSV: "+err.Error())
+	}
+	if len(records) < 2 {
+		return nil, apperror.New(422, "INVALID_CSV", "CSV must have a header row and at least one data row")
+	}
+
+	headers := records[0]
+	headerMap := make(map[string]int, len(headers))
+	for i, h := range headers {
+		headerMap[strings.TrimSpace(strings.ToLower(h))] = i
+	}
+
+	required := []string{"fullname"}
+	for _, r := range required {
+		if _, ok := headerMap[r]; !ok {
+			return nil, apperror.New(422, "INVALID_CSV", "Missing required column: "+r)
+		}
+	}
+
+	result := &CSVImportResult{}
+	for rowIdx, row := range records[1:] {
+		get := func(col string) string {
+			if idx, ok := headerMap[col]; ok && idx < len(row) {
+				return strings.TrimSpace(row[idx])
+			}
+			return ""
+		}
+
+		fullName := get("fullname")
+		if fullName == "" {
+			result.Skipped++
+			result.Errors = append(result.Errors, fmt.Sprintf("row %d: fullName is required", rowIdx+2))
+			continue
+		}
+
+		tier := get("tier")
+		if tier == "" {
+			tier = entity.MemberTierStandard
+		}
+
+		mn := get("membershipnumber")
+		if mn == "" {
+			mn = fmt.Sprintf("SJ-%d", time.Now().Unix()%1_000_000+int64(rowIdx))
+		}
+
+		m := &entity.Member{
+			ID:               uuid.NewString(),
+			MembershipNumber: mn,
+			FullName:         fullName,
+			FullNameNepali:   strPtr(get("fullnamenepali")),
+			Email:            strPtr(get("email")),
+			Phone:            get("phone"),
+			Gender:           strPtr(get("gender")),
+			CitizenshipNumber: strPtr(get("citizenshipnumber")),
+			Occupation:       strPtr(get("occupation")),
+			Employer:         strPtr(get("employer")),
+			Address:          strPtr(get("address")),
+			BranchID:         get("branchid"),
+			Tier:             tier,
+			Status:           entity.MemberStatusActive,
+			JoinedAt:         time.Now(),
+		}
+		if dob := get("dateofbirth"); dob != "" {
+			if d, err := time.Parse("2006-01-02", dob); err == nil {
+				m.DateOfBirth = &d
+			}
+		}
+
+		if err := s.repo.Create(ctx, m); err != nil {
+			result.Skipped++
+			result.Errors = append(result.Errors, fmt.Sprintf("row %d: %s", rowIdx+2, err.Error()))
+			continue
+		}
+		result.Imported++
+	}
+
+	return result, nil
 }
 
 func strPtr(s string) *string {

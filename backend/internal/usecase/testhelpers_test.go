@@ -78,6 +78,7 @@ func (r *stubUserRepo) List(_ context.Context, _ repository.ListUsersOptions) ([
 	return nil, 0, nil
 }
 
+func (r *stubUserRepo) UpdatePassword(_ context.Context, _, _ string) error { return nil }
 func (r *stubUserRepo) UpdateLastLogin(_ context.Context, id string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -116,7 +117,7 @@ func (r *stubAuditRepo) List(_ context.Context, _ repository.ListAuditOptions) (
 
 func newTestAuthService(repo *stubUserRepo, audit *stubAuditRepo) (*AuthService, *jwt.Manager) {
 	mgr := jwt.NewManager("test-secret-key-must-be-32-chars-long-xx", 15*time.Minute, 24*time.Hour, "test")
-	svc := NewAuthService(repo, audit, mgr)
+	svc := NewAuthService(repo, audit, nil, mgr)
 	return svc, mgr
 }
 

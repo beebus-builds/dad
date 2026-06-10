@@ -77,6 +77,22 @@ func (h *Handlers) ForgotPassword(c *gin.Context) {
 	response.OK(c, gin.H{"message": "If the account exists, an email has been sent."})
 }
 
+func (h *Handlers) ResetPassword(c *gin.Context) {
+	var body struct {
+		Token       string `json:"token"`
+		NewPassword string `json:"newPassword"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		response.Error(c, 422, "VALIDATION", err.Error())
+		return
+	}
+	if err := h.Auth.ResetPassword(c.Request.Context(), body.Token, body.NewPassword); err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.OK(c, gin.H{"message": "Password has been reset successfully."})
+}
+
 func (h *Handlers) Me(c *gin.Context) {
 	uid, _ := c.Get(middleware.CtxUserID)
 	userID, _ := uid.(string)

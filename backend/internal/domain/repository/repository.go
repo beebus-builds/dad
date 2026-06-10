@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/shramjagaran/cms-backend/internal/domain/entity"
 )
@@ -11,6 +12,7 @@ type UserRepository interface {
 	GetByID(ctx context.Context, id string) (*entity.User, error)
 	GetByEmail(ctx context.Context, email string) (*entity.User, error)
 	Update(ctx context.Context, id string, u *entity.User) error
+	UpdatePassword(ctx context.Context, id, passwordHash string) error
 	List(ctx context.Context, opts ListUsersOptions) ([]entity.User, int, error)
 	UpdateLastLogin(ctx context.Context, id string) error
 	Deactivate(ctx context.Context, id string) error
@@ -224,4 +226,10 @@ type ListContactOptions struct {
 	Page   int
 	PageSize int
 	IsRead *bool
+}
+
+type PasswordResetTokenRepository interface {
+	Create(ctx context.Context, userID, tokenHash string, expiresAt time.Time) error
+	GetByTokenHash(ctx context.Context, hash string) (*entity.PasswordResetToken, error)
+	MarkUsed(ctx context.Context, id string) error
 }

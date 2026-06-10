@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: shram-jagaran-api
+    runtime: go
+    repo: https://github.com/YOUR_ORG/dad_website
+    branch: main
+    rootDir: backend
+    buildCommand: go build -o bin/server ./cmd/api
+    startCommand: ./bin/server
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: HTTP_PORT
+        value: "8080"
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: shram-jagaran-frontend
+          property: url
+      - key: CORS_ORIGINS
+        fromService:
+          type: web
+          name: shram-jagaran-frontend
+          property: url
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_ACCESS_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 168h
+      - key: JWT_ISSUER
+        value: shram-jagaran-cms
+      - key: R2_ENABLED
+        value: "false"
+      - key: REDIS_URL
+        value: redis://localhost:6379
+      - key: SENTRY_ENABLED
+        value: "false"
+      - key: RATE_LIMIT_REQUESTS
+        value: "200"
+    plan: free
+    region: singapore

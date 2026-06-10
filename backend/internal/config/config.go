@@ -16,10 +16,20 @@ type Config struct {
 	Database   DatabaseConfig
 	Redis      RedisConfig
 	JWT        JWTConfig
+	SMTP       SMTPConfig
 	R2         R2Config
 	Sentry     SentryConfig
 	RateLimit  RateLimitConfig
 	CORS       CORSConfig
+}
+
+type SMTPConfig struct {
+	Host     string
+	Port     int
+	User     string
+	Pass     string
+	From     string
+	FromName string
 }
 
 type AppConfig struct {
@@ -94,6 +104,14 @@ func Load() (*Config, error) {
 			Name:        getEnv("APP_NAME", "Shram Jagaran CMS"),
 			Version:     getEnv("APP_VERSION", "0.1.0"),
 			FrontendURL: getEnv("FRONTEND_URL", "http://localhost:3000"),
+		},
+		SMTP: SMTPConfig{
+			Host:     getEnv("SMTP_HOST", ""),
+			Port:     getEnvInt("SMTP_PORT", 587),
+			User:     getEnv("SMTP_USER", ""),
+			Pass:     getEnv("SMTP_PASS", ""),
+			From:     getEnv("SMTP_FROM", "noreply@shramjagaran.org"),
+			FromName: getEnv("SMTP_FROM_NAME", "Shram Jagaran"),
 		},
 		HTTP: HTTPConfig{
 			Port:         getEnv("HTTP_PORT", "8080"),

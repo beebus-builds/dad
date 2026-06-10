@@ -30,4 +30,12 @@ export const memberService = {
   async remove(id: string): Promise<void> {
     await api.delete(`/members/${id}`);
   },
+  async importCsv(file: File): Promise<{ imported: number; skipped: number; errors?: string[] }> {
+    const form = new FormData();
+    form.append("file", file);
+    const { data } = await api.post("/members/import", form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return data.data;
+  },
 };

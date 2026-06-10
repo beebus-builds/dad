@@ -1,7 +1,7 @@
 {
   "common": {
     "appName": "Shram Jagaran",
-    "tagline": "Workers' Awakening",
+    "tagline": "Worker's Voice, Agent of Change",
     "search": "Search…",
     "loading": "Loading…",
     "back": "Back",
@@ -115,6 +115,19 @@
       "backToLogin": "Back to sign in",
       "success": "If an account exists, a reset link has been sent."
     },
+    "reset": {
+      "title": "Set new password",
+      "subtitle": "Enter your new password below.",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm Password",
+      "submit": "Reset password",
+      "submitting": "Resetting…",
+      "success": "Password reset successfully. Please sign in.",
+      "error": "Failed to reset password. The link may have expired.",
+      "invalid": "Invalid reset link",
+      "noToken": "This link is missing the reset token.",
+      "backToLogin": "Back to sign in"
+    },
     "quote": "Solidarity is not a feeling of vague sympathy. It is a firm determination to commit oneself to the common good.",
     "quoteAuthor": "— Voice of Nepalese Workers"
   },
@@ -182,20 +195,7 @@
     }
   },
   "about": {
-    "title": "About Shram Jagaran",
-    "intro": "Shram Jagaran means \"Workers' Awakening\" in Nepali. We are a national federation of trade unions committed to defending the rights, dignity and welfare of Nepalese workers — at home and abroad.",
-    "mission": {
-      "title": "Our mission",
-      "body": "To unite, empower and represent every Nepalese worker through collective bargaining, legal aid, training, and policy advocacy."
-    },
-    "vision": {
-      "title": "Our vision",
-      "body": "A Nepal where every worker is informed, protected, and fairly compensated for their labour."
-    },
-    "history": {
-      "title": "Our history",
-      "body": "Founded in 2008, Shram Jagaran has grown to over 80 branches across all 77 districts, representing more than 120,000 active members in every sector of the economy."
-    }
+    "title": "About Shram Jagaran Network"
   },
   "contact": {
     "title": "Get in touch",
@@ -209,9 +209,10 @@
     "sending": "Sending…",
     "success": "Thank you — we'll be in touch soon.",
     "office": "Head office",
-    "address": "Putalisadak, Kathmandu 44600, Nepal",
+    "address": "Koteshwar-32, Kathmandu, Nepal",
     "phoneLabel": "Phone",
-    "emailLabel": "Email"
+    "emailLabel": "Email",
+    "phone": "9851147727, 9851019594"
   },
   "news": {
     "title": "News & Updates",
@@ -373,6 +374,13 @@
       "subtitle": "Manage union membership across all branches and provinces.",
       "add": "Add Member",
       "exportCsv": "Export CSV",
+      "importCsv": "Import CSV",
+      "importTitle": "Import Members from CSV",
+      "importDesc": "Upload a CSV file with columns: fullName, phone, email, branchId, tier, etc.",
+      "importBtn": "Import",
+      "importing": "Importing…",
+      "importDone": "Successfully imported {n} member(s).",
+      "importSkipped": "{n} row(s) skipped due to errors.",
       "search": "Search by name, ID or phone…",
       "allStatuses": "All statuses",
       "moreFilters": "More filters",

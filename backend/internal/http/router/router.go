@@ -31,6 +31,7 @@ func New(cfg *config.Config, h *handler.Handlers, jm *jwt.Manager, auditRepo rep
 			auth.POST("/register", h.Register)
 			auth.POST("/refresh", h.Refresh)
 			auth.POST("/forgot-password", h.ForgotPassword)
+			auth.POST("/reset-password", h.ResetPassword)
 		}
 
 		authed := api.Group("")
@@ -61,7 +62,7 @@ func New(cfg *config.Config, h *handler.Handlers, jm *jwt.Manager, auditRepo rep
 		api.Group("/members").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermMembersRead)).
 			GET("", h.ListMembers).GET("/:id", h.GetMember)
 		api.Group("/members").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermMembersWrite)).
-			POST("", h.CreateMember).PATCH("/:id", h.UpdateMember).DELETE("/:id", h.DeleteMember)
+			POST("", h.CreateMember).POST("/import", h.ImportMembers).PATCH("/:id", h.UpdateMember).DELETE("/:id", h.DeleteMember)
 
 		api.Group("/complaints").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermComplaintsRead)).
 			GET("", h.ListComplaints).GET("/:id", h.GetComplaint).GET("/stats", h.ComplaintStats)

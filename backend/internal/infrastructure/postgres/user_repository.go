@@ -57,6 +57,11 @@ func (r *userRepo) Update(ctx context.Context, id string, u *entity.User) error 
 	return err
 }
 
+func (r *userRepo) UpdatePassword(ctx context.Context, id, passwordHash string) error {
+	_, err := r.pool.Exec(ctx, `UPDATE users SET password_hash=$2,updated_at=NOW() WHERE id=$1`, id, passwordHash)
+	return err
+}
+
 func (r *userRepo) UpdateLastLogin(ctx context.Context, id string) error {
 	_, err := r.pool.Exec(ctx, `UPDATE users SET last_login_at=NOW() WHERE id=$1`, id)
 	return err

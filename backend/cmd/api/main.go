@@ -20,6 +20,7 @@ import (
 	"github.com/shramjagaran/cms-backend/internal/usecase"
 	jwtpkg "github.com/shramjagaran/cms-backend/pkg/jwt"
 	"github.com/shramjagaran/cms-backend/pkg/logger"
+	"github.com/shramjagaran/cms-backend/pkg/mail"
 	"go.uber.org/zap"
 )
 
@@ -86,8 +87,9 @@ func run() error {
 	pubEventRegRepo := postgres.NewPublicEventRegistrationRepository(pool)
 	memberAppRepo := postgres.NewMemberApplicationRepository(pool)
 	contactRepo := postgres.NewContactRepository(pool)
+	resetTokenRepo := postgres.NewPasswordResetTokenRepository(pool)
 
-	authSvc := usecase.NewAuthService(userRepo, auditRepo, nil)
+	authSvc := usecase.NewAuthService(userRepo, auditRepo, resetTokenRepo, nil)
 	memberSvc := usecase.NewMemberService(memberRepo)
 	complaintSvc := usecase.NewComplaintService(complaintRepo)
 	eventSvc := usecase.NewEventService(eventRepo)
@@ -129,6 +131,14 @@ func run() error {
 
 	jm := jwtpkg.NewManager(cfg.JWT.Secret, cfg.JWT.AccessExpiresIn, cfg.JWT.RefreshExpiresIn, cfg.JWT.Issuer)
 	authSvc.SetJWTManager(jm)
+
+	if cfg.SMTP.Host != "" {
+		mailer := mail.NewSender(cfg.SMTP)
+		authSvc.SetMailer(mailer, cfg.App.FrontendURL, cfg.App.Name)
+		logger.L.Info("mailer configured", zap.String("host", cfg.SMTP.Host))
+	} else {
+		logger.L.Warn("SMTP not configured — password reset emails disabled")
+	}
 
 	r := router.New(cfg, handlers, jm, auditRepo)
 

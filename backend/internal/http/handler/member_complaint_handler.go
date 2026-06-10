@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"encoding/csv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/shramjagaran/cms-backend/internal/domain/repository"
 	"github.com/shramjagaran/cms-backend/internal/http/middleware"
@@ -63,6 +65,31 @@ func (h *Handlers) DeleteMember(c *gin.Context) {
 		return
 	}
 	response.NoContent(c)
+}
+
+func (h *Handlers) ImportMembers(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+		response.Error(c, 422, "VALIDATION", "CSV file is required")
+		return
+	}
+	f, err := file.Open()
+	if err != nil {
+		response.Error(c, 500, "INTERNAL", "Failed to open file")
+		return
+	}
+	defer f.Close()
+
+	reader := csv.NewReader(f)
+	reader.TrimLeadingSpace = true
+	reader.LazyQuotes = true
+
+	result, err := h.Members.ImportCSV(c.Request.Context(), reader)
+	if err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.OK(c, result)
 }
 
 func (h *Handlers) ListComplaints(c *gin.Context) {

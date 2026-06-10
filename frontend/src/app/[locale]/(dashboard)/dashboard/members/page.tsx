@@ -1,15 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/lib/i18n-navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Download, Filter, Search, UserPlus, Loader2 } from "lucide-react";
+import { Download, Filter, Search, Upload, UserPlus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -49,6 +58,9 @@ export default function MembersPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"" | Member["status"]>("");
   const [page, setPage] = useState(1);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importResult, setImportResult] = useState<{ imported: number; skipped: number; errors?: string[] } | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
   const params: MemberListParams = {
@@ -73,6 +85,27 @@ export default function MembersPage() {
       toast.error(err.message || t("list.deleteFailed"));
     },
   });
+
+  const importMutation = useMutation({
+    mutationFn: (file: File) => memberService.importCsv(file),
+    onSuccess: (res) => {
+      setImportResult(res);
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+    },
+    onError: (err: ApiError) => {
+      toast.error(err.message);
+    },
+  });
+
+  const handleImport = () => {
+    const file = fileRef.current?.files?.[0];
+    if (!file) {
+      toast.error("Please select a CSV file");
+      return;
+    }
+    setImportResult(null);
+    importMutation.mutate(file);
+  };
 
   const handleExport = () => {
     if (!data?.data.length) {
@@ -112,6 +145,50 @@ export default function MembersPage() {
                 <Download className="h-4 w-4" /> {t("list.exportCsv")}
               </Button>
               <PermissionGate permission={PERMISSIONS.MEMBERS_WRITE} fallback={null}>
+                <Dialog open={importOpen} onOpenChange={setImportOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Upload className="h-4 w-4" /> {t("list.importCsv")}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>{t("list.importTitle")}</DialogTitle>
+                      <DialogDescription>{t("list.importDesc")}</DialogDescription>
+                    </DialogHeader>
+                    {importResult ? (
+                      <div className="space-y-2 text-sm">
+                        <p className="text-success">{t("list.importDone", { n: importResult.imported })}</p>
+                        {importResult.skipped > 0 && (
+                          <p className="text-muted-foreground">{t("list.importSkipped", { n: importResult.skipped })}</p>
+                        )}
+                        {importResult.errors && importResult.errors.length > 0 && (
+                          <ul className="max-h-32 overflow-y-auto rounded border bg-muted p-2 text-xs text-destructive">
+                            {importResult.errors.map((e, i) => <li key={i}>{e}</li>)}
+                          </ul>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <Input ref={fileRef} type="file" accept=".csv" />
+                        {importMutation.isPending && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin" /> {t("list.importing")}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <DialogFooter>
+                      {importResult ? (
+                        <Button onClick={() => { setImportOpen(false); setImportResult(null); }}>{tCommon("close")}</Button>
+                      ) : (
+                        <Button onClick={handleImport} disabled={importMutation.isPending}>
+                          {t("list.importBtn")}
+                        </Button>
+                      )}
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
                 <Button size="sm" asChild>
                   <Link href="/dashboard/members/new">
                     <UserPlus className="h-4 w-4" /> {t("list.add")}

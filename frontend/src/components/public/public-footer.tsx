@@ -9,6 +9,7 @@ type FooterSection = { heading: string; items: { href: string; label: string }[]
 export function PublicFooter() {
   const t = useTranslations("footer");
   const tCommon = useTranslations("common");
+  const tCon = useTranslations("contact");
 
   const sections: FooterSection[] = [
     {
@@ -70,7 +71,12 @@ export function PublicFooter() {
             </nav>
           ))}
         </div>
-        <div className="mt-10 flex flex-col gap-3 border-t pt-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-6 flex flex-wrap gap-x-6 gap-y-1 border-t pt-4 text-xs text-muted-foreground">
+          <span>{tCon("address")}</span>
+          <span>{tCon("phoneLabel")}: {tCon("phone")}</span>
+          <span>{tCon("emailLabel")}: cstunepal2019@gmail.com</span>
+        </div>
+        <div className="mt-4 flex flex-col gap-3 border-t pt-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>{t("copyright", { year: new Date().getFullYear(), appName: tCommon("appName") })}</p>
           <div className="flex gap-4">
             <Link href="/privacy" className="hover:underline">

@@ -65,7 +65,8 @@ func (r *hStubUserRepo) List(_ context.Context, _ repository.ListUsersOptions) (
 	return nil, 0, nil
 }
 
-func (r *hStubUserRepo) UpdateLastLogin(_ context.Context, _ string) error { return nil }
+func (r *hStubUserRepo) UpdateLastLogin(_ context.Context, _ string) error  { return nil }
+func (r *hStubUserRepo) UpdatePassword(_ context.Context, _, _ string) error { return nil }
 func (r *hStubUserRepo) Deactivate(_ context.Context, _ string) error       { return nil }
 
 type hStubAuditRepo struct{}
@@ -78,7 +79,7 @@ func (hStubAuditRepo) List(_ context.Context, _ repository.ListAuditOptions) ([]
 func hNewTestAuthService() (*usecase.AuthService, *jwt.Manager, *hStubUserRepo) {
 	repo := newHStubUserRepo()
 	mgr := jwt.NewManager("test-secret-key-must-be-32-chars-long-xx", 15*time.Minute, 24*time.Hour, "test")
-	svc := usecase.NewAuthService(repo, hStubAuditRepo{}, mgr)
+	svc := usecase.NewAuthService(repo, hStubAuditRepo{}, nil, mgr)
 	return svc, mgr, repo
 }
 

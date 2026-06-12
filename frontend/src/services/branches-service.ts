@@ -3,11 +3,11 @@ import type { Branch } from "@/types";
 
 export const branchService = {
   async list(): Promise<Branch[]> {
-    const { data } = await api.get<ApiResponse<Branch[]>>("/branches");
+    const { data } = await api.get<ApiResponse<Branch[]>>("/public/branches");
     return data.data;
   },
   async listAdmin(params: { page?: number; pageSize?: number; search?: string } = {}): Promise<Paginated<Branch>> {
-    const { data } = await api.get<Paginated<Branch>>("/branches/admin", { params });
+    const { data } = await api.get<Paginated<Branch>>("/branches", { params });
     return data;
   },
   async detail(id: string): Promise<Branch> {

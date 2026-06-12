@@ -21,7 +21,6 @@ func New(cfg *config.Config, h *handler.Handlers, jm *jwt.Manager, auditRepo rep
 	r.Use(middleware.NewRateLimiter(cfg.RateLimit.Requests).Middleware())
 
 	r.GET("/health", h.Health)
-	r.GET("/api/v1/branches", h.BranchesList)
 
 	api := r.Group("/api/v1")
 	{
@@ -106,6 +105,7 @@ func New(cfg *config.Config, h *handler.Handlers, jm *jwt.Manager, auditRepo rep
 
 		public := api.Group("/public")
 		{
+			public.GET("/branches", h.BranchesList)
 			public.GET("/search", h.PublicSearch)
 			public.GET("/news/:slug", h.PublicGetNewsBySlug)
 			public.POST("/events/:id/register", h.PublicRegisterForEvent)

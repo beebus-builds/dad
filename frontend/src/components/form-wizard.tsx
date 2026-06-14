@@ -18,6 +18,9 @@ export function FormWizard({
   children,
   onNext,
   isSubmitting,
+  previousLabel = "Previous",
+  nextLabel = "Next",
+  saveLabel = "Save",
 }: {
   steps: WizardStep[];
   currentStep: number;
@@ -25,6 +28,9 @@ export function FormWizard({
   children: React.ReactNode;
   onNext?: () => Promise<boolean>;
   isSubmitting?: boolean;
+  previousLabel?: string;
+  nextLabel?: string;
+  saveLabel?: string;
 }) {
   const [transitioning, setTransitioning] = useState(false);
   const total = steps.length;
@@ -105,18 +111,18 @@ export function FormWizard({
           onClick={handlePrev}
           disabled={isFirst || transitioning}
         >
-          <ChevronLeft className="mr-1 h-4 w-4" /> Previous
+          <ChevronLeft className="mr-1 h-4 w-4" /> {previousLabel}
         </Button>
 
         <div className="flex items-center gap-2">
           {!isLast ? (
             <Button type="button" onClick={handleNext} disabled={transitioning}>
-              Next <ChevronRight className="ml-1 h-4 w-4" />
+              {nextLabel} <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           ) : (
             <Button type="submit" disabled={isSubmitting || transitioning}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Member
+              {saveLabel}
             </Button>
           )}
         </div>

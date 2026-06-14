@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
-import { ScrollText, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -34,6 +35,8 @@ const ACTION_COLOR: Record<string, "default" | "secondary" | "warning" | "destru
 const PAGE_SIZE = 30;
 
 export default function AuditLogPage() {
+  const t = useTranslations("common");
+  const tAudit = useTranslations("audit");
   const { dateTime } = useLocaleFormat();
   const [page, setPage] = useState(1);
   const [actionFilter, setActionFilter] = useState("");
@@ -50,14 +53,14 @@ export default function AuditLogPage() {
 
   return (
     <PermissionGate permission={PERMISSIONS.AUDIT_VIEW}>
-      <PageHeader title="Audit Log" description="Track all changes made across the system" />
+      <PageHeader title={tAudit("title")} description={tAudit("subtitle")} />
       <Card className="mt-6">
         <CardContent className="p-0">
           <div className="flex items-center gap-2 border-b px-4 py-3">
-            <span className="text-sm font-medium">Filter:</span>
+            <span className="text-sm font-medium">{tAudit("filter")}</span>
             {["", "POST", "PATCH", "DELETE"].map((a) => (
               <Button key={a} variant={actionFilter === a ? "default" : "outline"} size="sm" onClick={() => { setActionFilter(a); setPage(1); }}>
-                {a || "All"}
+                {a || t("all")}
               </Button>
             ))}
           </div>
@@ -67,11 +70,11 @@ export default function AuditLogPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Action</TableHead>
-                  <TableHead>Resource</TableHead>
-                  <TableHead>User</TableHead>
-                  <TableHead>IP</TableHead>
-                  <TableHead>Time</TableHead>
+                  <TableHead>{tAudit("action")}</TableHead>
+                  <TableHead>{tAudit("resource")}</TableHead>
+                  <TableHead>{tAudit("user")}</TableHead>
+                  <TableHead>{tAudit("ip")}</TableHead>
+                  <TableHead>{tAudit("time")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -84,16 +87,16 @@ export default function AuditLogPage() {
                     <TableCell className="text-sm text-muted-foreground">{dateTime(e.createdAt)}</TableCell>
                   </TableRow>
                 ))}
-                {!data?.data.length && <TableRow><TableCell colSpan={5} className="py-12 text-center text-muted-foreground">No audit entries found</TableCell></TableRow>}
+                {!data?.data.length && <TableRow><TableCell colSpan={5} className="py-12 text-center text-muted-foreground">{tAudit("noResults")}</TableCell></TableRow>}
               </TableBody>
             </Table>
           )}
-          {data && data.pagination.totalPages > 1 && (
-            <div className="flex items-center justify-between border-t px-4 py-3 text-sm text-muted-foreground">
-              <span>Page {page} of {data.pagination.totalPages}</span>
+          {data && (data.pagination?.totalPages ?? 0) > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 text-sm text-muted-foreground">
+              <span>{t("showing", { from: (page - 1) * PAGE_SIZE + 1, to: Math.min(page * PAGE_SIZE, data.pagination?.total ?? 0), total: data.pagination?.total ?? 0 })}</span>
               <div className="flex gap-1">
-                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Previous</Button>
-                <Button variant="outline" size="sm" disabled={page >= data.pagination.totalPages} onClick={() => setPage(p => p + 1)}>Next</Button>
+                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>{t("previous")}</Button>
+                <Button variant="outline" size="sm" disabled={page >= (data.pagination?.totalPages ?? 1)} onClick={() => setPage(p => p + 1)}>{t("next")}</Button>
               </div>
             </div>
           )}

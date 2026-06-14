@@ -1,22 +1,19 @@
 import { getRequestConfig } from "next-intl/server";
 import { notFound } from "next/navigation";
 
-export const locales = ["en", "ne"] as const;
+export const locales = ["ne"] as const;
 export type Locale = (typeof locales)[number];
 export const defaultLocale: Locale = "ne";
 
 export const localeLabels: Record<Locale, string> = {
-  en: "English",
   ne: "नेपाली",
 };
 
 export const localeHtmlLang: Record<Locale, string> = {
-  en: "en",
   ne: "ne",
 };
 
 export const localeBcp47: Record<Locale, string> = {
-  en: "en-US",
   ne: "ne-NP",
 };
 

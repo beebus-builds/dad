@@ -17,9 +17,11 @@ import (
 	"github.com/shramjagaran/cms-backend/internal/domain/repository"
 	"github.com/shramjagaran/cms-backend/pkg/apperror"
 	"github.com/shramjagaran/cms-backend/pkg/jwt"
+	"github.com/shramjagaran/cms-backend/pkg/logger"
 	"github.com/shramjagaran/cms-backend/pkg/mail"
 	"github.com/shramjagaran/cms-backend/pkg/password"
 	"github.com/shramjagaran/cms-backend/pkg/validator"
+	"go.uber.org/zap"
 )
 
 type Mailer interface {
@@ -113,17 +115,50 @@ func (s *AuthService) Register(ctx context.Context, in RegisterInput) (*Register
 	if !validator.IsStrongPassword(in.Password) {
 		return nil, apperror.New(422, "VALIDATION", "password must be 8+ chars with uppercase and number")
 	}
-	existing, _ := s.users.GetByEmail(ctx, strings.ToLower(in.Email))
-	if existing != nil {
+
+	email := strings.ToLower(in.Email)
+	existing, _ := s.users.GetByEmail(ctx, email)
+
+	// If email exists and is already verified, reject
+	if existing != nil && existing.EmailVerifiedAt != nil {
 		return nil, apperror.New(409, "CONFLICT", "email already registered")
 	}
+
+	// If email exists but is unverified, update the record and resend OTP
+	if existing != nil {
+		hash, err := password.Hash(in.Password)
+		if err != nil {
+			return nil, err
+		}
+		existing.FullName = in.FullName
+		existing.Phone = &in.Phone
+		if err := s.users.Update(ctx, existing.ID, existing); err != nil {
+			return nil, err
+		}
+		if err := s.users.UpdatePassword(ctx, existing.ID, hash); err != nil {
+			return nil, err
+		}
+		if err := s.sendVerificationOTP(ctx, existing.ID, existing.Email); err != nil {
+			logger.L.Error("send verification otp failed", zap.String("email", existing.Email), zap.Error(err))
+		}
+		_ = s.audit.Create(ctx, &entity.AuditLog{
+			UserID: &existing.ID, Action: "REGISTER", Resource: "User",
+			ResourceID: &existing.ID,
+		})
+		msg := "verification code sent to email"
+		if s.mailer == nil {
+			msg = "account exists — email verification unavailable (SMTP not configured)"
+		}
+		return &RegisterResult{UserID: existing.ID, Email: existing.Email, Message: msg}, nil
+	}
+
 	hash, err := password.Hash(in.Password)
 	if err != nil {
 		return nil, err
 	}
 	u := &entity.User{
 		ID:           uuid.NewString(),
-		Email:        strings.ToLower(in.Email),
+		Email:        email,
 		PasswordHash: hash,
 		FullName:     in.FullName,
 		Phone:        &in.Phone,
@@ -134,13 +169,17 @@ func (s *AuthService) Register(ctx context.Context, in RegisterInput) (*Register
 		return nil, err
 	}
 	if err := s.sendVerificationOTP(ctx, u.ID, u.Email); err != nil {
-		return nil, err
+		logger.L.Error("send verification otp failed", zap.String("email", u.Email), zap.Error(err))
 	}
 	_ = s.audit.Create(ctx, &entity.AuditLog{
 		UserID: &u.ID, Action: "REGISTER", Resource: "User",
 		ResourceID: &u.ID,
 	})
-	return &RegisterResult{UserID: u.ID, Email: u.Email, Message: "verification code sent to email"}, nil
+	msg := "verification code sent to email"
+	if s.mailer == nil {
+		msg = "account created — email verification unavailable (SMTP not configured)"
+	}
+	return &RegisterResult{UserID: u.ID, Email: u.Email, Message: msg}, nil
 }
 
 func (s *AuthService) sendVerificationOTP(ctx context.Context, userID, email string) error {
@@ -165,7 +204,7 @@ func (s *AuthService) sendVerificationOTP(ctx context.Context, userID, email str
 		return err
 	}
 	html := s.mailer.VerificationOTPHTML(code, s.appName)
-	return s.mailer.SendHTML(email, "Shram Jagaran — Verify Your Email", html)
+	return s.mailer.SendHTML(email, "श्रम जागरण — तपाईंको इमेल प्रमाणित गर्नुहोस्", html)
 }
 
 func generateOTP() (string, error) {
@@ -291,7 +330,7 @@ func (s *AuthService) ForgotPassword(ctx context.Context, email string) error {
 	locale := "ne"
 	resetLink := mail.BuildResetLink(s.frontendURL, raw, locale)
 	html := s.mailer.PasswordResetHTML(lower, resetLink, s.appName)
-	_ = s.mailer.SendHTML(lower, "Shram Jagaran — Password Reset", html)
+	_ = s.mailer.SendHTML(lower, "श्रम जागरण — पासवर्ड रिसेट", html)
 	return nil
 }
 

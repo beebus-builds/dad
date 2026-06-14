@@ -27,20 +27,19 @@ export const metadata: Metadata = {
     template: `%s · ${env.appName}`,
   },
   description:
-    "Shram Jagaran is a digital platform empowering Nepalese trade unions, workers, and labour advocates.",
+    "श्रम जागरण नेपाली ट्रेड युनियनहरू, श्रमिकहरू र श्रम अधिवक्ताहरूलाई सशक्त बनाउने एक डिजिटल प्लेटफर्म हो।",
   keywords: [
-    "Nepal Trade Union",
-    "Shram Jagaran",
-    "Labour Rights",
-    "Worker Welfare",
-    "Foreign Employment",
-    "Legal Aid",
+    "नेपाल ट्रेड युनियन",
+    "श्रम जागरण",
+    "श्रम अधिकार",
+    "श्रमिक कल्याण",
+    "वैदेशिक रोजगारी",
+    "कानूनी सहायता",
   ],
-  authors: [{ name: "Shram Jagaran" }],
+  authors: [{ name: "श्रम जागरण" }],
   metadataBase: new URL(env.appUrl),
   alternates: {
     languages: {
-      en: "/en",
       ne: "/ne",
     },
   },

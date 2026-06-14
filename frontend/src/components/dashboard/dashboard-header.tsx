@@ -21,7 +21,6 @@ import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { useAuthStore } from "@/stores/auth-store";
 import { useLogout } from "@/hooks/use-auth";
 import { getInitials } from "@/lib/utils";
-import { LocaleSwitcher } from "@/components/i18n/locale-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const ROLE_KEYS = {
@@ -72,7 +71,6 @@ export function DashboardHeader() {
         </div>
       </form>
       <div className="flex items-center gap-2">
-        <LocaleSwitcher />
         <ThemeToggle />
         <Button variant="ghost" size="icon" aria-label={t("notificationsAria")} className="relative">
           <Bell className="h-5 w-5" />

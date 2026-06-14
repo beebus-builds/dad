@@ -15,9 +15,9 @@ import { publicService } from "@/services/public-service";
 import { ApiError } from "@/lib/api-client";
 
 const SAMPLE_EVENTS = [
-  { id: "1", title: "National Workers Convention 2026", date: "2026-06-21", location: "Bhrikutimandap, Kathmandu", type: "CONFERENCE" },
-  { id: "2", title: "OSH Awareness Workshop", date: "2026-06-28", location: "Birgunj, Province 2", type: "WORKSHOP" },
-  { id: "3", title: "Migrant Workers Rights Rally", date: "2026-07-05", location: "Maitighar, Kathmandu", type: "RALLY" },
+  { id: "1", title: "राष्ट्रिय श्रमिक सम्मेलन २०२६", date: "2026-06-21", location: "भृकुटीमण्डप, काठमाडौं", type: "CONFERENCE" },
+  { id: "2", title: "व्यावसायिक सुरक्षा तथा स्वास्थ्य सचेतना कार्यशाला", date: "2026-06-28", location: "वीरगञ्ज, मधेस प्रदेश", type: "WORKSHOP" },
+  { id: "3", title: "आप्रवासी श्रमिक अधिकार र्‍याली", date: "2026-07-05", location: "माइतीघर, काठमाडौं", type: "RALLY" },
 ] as const;
 
 function EventRegisterDialog({ event }: { event: typeof SAMPLE_EVENTS[number] }) {
@@ -109,7 +109,7 @@ export default function PublicEventsPage() {
             <CardContent className="flex flex-1 flex-col space-y-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
-                {new Date(e.date).toLocaleDateString("en-US")}
+                {new Date(e.date).toLocaleDateString("ne-NP")}
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />

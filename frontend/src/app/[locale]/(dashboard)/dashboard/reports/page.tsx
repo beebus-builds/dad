@@ -30,7 +30,7 @@ export default function ReportsPage() {
           description={t("subtitle")}
           actions={
             <Button size="sm" variant="outline">
-              <Download className="h-4 w-4" /> {t("exportPdf") || "Export PDF"}
+              <Download className="h-4 w-4" /> {t("exportPdf")}
             </Button>
           }
         />
@@ -49,53 +49,53 @@ export default function ReportsPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4" /> {t("members") || "Members"}
+                    <BarChart3 className="h-4 w-4" /> {t("members")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold">{number(data.totalMembers)}</p>
                   <p className="text-sm text-muted-foreground">
-                    {number(data.activeMembers)} {t("active") || "active"}
+                    {number(data.activeMembers)} {t("active")}
                   </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <LineChart className="h-4 w-4" /> {t("complaints") || "Complaints"}
+                    <LineChart className="h-4 w-4" /> {t("complaints")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold">{number(data.openComplaints)}</p>
                   <p className="text-sm text-muted-foreground">
-                    {number(data.resolvedComplaints)} {t("resolved") || "resolved"}
+                    {number(data.resolvedComplaints)} {t("resolved")}
                   </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <PieChart className="h-4 w-4" /> {t("donations") || "Donations"}
+                    <PieChart className="h-4 w-4" /> {t("donations")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold">{currency(data.totalDonations, "NPR")}</p>
-                  <p className="text-sm text-muted-foreground">{t("totalReceived") || "total received"}</p>
+                  <p className="text-sm text-muted-foreground">{t("totalReceived")}</p>
                 </CardContent>
               </Card>
             </div>
 
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              <Mini label={t("upcomingEvents") || "Upcoming events"} value={data.upcomingEvents} />
-              <Mini label={t("activeLegal") || "Active legal cases"} value={data.activeLegalCases} />
-              <Mini label={t("openComplaints") || "Open complaints"} value={data.openComplaints} tone="warning" />
-              <Mini label={t("resolvedComplaints") || "Resolved complaints"} value={data.resolvedComplaints} tone="success" />
+              <Mini label={t("upcomingEvents")} value={data.upcomingEvents} />
+              <Mini label={t("activeLegal")} value={data.activeLegalCases} />
+              <Mini label={t("openComplaints")} value={data.openComplaints} tone="warning" />
+              <Mini label={t("resolvedComplaints")} value={data.resolvedComplaints} tone="success" />
             </div>
 
             {data.monthlyGrowth?.length ? (
               <Card>
                 <CardHeader>
-                  <CardTitle>{t("monthlyGrowth") || "Monthly growth"}</CardTitle>
+                  <CardTitle>{t("monthlyGrowth")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {data.monthlyGrowth.map((m: { month: string; members: number; complaints: number }) => (
@@ -103,7 +103,7 @@ export default function ReportsPage() {
                       <div className="flex items-center justify-between text-sm">
                         <span className="font-medium">{m.month}</span>
                         <span className="text-muted-foreground tabular-nums">
-                          +{m.members} {t("members") || "members"} · {m.complaints} {t("complaints") || "complaints"}
+                          +{m.members} {t("members")} · {m.complaints} {t("complaints")}
                         </span>
                       </div>
                       <div className="h-2 overflow-hidden rounded-full bg-muted">
@@ -120,11 +120,11 @@ export default function ReportsPage() {
             ) : (
               <Card>
                 <CardHeader>
-                  <CardTitle>{t("provincePerformance") || "Province performance"}</CardTitle>
+                  <CardTitle>{t("provincePerformance")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">
-                    {t("provinceDataUnavailable") || "Monthly growth data is not yet available."}
+                    {t("provinceDataUnavailable")}
                   </p>
                 </CardContent>
               </Card>

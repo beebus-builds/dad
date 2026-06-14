@@ -40,7 +40,8 @@ INSERT INTO permissions (name, description) VALUES
 ON CONFLICT (name) DO NOTHING;
 
 INSERT INTO role_permissions (role_id, permission_id)
-SELECT r.id, p.id FROM roles r CROSS JOIN permissions p WHERE r.name = 'SUPER_ADMIN';
+SELECT r.id, p.id FROM roles r CROSS JOIN permissions p WHERE r.name = 'SUPER_ADMIN'
+ON CONFLICT (role_id, permission_id) DO NOTHING;
 
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r JOIN permissions p ON p.name IN
@@ -49,7 +50,8 @@ SELECT r.id, p.id FROM roles r JOIN permissions p ON p.name IN
      'documents:read','documents:write','donations:read','donations:write',
      'legal:read','legal:write','training:read','training:write',
      'incidents:read','incidents:write','reports:view','audit:view','users:manage')
-WHERE r.name = 'NATIONAL_ADMIN';
+WHERE r.name = 'NATIONAL_ADMIN'
+ON CONFLICT (role_id, permission_id) DO NOTHING;
 
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r JOIN permissions p ON p.name IN
@@ -57,29 +59,34 @@ SELECT r.id, p.id FROM roles r JOIN permissions p ON p.name IN
      'events:read','events:write','news:read','news:write',
      'documents:read','documents:write','donations:read',
      'legal:read','legal:write','training:read','incidents:read','incidents:write','reports:view')
-WHERE r.name = 'PROVINCE_ADMIN';
+WHERE r.name = 'PROVINCE_ADMIN'
+ON CONFLICT (role_id, permission_id) DO NOTHING;
 
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r JOIN permissions p ON p.name IN
     ('members:read','members:write','complaints:read','complaints:write',
      'events:read','events:write','news:read','documents:read',
      'legal:read','incidents:read','incidents:write','reports:view')
-WHERE r.name = 'DISTRICT_ADMIN';
+WHERE r.name = 'DISTRICT_ADMIN'
+ON CONFLICT (role_id, permission_id) DO NOTHING;
 
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r JOIN permissions p ON p.name IN
     ('members:read','members:write','complaints:read','complaints:write',
      'events:read','news:read','documents:read','incidents:read','incidents:write')
-WHERE r.name = 'BRANCH_ADMIN';
+WHERE r.name = 'BRANCH_ADMIN'
+ON CONFLICT (role_id, permission_id) DO NOTHING;
 
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r JOIN permissions p ON p.name IN
     ('complaints:read','complaints:write','events:read','news:read','documents:read','legal:read','training:read')
-WHERE r.name = 'MEMBER';
+WHERE r.name = 'MEMBER'
+ON CONFLICT (role_id, permission_id) DO NOTHING;
 
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r JOIN permissions p ON p.name IN ('news:read','events:read')
-WHERE r.name = 'PUBLIC';
+WHERE r.name = 'PUBLIC'
+ON CONFLICT (role_id, permission_id) DO NOTHING;
 
 INSERT INTO branches (id, name, name_nepali, province_code, district_code, address, contact_email, contact_phone)
 VALUES

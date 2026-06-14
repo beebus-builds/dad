@@ -117,7 +117,7 @@ func Load() (*Config, error) {
 			Host:     getEnv("SMTP_HOST", ""),
 			Port:     getEnvInt("SMTP_PORT", 587),
 			User:     getEnv("SMTP_USER", ""),
-			Pass:     getEnv("SMTP_PASS", ""),
+			Pass:     strings.ReplaceAll(getEnv("SMTP_PASS", ""), " ", ""),
 			From:     getEnv("SMTP_FROM", "noreply@shramjagaran.org"),
 			FromName: getEnv("SMTP_FROM_NAME", "Shram Jagaran"),
 		},

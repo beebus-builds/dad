@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Building2, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -12,8 +13,7 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { PermissionGate } from "@/components/auth/permission-gate";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { PERMISSIONS } from "@/lib/rbac";
-import { api, ApiError, type ApiResponse } from "@/lib/api-client";
-import { useLocaleFormat } from "@/lib/use-locale-format";
+import { api, ApiError } from "@/lib/api-client";
 
 type Branch = {
   id: string;
@@ -29,7 +29,8 @@ type Branch = {
 };
 
 export default function BranchesPage() {
-  const { date } = useLocaleFormat();
+  const t = useTranslations("common");
+  const tBranches = useTranslations("branchesAdmin");
   const queryClient = useQueryClient();
 
   const { data: branches, isLoading } = useQuery({
@@ -45,7 +46,7 @@ export default function BranchesPage() {
       await api.patch(`/branches/${id}`, { isActive: false });
     },
     onSuccess: () => {
-      toast.success("Branch deactivated");
+      toast.success(tBranches("deactivated"));
       queryClient.invalidateQueries({ queryKey: ["branches"] });
     },
     onError: (err: ApiError) => toast.error(err.message),
@@ -53,33 +54,33 @@ export default function BranchesPage() {
 
   return (
     <PermissionGate permission={PERMISSIONS.BRANCHES_MANAGE}>
-      <PageHeader title="Branches" description="Manage organisation branches and offices" />
+      <PageHeader title={tBranches("title")} description={tBranches("subtitle")} />
       <Card className="mt-6">
         <CardContent className="p-0">
           <div className="flex items-center justify-between p-4">
-            <p className="text-sm text-muted-foreground">{branches?.length ?? 0} branches</p>
-            <Button variant="union" size="sm"><Plus className="mr-2 h-4 w-4" />Add Branch</Button>
+            <p className="text-sm text-muted-foreground">{tBranches("count", { count: branches?.length ?? 0 })}</p>
+            <Button variant="union" size="sm"><Plus className="mr-2 h-4 w-4" />{tBranches("addBranch")}</Button>
           </div>
           {isLoading ? (
             <div className="flex items-center justify-center py-12"><Loader2 className="h-4 w-4 animate-spin" /></div>
           ) : !branches?.length ? (
             <EmptyState
               icon={Building2}
-              title="No branches yet"
-              description="Branches are the local offices of your organisation. Add your first branch to get started."
-              hint="You can add province, district and local-level branches."
-              action={<Button variant="union" size="sm"><Plus className="mr-2 h-4 w-4" />Add Branch</Button>}
+              title={tBranches("empty")}
+              description={tBranches("emptyDesc")}
+              hint={tBranches("emptyHint")}
+              action={<Button variant="union" size="sm"><Plus className="mr-2 h-4 w-4" />{tBranches("addBranch")}</Button>}
             />
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Province</TableHead>
-                  <TableHead>District</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{tBranches("name")}</TableHead>
+                  <TableHead>{tBranches("province")}</TableHead>
+                  <TableHead>{tBranches("district")}</TableHead>
+                  <TableHead>{tBranches("contact")}</TableHead>
+                  <TableHead>{tBranches("status")}</TableHead>
+                  <TableHead>{tBranches("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -89,9 +90,9 @@ export default function BranchesPage() {
                     <TableCell>{b.provinceCode}</TableCell>
                     <TableCell>{b.districtCode}</TableCell>
                     <TableCell className="text-sm">{b.contactEmail || b.contactPhone || "—"}</TableCell>
-                    <TableCell><Badge variant={b.isActive ? "success" : "secondary"}>{b.isActive ? "Active" : "Inactive"}</Badge></TableCell>
+                    <TableCell><Badge variant={b.isActive ? "success" : "secondary"}>{b.isActive ? tBranches("active") : tBranches("inactive")}</Badge></TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm" disabled={!b.isActive} onClick={() => deactivateMutation.mutate(b.id)}>Deactivate</Button>
+                      <Button variant="ghost" size="sm" disabled={!b.isActive} onClick={() => deactivateMutation.mutate(b.id)}>{tBranches("deactivate")}</Button>
                     </TableCell>
                   </TableRow>
                 ))}

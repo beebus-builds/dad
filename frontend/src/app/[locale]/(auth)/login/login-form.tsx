@@ -6,9 +6,11 @@ import { AlertCircle, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Link } from "@/lib/i18n-navigation";
 import { useLogin } from "@/hooks/use-auth";
+import { ApiError } from "@/lib/api-client";
 import { loginSchema, type LoginInput } from "@/lib/validations";
 
 export function LoginForm() {
@@ -52,9 +54,8 @@ export function LoginForm() {
             {t("forgotPassword")}
           </Link>
         </div>
-        <Input
+        <PasswordInput
           id="password"
-          type="password"
           autoComplete="current-password"
           placeholder={t("passwordPlaceholder")}
           aria-invalid={Boolean(errors.password)}
@@ -70,7 +71,11 @@ export function LoginForm() {
       {login.error && (
         <div className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>{login.error.message}</span>
+          <span>
+            {login.error instanceof ApiError && login.error.code
+              ? `${login.error.code}: ${login.error.message}`
+              : login.error.message}
+          </span>
         </div>
       )}
       <Button type="submit" className="w-full" disabled={login.isPending}>

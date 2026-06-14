@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { use } from "react";
+import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import {
   AlertCircle,
@@ -43,12 +44,27 @@ const STATUS_VARIANT: Record<
   RESOLVED: "success",
 };
 
+const SEVERITY_LABELS: Record<string, string> = {
+  MINOR: "सामान्य",
+  MODERATE: "मध्यम",
+  SEVERE: "गम्भीर",
+  FATAL: "घातक",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  REPORTED: "प्रतिवेदन गरिएको",
+  INVESTIGATING: "अनुसन्धान भइरहेको",
+  RESOLVED: "समाधान भयो",
+};
+
 export default function IncidentDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const t = useTranslations("incidentsAdmin.detail");
+  const tCommon = useTranslations("common");
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["incidents", { pageSize: 200 }],
     queryFn: () => incidentService.list({ page: 1, pageSize: 200 }),
@@ -60,7 +76,7 @@ export default function IncidentDetailPage({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16 text-muted-foreground">
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading incident…
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("loading")}
       </div>
     );
   }
@@ -69,12 +85,12 @@ export default function IncidentDetailPage({
     return (
       <div className="space-y-4">
         <PageHeader
-          title="Incident"
-          description={`Could not load incident ${id}`}
+          title={t("title")}
+          description={t("loadError", { id })}
           actions={
             <Button variant="outline" size="sm" asChild>
               <Link href="/dashboard/incidents">
-                <ArrowLeft className="h-4 w-4" /> Back
+                <ArrowLeft className="h-4 w-4" /> {tCommon("back")}
               </Link>
             </Button>
           }
@@ -90,12 +106,12 @@ export default function IncidentDetailPage({
     return (
       <div className="space-y-4">
         <PageHeader
-          title="Incident not found"
-          description={`No incident with id ${id}`}
+          title={t("notFound")}
+          description={t("notFoundDesc", { id })}
           actions={
             <Button variant="outline" size="sm" asChild>
               <Link href="/dashboard/incidents">
-                <ArrowLeft className="h-4 w-4" /> Back
+                <ArrowLeft className="h-4 w-4" /> {tCommon("back")}
               </Link>
             </Button>
           }
@@ -111,11 +127,11 @@ export default function IncidentDetailPage({
       <div className="space-y-6">
         <PageHeader
           title={incident.title}
-          description={`${incident.incidentNumber} · ${incident.severity} severity`}
+          description={`${incident.incidentNumber} · ${SEVERITY_LABELS[incident.severity] ?? incident.severity}`}
           actions={
             <Button variant="outline" size="sm" asChild>
               <Link href="/dashboard/incidents">
-                <ArrowLeft className="h-4 w-4" /> Back
+                <ArrowLeft className="h-4 w-4" /> {tCommon("back")}
               </Link>
             </Button>
           }
@@ -124,9 +140,9 @@ export default function IncidentDetailPage({
           <div className="flex items-start gap-3 rounded-md border border-destructive/50 bg-destructive/5 p-4 text-destructive">
             <AlertTriangle className="mt-0.5 h-5 w-5" />
             <div>
-              <p className="font-semibold">Fatal incident — escalation required</p>
+              <p className="font-semibold">{t("fatalAlert")}</p>
               <p className="text-sm">
-                A fatality must be reported to the Department of Labour within 48 hours.
+                {t("fatalAlertDesc")}
               </p>
             </div>
           </div>
@@ -139,9 +155,9 @@ export default function IncidentDetailPage({
                   {incident.severity === "FATAL" && (
                     <ShieldAlert className="mr-1 h-3 w-3" />
                   )}
-                  {incident.severity}
+                  {SEVERITY_LABELS[incident.severity]}
                 </Badge>
-                <Badge variant={STATUS_VARIANT[incident.status]}>{incident.status}</Badge>
+                <Badge variant={STATUS_VARIANT[incident.status]}>{STATUS_LABELS[incident.status]}</Badge>
               </div>
               <CardTitle>{incident.title}</CardTitle>
             </CardHeader>
@@ -150,7 +166,7 @@ export default function IncidentDetailPage({
               <div className="grid gap-3 sm:grid-cols-2 pt-2">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Calendar className="h-4 w-4" />
-                  Occurred {formatDateTime(incident.occurredAt)}
+                  {t("occurred")} {formatDateTime(incident.occurredAt)}
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <MapPin className="h-4 w-4" />
@@ -159,7 +175,7 @@ export default function IncidentDetailPage({
                 {incident.workplaceName && (
                   <div className="flex items-center gap-2 text-muted-foreground sm:col-span-2">
                     <AlertCircle className="h-4 w-4" />
-                    Workplace: {incident.workplaceName}
+                    {t("workplace")}: {incident.workplaceName}
                   </div>
                 )}
               </div>
@@ -168,7 +184,7 @@ export default function IncidentDetailPage({
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Reported by</CardTitle>
+                <CardTitle>{t("reportedBy")}</CardTitle>
               </CardHeader>
               <CardContent className="flex items-center gap-3">
                 <div className="rounded-md bg-primary/10 p-2 text-primary">
@@ -176,7 +192,7 @@ export default function IncidentDetailPage({
                 </div>
                 <div>
                   <p className="text-sm font-medium">
-                    {incident.reportedBy?.name ?? "Unknown"}
+                    {incident.reportedBy?.name ?? t("unknown")}
                   </p>
                   <p className="text-xs text-muted-foreground">{formatDate(incident.occurredAt)}</p>
                 </div>
@@ -184,13 +200,13 @@ export default function IncidentDetailPage({
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Status</CardTitle>
+                <CardTitle>{tCommon("status")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
-                <Info label="Severity" value={incident.severity} />
-                <Info label="Status" value={incident.status} />
-                <Info label="Occurred" value={formatDateTime(incident.occurredAt)} />
-                <Info label="Location" value={incident.location} />
+                <Info label={t("severity")} value={SEVERITY_LABELS[incident.severity]} />
+                <Info label={tCommon("status")} value={STATUS_LABELS[incident.status]} />
+                <Info label={t("occurred")} value={formatDateTime(incident.occurredAt)} />
+                <Info label={t("location")} value={incident.location} />
               </CardContent>
             </Card>
           </div>

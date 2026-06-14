@@ -11,8 +11,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 const LEADERSHIP = [
-  { role: "अध्यक्ष", name: "विष्णुप्रसाद पौडेल", nameEn: "Bishnu Prasad Poudel" },
-  { role: "प्रधान सम्पादक", name: "प्रकाश भट्टराई", nameEn: "Prakash Bhattarai" },
+  { role: "अध्यक्ष", name: "विष्णुप्रसाद पौडेल" },
+  { role: "प्रधान सम्पादक", name: "प्रकाश भट्टराई" },
 ];
 
 const CORRESPONDENTS = [
@@ -27,14 +27,13 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("about");
-  const isNe = locale === "ne";
 
   return (
     <div className="container py-16">
       <div className="mx-auto max-w-3xl space-y-6">
         <h1 className="text-balance text-4xl font-bold tracking-tight">{t("title")}</h1>
         <p className="text-lg font-medium text-muted-foreground">
-          {isNe ? "मजदुरको आवाज, परिवर्तनको संवाहक" : "Worker's Voice, Agent of Change"}
+          मजदुरको आवाज, परिवर्तनको संवाहक
         </p>
 
         <div className="grid gap-6 sm:grid-cols-2">
@@ -44,7 +43,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
                 <CardTitle className="text-base">{l.role}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="font-semibold">{isNe ? l.name : l.nameEn}</p>
+                <p className="font-semibold">{l.name}</p>
               </CardContent>
             </Card>
           ))}
@@ -52,7 +51,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
 
         <Card>
           <CardHeader>
-            <CardTitle>{isNe ? "संवाददाता समूह" : "Correspondents"}</CardTitle>
+            <CardTitle>संवाददाता समूह</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="grid gap-1 sm:grid-cols-2">
@@ -63,7 +62,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
 
         <Card>
           <CardHeader>
-            <CardTitle>{isNe ? "बजार व्यवस्थापन" : "Market Management"}</CardTitle>
+            <CardTitle>बजार व्यवस्थापन</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="grid gap-1 sm:grid-cols-2">
@@ -74,12 +73,12 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
 
         <Card>
           <CardHeader>
-            <CardTitle>{isNe ? "सम्पर्क" : "Contact"}</CardTitle>
+            <CardTitle>सम्पर्क</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="flex items-start gap-2">
               <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <span>{isNe ? "कार्यालय: कोटेश्वर-३२, काठमाडौं" : "Office: Koteshwar-32, Kathmandu"}</span>
+              <span>कार्यालय: कोटेश्वर-३२, काठमाडौं</span>
             </div>
             <div className="flex items-center gap-2">
               <Phone className="h-4 w-4 shrink-0 text-muted-foreground" />

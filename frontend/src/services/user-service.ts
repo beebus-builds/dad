@@ -40,4 +40,7 @@ export const userService = {
   async deactivate(id: string): Promise<void> {
     await api.delete(`/users/${id}`);
   },
+  async remove(id: string): Promise<void> {
+    await api.delete(`/users/${id}`);
+  },
 };

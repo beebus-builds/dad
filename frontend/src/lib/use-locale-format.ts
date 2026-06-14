@@ -4,7 +4,7 @@ import { useLocale } from "next-intl";
 
 export function useLocaleFormat() {
   const locale = useLocale();
-  const bcp47 = locale === "ne" ? "ne-NP" : "en-US";
+  const bcp47 = "ne-NP";
   return {
     locale,
     bcp47,

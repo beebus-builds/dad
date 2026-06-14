@@ -55,7 +55,7 @@ func RunSchema(ctx context.Context, pool *pgxpool.Pool) error {
 	return runFiles(ctx, pool, schema)
 }
 
-// RunSeed applies seed data and remaining migrations (0002, 0003, 0004).
+// RunSeed applies seed data and remaining migrations (0002+).
 func RunSeed(ctx context.Context, pool *pgxpool.Pool) error {
 	all, err := listAll()
 	if err != nil {
@@ -63,7 +63,7 @@ func RunSeed(ctx context.Context, pool *pgxpool.Pool) error {
 	}
 	var seed []fs.DirEntry
 	for _, f := range all {
-		if strings.HasPrefix(f.Name(), "0002") || strings.HasPrefix(f.Name(), "0003") || strings.HasPrefix(f.Name(), "0004") {
+		if strings.HasPrefix(f.Name(), "0002") || strings.HasPrefix(f.Name(), "0003") || strings.HasPrefix(f.Name(), "0004") || strings.HasPrefix(f.Name(), "0005") {
 			seed = append(seed, f)
 		}
 	}
@@ -78,15 +78,6 @@ type AdminSeed struct {
 }
 
 func SeedAdmin(ctx context.Context, pool *pgxpool.Pool, s AdminSeed) error {
-	var exists bool
-	err := pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM users WHERE email=$1)`, s.Email).Scan(&exists)
-	if err != nil {
-		return fmt.Errorf("check admin exists: %w", err)
-	}
-	if exists {
-		return nil
-	}
-
 	hash, err := bcrypt.GenerateFromPassword([]byte(s.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return fmt.Errorf("hash password: %w", err)
@@ -94,7 +85,15 @@ func SeedAdmin(ctx context.Context, pool *pgxpool.Pool, s AdminSeed) error {
 
 	_, err = pool.Exec(ctx,
 		`INSERT INTO users (id, email, password_hash, full_name, phone, role, is_active)
-		 VALUES ($1,$2,$3,$4,$5,'SUPER_ADMIN',true)`,
+		 VALUES ($1,$2,$3,$4,$5,'SUPER_ADMIN',true)
+		 ON CONFLICT (email) DO UPDATE SET
+		   password_hash=EXCLUDED.password_hash,
+		   full_name=EXCLUDED.full_name,
+		   phone=EXCLUDED.phone,
+		   role=EXCLUDED.role,
+		   is_active=true,
+		   deleted_at=NULL,
+		   updated_at=NOW()`,
 		"00000000-0000-0000-0000-000000000001", s.Email, string(hash), s.FullName, s.Phone,
 	)
 	if err != nil {

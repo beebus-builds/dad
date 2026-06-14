@@ -37,9 +37,9 @@ function createApiClient(): AxiosInstance {
 
   instance.interceptors.response.use(
     (res) => res,
-    async (error: AxiosError<{ message?: string; code?: string; details?: unknown }>) => {
+    async (error: AxiosError<{ error?: { code?: string; message?: string; details?: unknown } }>) => {
       const status = error.response?.status ?? 0;
-      const data = error.response?.data;
+      const err = error.response?.data?.error;
 
       if (status === 401 && typeof window !== "undefined") {
         Cookies.remove(env.authCookieName);
@@ -50,10 +50,10 @@ function createApiClient(): AxiosInstance {
       }
 
       throw new ApiError(
-        data?.message ?? error.message ?? "An unexpected error occurred",
+        err?.message ?? error.message ?? "An unexpected error occurred",
         status,
-        data?.code,
-        data?.details,
+        err?.code,
+        err?.details,
       );
     },
   );

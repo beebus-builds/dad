@@ -9,8 +9,8 @@ const intlMiddleware = createMiddleware({
   localeDetection: true,
 });
 
-const PROTECTED_PREFIXES_REGEX = /^\/(en|ne)\/dashboard/;
-const PUBLIC_AUTH_REGEX = /^\/(en|ne)\/(login|register|forgot-password)$/;
+const PROTECTED_PREFIXES_REGEX = /^\/(ne)\/dashboard/;
+const PUBLIC_AUTH_REGEX = /^\/(ne)\/(login|register|forgot-password)$/;
 
 export default function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

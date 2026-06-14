@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { use } from "react";
+import { useTranslations } from "next-intl";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -24,11 +25,11 @@ import { ApiError } from "@/lib/api-client";
 import type { LegalCase } from "@/types";
 
 const TYPE_LABELS: Record<LegalCase["type"], string> = {
-  FOREIGN_EMPLOYMENT: "Foreign Employment",
-  LABOR_DISPUTE: "Labour Dispute",
-  OSH: "Occupational Safety",
-  COLLECTIVE_BARGAINING: "Collective Bargaining",
-  OTHER: "Other",
+  FOREIGN_EMPLOYMENT: "वैदेशिक रोजगारी",
+  LABOR_DISPUTE: "श्रम विवाद",
+  OSH: "श्रम सुरक्षा",
+  COLLECTIVE_BARGAINING: "सामूहिक सौदाबाजी",
+  OTHER: "अन्य",
 };
 
 const STATUS_VARIANT: Record<
@@ -42,12 +43,22 @@ const STATUS_VARIANT: Record<
   CLOSED: "secondary",
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  INTAKE: "दर्ता भएको",
+  ACTIVE: "सक्रिय",
+  HEARING: "सुनुवाइ",
+  RESOLVED: "समाधान",
+  CLOSED: "बन्द",
+};
+
 export default function LegalCaseDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const t = useTranslations("legalCasesAdmin.detail");
+  const tCommon = useTranslations("common");
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError, error } = useQuery({
@@ -60,7 +71,7 @@ export default function LegalCaseDetailPage({
     mutationFn: (payload: { status?: LegalCase["status"] }) =>
       legalService.update(id, payload),
     onSuccess: () => {
-      toast.success("Case updated");
+      toast.success(t("updated"));
       queryClient.invalidateQueries({ queryKey: ["legal-case", id] });
       queryClient.invalidateQueries({ queryKey: ["legal"] });
     },
@@ -70,7 +81,7 @@ export default function LegalCaseDetailPage({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16 text-muted-foreground">
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading case…
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("loading")}
       </div>
     );
   }
@@ -79,12 +90,12 @@ export default function LegalCaseDetailPage({
     return (
       <div className="space-y-4">
         <PageHeader
-          title="Legal case"
-          description={`Could not load case ${id}`}
+          title={t("title")}
+          description={t("loadError", { id })}
           actions={
             <Button variant="outline" size="sm" asChild>
               <Link href="/dashboard/legal-cases">
-                <ArrowLeft className="h-4 w-4" /> Back
+                <ArrowLeft className="h-4 w-4" /> {tCommon("back")}
               </Link>
             </Button>
           }
@@ -108,7 +119,7 @@ export default function LegalCaseDetailPage({
           actions={
             <Button variant="outline" size="sm" asChild>
               <Link href="/dashboard/legal-cases">
-                <ArrowLeft className="h-4 w-4" /> Back
+                <ArrowLeft className="h-4 w-4" /> {tCommon("back")}
               </Link>
             </Button>
           }
@@ -118,7 +129,7 @@ export default function LegalCaseDetailPage({
             <CardHeader>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline">{TYPE_LABELS[c.type]}</Badge>
-                <Badge variant={STATUS_VARIANT[c.status]}>{c.status}</Badge>
+                <Badge variant={STATUS_VARIANT[c.status]}>{STATUS_LABELS[c.status]}</Badge>
               </div>
               <CardTitle>{c.title}</CardTitle>
             </CardHeader>
@@ -127,12 +138,12 @@ export default function LegalCaseDetailPage({
               <div className="grid gap-3 sm:grid-cols-2 pt-2">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Calendar className="h-4 w-4" />
-                  Filed {formatDate(c.filedAt)}
+                  {t("filed")} {formatDate(c.filedAt)}
                 </div>
                 {c.nextHearingAt && (
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Gavel className="h-4 w-4" />
-                    Next hearing {formatDateTime(c.nextHearingAt)}
+                    {t("nextHearing")} {formatDateTime(c.nextHearingAt)}
                   </div>
                 )}
               </div>
@@ -141,7 +152,7 @@ export default function LegalCaseDetailPage({
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Advisor</CardTitle>
+                <CardTitle>{t("advisor")}</CardTitle>
               </CardHeader>
               <CardContent className="flex items-center gap-3">
                 <div className="rounded-md bg-primary/10 p-2 text-primary">
@@ -149,17 +160,17 @@ export default function LegalCaseDetailPage({
                 </div>
                 <div>
                   <p className="text-sm font-medium">
-                    {c.assignedAdvisor?.name ?? "Unassigned"}
+                    {c.assignedAdvisor?.name ?? t("unassigned")}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {c.assignedAdvisor ? "Legal advisor" : "Awaiting assignment"}
+                    {c.assignedAdvisor ? t("legalAdvisor") : t("awaitingAssignment")}
                   </p>
                 </div>
               </CardContent>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Client</CardTitle>
+                <CardTitle>{t("client")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-1 text-sm">
                 <div className="flex items-center gap-2">
@@ -168,20 +179,20 @@ export default function LegalCaseDetailPage({
                 </div>
                 {c.memberId && (
                   <Button variant="outline" size="sm" className="mt-2 w-full" asChild>
-                    <Link href={`/dashboard/members/${c.memberId}`}>View member</Link>
+                    <Link href={`/dashboard/members/${c.memberId}`}>{t("viewMember")}</Link>
                   </Button>
                 )}
               </CardContent>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Status</CardTitle>
+                <CardTitle>{tCommon("status")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
-                <Info label="Current" value={c.status} />
-                <Info label="Filed" value={formatDate(c.filedAt)} />
+                <Info label={t("current")} value={STATUS_LABELS[c.status]} />
+                <Info label={t("filed")} value={formatDate(c.filedAt)} />
                 {c.nextHearingAt && (
-                  <Info label="Next hearing" value={formatDateTime(c.nextHearingAt)} />
+                  <Info label={t("nextHearing")} value={formatDateTime(c.nextHearingAt)} />
                 )}
                 <PermissionGate permission={PERMISSIONS.LEGAL_WRITE} fallback={null}>
                   <div className="space-y-2 pt-2">
@@ -191,7 +202,7 @@ export default function LegalCaseDetailPage({
                       disabled={updateMutation.isPending || c.status === "RESOLVED"}
                       onClick={() => updateMutation.mutate({ status: "RESOLVED" })}
                     >
-                      Mark Resolved
+                      {t("markResolved")}
                     </Button>
                     <Button
                       className="w-full"
@@ -199,7 +210,7 @@ export default function LegalCaseDetailPage({
                       disabled={updateMutation.isPending || c.status === "CLOSED"}
                       onClick={() => updateMutation.mutate({ status: "CLOSED" })}
                     >
-                      Close case
+                      {t("closeCase")}
                     </Button>
                   </div>
                 </PermissionGate>

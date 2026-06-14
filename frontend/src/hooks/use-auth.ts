@@ -5,6 +5,7 @@ import { useRouter } from "@/lib/i18n-navigation";
 import Cookies from "js-cookie";
 import { toast } from "sonner";
 import { authService, type LoginPayload, type RegisterPayload } from "@/services/auth-service";
+import { ApiError } from "@/lib/api-client";
 import { useAuthStore } from "@/stores/auth-store";
 import { env } from "@/lib/env";
 import { QUERY_KEYS } from "@/lib/constants";
@@ -31,14 +32,12 @@ export function useLogin() {
       toast.success(`Welcome back, ${result.user.fullName}`);
       router.push("/dashboard");
     },
-    onError: (err: Error) => toast.error(err.message ?? "Login failed"),
   });
 }
 
 export function useRegister() {
   return useMutation({
     mutationFn: (payload: RegisterPayload) => authService.register(payload),
-    onError: (err: Error) => toast.error(err.message ?? "Registration failed"),
   });
 }
 
@@ -54,14 +53,14 @@ export function useVerifyEmail() {
       toast.success("Email verified successfully");
       router.push("/dashboard");
     },
-    onError: (err: Error) => toast.error(err.message ?? "Verification failed"),
+    onError: (err: ApiError) => toast.error(err.code ? `${err.code}: ${err.message}` : err.message),
   });
 }
 
 export function useResendOTP() {
   return useMutation({
     mutationFn: (userId: string) => authService.resendOTP(userId),
-    onError: (err: Error) => toast.error(err.message ?? "Failed to resend code"),
+    onError: (err: ApiError) => toast.error(err.code ? `${err.code}: ${err.message}` : err.message),
   });
 }
 

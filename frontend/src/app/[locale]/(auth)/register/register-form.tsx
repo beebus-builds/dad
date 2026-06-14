@@ -7,8 +7,10 @@ import { AlertCircle, CheckCircle2, Loader2, Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { useRegister, useVerifyEmail, useResendOTP } from "@/hooks/use-auth";
+import { ApiError } from "@/lib/api-client";
 import { registerSchema, type RegisterInput } from "@/lib/validations";
 
 export function RegisterForm() {
@@ -80,7 +82,7 @@ export function RegisterForm() {
         <div className="rounded-lg border bg-muted/30 p-4 text-center">
           <Mail className="mx-auto h-8 w-8 text-primary" />
           <p className="mt-2 text-sm text-muted-foreground">
-            Enter the 6-digit code sent to <span className="font-medium text-foreground">{registeredEmail}</span>
+            {t("otpSubtitle", { email: registeredEmail })}
           </p>
         </div>
         <div className="flex justify-center gap-2">
@@ -100,18 +102,22 @@ export function RegisterForm() {
         {verifyMutation.error && (
           <div className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>{verifyMutation.error.message}</span>
+            <span>
+              {verifyMutation.error instanceof ApiError && verifyMutation.error.code
+                ? `${verifyMutation.error.code}: ${verifyMutation.error.message}`
+                : verifyMutation.error.message}
+            </span>
           </div>
         )}
         {verifyMutation.isSuccess && (
           <div className="flex items-start gap-2.5 rounded-lg border border-green-500/30 bg-green-500/5 p-3 text-sm text-green-600">
             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>Email verified! Redirecting...</span>
+            <span>{t("emailVerified")}</span>
           </div>
         )}
         <Button className="w-full" onClick={handleVerify} disabled={otp.join("").length !== 6 || verifyMutation.isPending}>
           {verifyMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Verify Email
+          {t("verifyEmail")}
         </Button>
         <div className="text-center">
           <button
@@ -120,7 +126,7 @@ export function RegisterForm() {
             onClick={handleResend}
             disabled={resendMutation.isPending}
           >
-            {resendMutation.isPending ? "Sending..." : "Resend code"}
+            {resendMutation.isPending ? t("sending") : t("resendCode")}
           </button>
         </div>
       </div>
@@ -140,21 +146,20 @@ export function RegisterForm() {
       </Field>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field id="password" label={t("password")} error={errors.password?.message}>
-          <Input id="password" type="password" autoComplete="new-password" {...register("password")} />
+          <PasswordInput id="password" autoComplete="new-password" {...register("password")} />
         </Field>
         <Field id="confirmPassword" label={t("confirmPassword")} error={errors.confirmPassword?.message}>
-          <Input
-            id="confirmPassword"
-            type="password"
-            autoComplete="new-password"
-            {...register("confirmPassword")}
-          />
+          <PasswordInput id="confirmPassword" autoComplete="new-password" {...register("confirmPassword")} />
         </Field>
       </div>
       {registerMutation.error && (
         <div className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>{registerMutation.error.message}</span>
+          <span>
+            {registerMutation.error instanceof ApiError && registerMutation.error.code
+              ? `${registerMutation.error.code}: ${registerMutation.error.message}`
+              : registerMutation.error.message}
+          </span>
         </div>
       )}
       <Button type="submit" className="w-full" disabled={registerMutation.isPending}>

@@ -40,7 +40,7 @@ export default function SettingsPage() {
       await api.put("/settings", payload);
     },
     onSuccess: () => {
-      toast.success("Settings saved");
+      toast.success(t("settings.save"));
       queryClient.invalidateQueries({ queryKey: ["settings"] });
     },
     onError: (err: ApiError) => toast.error(err.message),
@@ -60,15 +60,15 @@ export default function SettingsPage() {
         <PageHeader title={t("title")} description={t("subtitle")} />
         <Tabs defaultValue="organisation">
           <TabsList>
-            <TabsTrigger value="organisation">{t("tabs.organisation") || "Organisation"}</TabsTrigger>
-            <TabsTrigger value="branches">{t("tabs.branches") || "Branches"}</TabsTrigger>
-            <TabsTrigger value="security">{t("tabs.security") || "Security"}</TabsTrigger>
-            <TabsTrigger value="integrations">{t("tabs.integrations") || "Integrations"}</TabsTrigger>
+            <TabsTrigger value="organisation">{t("tabs.organisation")}</TabsTrigger>
+            <TabsTrigger value="branches">{t("tabs.branches")}</TabsTrigger>
+            <TabsTrigger value="security">{t("tabs.security")}</TabsTrigger>
+            <TabsTrigger value="integrations">{t("tabs.integrations")}</TabsTrigger>
           </TabsList>
           <TabsContent value="organisation">
             <Card>
               <CardHeader>
-                <CardTitle>{t("organisation.title") || "Organisation profile"}</CardTitle>
+                <CardTitle>{t("organisation.title")}</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-4 sm:grid-cols-2">
                 {orgLoading ? (
@@ -76,23 +76,23 @@ export default function SettingsPage() {
                 ) : (
                   <>
                     <div className="space-y-2">
-                      <Label htmlFor="org-name">{t("organisation.name") || "Name"}</Label>
+                      <Label htmlFor="org-name">{t("organisation.name")}</Label>
                       <Input id="org-name" value={orgForm.name || ""} onChange={(e) => setOrgForm(p => ({ ...p, name: e.target.value }))} />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="org-name-ne">{t("organisation.nameNepali") || "Name (Nepali)"}</Label>
+                      <Label htmlFor="org-name-ne">{t("organisation.nameNepali")}</Label>
                       <Input id="org-name-ne" className="font-devanagari" value={orgForm.nameNepali || ""} onChange={(e) => setOrgForm(p => ({ ...p, nameNepali: e.target.value }))} />
                     </div>
                     <div className="space-y-2 sm:col-span-2">
-                      <Label htmlFor="org-tagline">{t("organisation.tagline") || "Tagline"}</Label>
+                      <Label htmlFor="org-tagline">{t("organisation.tagline")}</Label>
                       <Input id="org-tagline" value={orgForm.tagline || ""} onChange={(e) => setOrgForm(p => ({ ...p, tagline: e.target.value }))} />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="org-email">{t("organisation.email") || "Public email"}</Label>
+                      <Label htmlFor="org-email">{t("organisation.email")}</Label>
                       <Input id="org-email" type="email" value={orgForm.email || ""} onChange={(e) => setOrgForm(p => ({ ...p, email: e.target.value }))} />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="org-phone">{t("organisation.phone") || "Phone"}</Label>
+                      <Label htmlFor="org-phone">{t("organisation.phone")}</Label>
                       <Input id="org-phone" value={orgForm.phone || ""} onChange={(e) => setOrgForm(p => ({ ...p, phone: e.target.value }))} />
                     </div>
                     <div className="sm:col-span-2">
@@ -109,14 +109,14 @@ export default function SettingsPage() {
           <TabsContent value="branches">
             <Card>
               <CardHeader>
-                <CardTitle>{t("branches.title") || "Branch management"}</CardTitle>
+                <CardTitle>{t("branches.title")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  {branches ? `${branches.length} branches across all provinces.` : t("branches.description") || "Manage 80+ branches across all 7 provinces."}
+                  {branches ? `${branches.length} शाखा` : t("branches.description")}
                 </p>
                 <Button className="mt-4" asChild>
-                  <Link href="/dashboard/branches">{t("branches.manage") || "Manage branches"}</Link>
+                  <Link href="/dashboard/branches">{t("branches.manage")}</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -124,21 +124,21 @@ export default function SettingsPage() {
           <TabsContent value="security">
             <Card>
               <CardHeader>
-                <CardTitle>{t("security.title") || "Security & access"}</CardTitle>
+                <CardTitle>{t("security.title")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <SettingRow title={t("security.twoFactor") || "Two-factor authentication"} description={t("security.twoFactorDesc") || "Require admin users to set up 2FA on login."} action={<Button variant="outline">{t("security.enforce") || "Enforce"}</Button>} />
+                <SettingRow title={t("security.twoFactor")} description={t("security.twoFactorDesc")} action={<Button variant="outline">{t("security.enforce")}</Button>} />
                 <Separator />
-                <SettingRow title={t("security.sessionTimeout") || "Session timeout"} description={t("security.sessionTimeoutDesc") || "Automatically sign out idle users after 30 minutes."} action={<Button variant="outline">{t("security.configure") || "Configure"}</Button>} />
+                <SettingRow title={t("security.sessionTimeout")} description={t("security.sessionTimeoutDesc")} action={<Button variant="outline">{t("security.configure")}</Button>} />
                 <Separator />
-                <SettingRow title={t("security.auditLog") || "Audit log retention"} description={t("security.auditLogDesc") || "Storing 2 years of audit data."} action={<Button variant="outline">{t("security.adjust") || "Adjust"}</Button>} />
+                <SettingRow title={t("security.auditLog")} description={t("security.auditLogDesc")} action={<Button variant="outline">{t("security.adjust")}</Button>} />
               </CardContent>
             </Card>
           </TabsContent>
           <TabsContent value="integrations">
             <Card>
               <CardHeader>
-                <CardTitle>{t("integrations.title") || "Integrations"}</CardTitle>
+                <CardTitle>{t("integrations.title")}</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-4 sm:grid-cols-2">
                 {[
@@ -152,10 +152,10 @@ export default function SettingsPage() {
                   <div key={i.name} className="flex items-center justify-between rounded-md border p-4">
                     <div>
                       <p className="font-medium">{i.name}</p>
-                      <p className="text-xs text-muted-foreground">{i.enabled ? (t("connected") || "Connected") : (t("notConfigured") || "Not configured")}</p>
+                      <p className="text-xs text-muted-foreground">{i.enabled ? t("integrations.connected") : t("integrations.notConfigured")}</p>
                     </div>
                     <Button variant={i.enabled ? "outline" : "default"} size="sm">
-                      {i.enabled ? (t("manage") || "Manage") : (t("connect") || "Connect")}
+                      {i.enabled ? t("integrations.manage") : t("integrations.connect")}
                     </Button>
                   </div>
                 ))}

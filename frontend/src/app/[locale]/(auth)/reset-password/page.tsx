@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { useMutation } from "@tanstack/react-query";
 import { authService } from "@/services/auth-service";
@@ -19,14 +19,14 @@ const resetSchema = z
   .object({
     password: z
       .string()
-      .min(8, "At least 8 characters")
-      .regex(/[A-Z]/, "At least one uppercase letter")
-      .regex(/[0-9]/, "At least one number"),
+      .min(8, "कम्तिमा ८ अक्षर हुनुपर्छ")
+      .regex(/[A-Z]/, "कम्तिमा एउटा ठूलो अक्षर हुनुपर्छ")
+      .regex(/[0-9]/, "कम्तिमा एउटा अंक हुनुपर्छ"),
     confirmPassword: z.string(),
   })
   .refine((d) => d.password === d.confirmPassword, {
     path: ["confirmPassword"],
-    message: "Passwords do not match",
+    message: "पासवर्ड मेल खाँदैन",
   });
 
 type ResetInput = z.infer<typeof resetSchema>;
@@ -70,12 +70,12 @@ export default function ResetPasswordPage() {
       <form onSubmit={handleSubmit((d) => mutation.mutate(d.password))} className="space-y-4" noValidate>
         <div className="space-y-2">
           <Label htmlFor="password">{t("newPassword")}</Label>
-          <Input id="password" type="password" autoComplete="new-password" {...register("password")} />
+          <PasswordInput id="password" autoComplete="new-password" {...register("password")} />
           {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="confirmPassword">{t("confirmPassword")}</Label>
-          <Input id="confirmPassword" type="password" autoComplete="new-password" {...register("confirmPassword")} />
+          <PasswordInput id="confirmPassword" autoComplete="new-password" {...register("confirmPassword")} />
           {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>}
         </div>
         <Button type="submit" className="w-full" disabled={mutation.isPending}>

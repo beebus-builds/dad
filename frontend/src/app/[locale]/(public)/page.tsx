@@ -1,4 +1,4 @@
-﻿import {
+import {
   ArrowRight,
   Building2,
   Gavel,
@@ -24,45 +24,24 @@ import { DhakaPattern } from "@/components/decorative-pattern";
 
 type Story = { quote: string; name: string; role: string; impact: string };
 
-const storiesEn: Story[] = [
+const stories: Story[] = [
   {
-    quote: "After I filed a complaint through Shram Jagaran, the union lawyers took up my case within a week. My employer had withheld six months of wages â€” I got every rupee back.",
-    name: "Ram Prasad Acharya",
-    role: "Construction worker, Kathmandu",
-    impact: "Rs. 1,80,000 recovered",
+    quote: "मैले श्रम जागरण मार्फत उजुरी दर्ता गरेपछि, युनियनका वकिलहरूले एक हप्ताभित्र मेरो मुद्दा हातमा लिए। मेरो रोजगारदाताले ६ महिनाको ज्याला रोकेको थियो — मैले हरेक रुपैयाँ फिर्ता पाएँ।",
+    name: "रामप्रसाद आचार्य",
+    role: "निर्माण मजदुर, काठमाडौं",
+    impact: "रु. १,८०,००० फिर्ता",
   },
   {
-    quote: "I was stranded in Qatar with an expired visa and no passport. The migrant support team coordinated with the embassy and got me home safely within two weeks.",
-    name: "Sita Devi Thapa",
-    role: "Migrant worker, returned from Qatar",
-    impact: "Safe repatriation",
+    quote: "म्याद सकिएको भिसा र राहदानीविना म कतारमा अलपत्र परेको थिएँ। आप्रवासी सहायता टोलीले दूतावाससँग समन्वय गरी मलाई दुई हप्ताभित्र सुरक्षित घर पुर्‍यायो।",
+    name: "सीतादेवी थापा",
+    role: "कतारबाट फर्केकी आप्रवासी श्रमिक",
+    impact: "सुरक्षित स्वदेश फिर्ती",
   },
   {
-    quote: "Our branch used the platform to register 300 new women members in one month. The digital system made it easy for workers in remote villages to join and access legal aid.",
-    name: "Mina Kumari Shrestha",
-    role: "Branch secretary, Pokhara",
-    impact: "300 women registered",
-  },
-];
-
-const storiesNe: Story[] = [
-  {
-    quote: "à¤®à¥ˆà¤²à¥‡ à¤¶à¥à¤°à¤® à¤œà¤¾à¤—à¤°à¤£ à¤®à¤¾à¤°à¥à¤«à¤¤ à¤‰à¤œà¥à¤°à¥€ à¤¦à¤°à¥à¤¤à¤¾ à¤—à¤°à¥‡à¤ªà¤›à¤¿, à¤¯à¥à¤¨à¤¿à¤¯à¤¨à¤•à¤¾ à¤µà¤•à¤¿à¤²à¤¹à¤°à¥‚à¤²à¥‡ à¤à¤• à¤¹à¤ªà¥à¤¤à¤¾à¤­à¤¿à¤¤à¥à¤° à¤®à¥‡à¤°à¥‹ à¤®à¥à¤¦à¥à¤¦à¤¾ à¤¹à¤¾à¤¤à¤®à¤¾ à¤²à¤¿à¤à¥¤ à¤®à¥‡à¤°à¥‹ à¤°à¥‹à¤œà¤—à¤¾à¤°à¤¦à¤¾à¤¤à¤¾à¤²à¥‡ à¥¬ à¤®à¤¹à¤¿à¤¨à¤¾à¤•à¥‹ à¤œà¥à¤¯à¤¾à¤²à¤¾ à¤°à¥‹à¤•à¥‡à¤•à¥‹ à¤¥à¤¿à¤¯à¥‹ â€” à¤®à¥ˆà¤²à¥‡ à¤¹à¤°à¥‡à¤• à¤°à¥à¤ªà¥ˆà¤¯à¤¾à¤ à¤«à¤¿à¤°à¥à¤¤à¤¾ à¤ªà¤¾à¤à¤à¥¤",
-    name: "à¤°à¤¾à¤®à¤ªà¥à¤°à¤¸à¤¾à¤¦ à¤†à¤šà¤¾à¤°à¥à¤¯",
-    role: "à¤¨à¤¿à¤°à¥à¤®à¤¾à¤£ à¤®à¤œà¤¦à¥à¤°, à¤•à¤¾à¤ à¤®à¤¾à¤¡à¥Œà¤‚",
-    impact: "à¤°à¥. à¥§,à¥®à¥¦,à¥¦à¥¦à¥¦ à¤«à¤¿à¤°à¥à¤¤à¤¾",
-  },
-  {
-    quote: "à¤®à¥à¤¯à¤¾à¤¦ à¤¸à¤•à¤¿à¤à¤•à¥‹ à¤­à¤¿à¤¸à¤¾ à¤° à¤°à¤¾à¤¹à¤¦à¤¾à¤¨à¥€à¤µà¤¿à¤¨à¤¾ à¤® à¤•à¤¤à¤¾à¤°à¤®à¤¾ à¤…à¤²à¤ªà¤¤à¥à¤° à¤ªà¤°à¥‡à¤•à¥‹ à¤¥à¤¿à¤à¤à¥¤ à¤†à¤ªà¥à¤°à¤µà¤¾à¤¸à¥€ à¤¸à¤¹à¤¾à¤¯à¤¤à¤¾ à¤Ÿà¥‹à¤²à¥€à¤²à¥‡ à¤¦à¥‚à¤¤à¤¾à¤µà¤¾à¤¸à¤¸à¤à¤— à¤¸à¤®à¤¨à¥à¤µà¤¯ à¤—à¤°à¥€ à¤®à¤²à¤¾à¤ˆ à¤¦à¥à¤ˆ à¤¹à¤ªà¥à¤¤à¤¾à¤­à¤¿à¤¤à¥à¤° à¤¸à¥à¤°à¤•à¥à¤·à¤¿à¤¤ à¤˜à¤° à¤ªà¥à¤°à¥à¤¯à¤¾à¤¯à¥‹à¥¤",
-    name: "à¤¸à¥€à¤¤à¤¾à¤¦à¥‡à¤µà¥€ à¤¥à¤¾à¤ªà¤¾",
-    role: "à¤•à¤¤à¤¾à¤°à¤¬à¤¾à¤Ÿ à¤«à¤°à¥à¤•à¥‡à¤•à¥€ à¤†à¤ªà¥à¤°à¤µà¤¾à¤¸à¥€ à¤¶à¥à¤°à¤®à¤¿à¤•",
-    impact: "à¤¸à¥à¤°à¤•à¥à¤·à¤¿à¤¤ à¤¸à¥à¤µà¤¦à¥‡à¤¶ à¤«à¤¿à¤°à¥à¤¤à¥€",
-  },
-  {
-    quote: "à¤¹à¤¾à¤®à¥à¤°à¥‹ à¤¶à¤¾à¤–à¤¾à¤²à¥‡ à¤ªà¥à¤²à¥‡à¤Ÿà¤«à¤°à¥à¤® à¤ªà¥à¤°à¤¯à¥‹à¤— à¤—à¤°à¥‡à¤° à¤à¤•à¥ˆ à¤®à¤¹à¤¿à¤¨à¤¾à¤®à¤¾ à¥©à¥¦à¥¦ à¤¨à¤¯à¤¾à¤ à¤®à¤¹à¤¿à¤²à¤¾ à¤¸à¤¦à¤¸à¥à¤¯ à¤¦à¤°à¥à¤¤à¤¾ à¤—à¤°à¥à¤¯à¥‹à¥¤ à¤¡à¤¿à¤œà¤¿à¤Ÿà¤² à¤ªà¥à¤°à¤£à¤¾à¤²à¥€à¤²à¥‡ à¤¦à¥à¤°à¥à¤—à¤® à¤—à¤¾à¤‰à¤à¤•à¤¾ à¤¶à¥à¤°à¤®à¤¿à¤•à¤¹à¤°à¥‚à¤²à¤¾à¤ˆ à¤¸à¤¾à¤®à¥‡à¤² à¤¹à¥à¤¨ à¤° à¤•à¤¾à¤¨à¥à¤¨à¥€ à¤¸à¤¹à¤¾à¤¯à¤¤à¤¾ à¤ªà¥à¤°à¤¾à¤ªà¥à¤¤ à¤—à¤°à¥à¤¨ à¤¸à¤œà¤¿à¤²à¥‹ à¤¬à¤¨à¤¾à¤¯à¥‹à¥¤",
-    name: "à¤®à¥€à¤¨à¤¾ à¤•à¥à¤®à¤¾à¤°à¥€ à¤¶à¥à¤°à¥‡à¤·à¥à¤ ",
-    role: "à¤¶à¤¾à¤–à¤¾ à¤¸à¤šà¤¿à¤µ, à¤ªà¥‹à¤–à¤°à¤¾",
-    impact: "à¥©à¥¦à¥¦ à¤®à¤¹à¤¿à¤²à¤¾ à¤¦à¤°à¥à¤¤à¤¾",
+    quote: "हाम्रो शाखाले प्लेटफर्म प्रयोग गरेर एकै महिनामा ३०० नयाँ महिला सदस्य दर्ता गर्‍यो। डिजिटल प्रणालीले दुर्गम गाउँका श्रमिकहरूलाई सामेल हुन र कानुनी सहायता प्राप्त गर्न सजिलो बनायो।",
+    name: "मीना कुमारी श्रेष्ठ",
+    role: "शाखा सचिव, पोखरा",
+    impact: "३०० महिला दर्ता",
   },
 ];
 
@@ -73,7 +52,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     <div>
       <Hero />
       <Stats />
-      <Testimonials locale={locale} />
+      <Testimonials />
       <Services />
       <Modules />
       <CallToAction />
@@ -120,10 +99,10 @@ async function Hero() {
 async function Stats() {
   const t = await getTranslations("home.stats");
   const items = [
-    { label: t("members"), value: "120,000+" },
-    { label: t("branches"), value: "80+" },
-    { label: t("districts"), value: "77" },
-    { label: t("cases"), value: "5,400+" },
+    { label: t("members"), value: "१,२०,०००+" },
+    { label: t("branches"), value: "८०+" },
+    { label: t("districts"), value: "७७" },
+    { label: t("cases"), value: "५,४००+" },
   ];
   return (
     
@@ -140,9 +119,8 @@ async function Stats() {
   );
 }
 
-async function Testimonials({ locale }: { locale: string }) {
+async function Testimonials() {
   const t = await getTranslations("home.testimonials");
-  const stories = locale === "ne" ? storiesNe : storiesEn;
   return (
     
       <section className="relative overflow-hidden bg-gradient-to-b from-background via-amber-50/40 to-background py-20">

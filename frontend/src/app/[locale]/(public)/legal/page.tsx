@@ -16,6 +16,7 @@ export default async function LegalPage({ params }: { params: Promise<{ locale: 
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("legal");
+  const tNav = await getTranslations("nav");
   return (
     <div className="container py-16">
       <div className="mx-auto max-w-3xl">
@@ -42,7 +43,7 @@ export default async function LegalPage({ params }: { params: Promise<{ locale: 
               <Link href="/register">{t("request")}</Link>
             </Button>
             <Button variant="outline" asChild>
-              <Link href="/contact">Contact</Link>
+              <Link href="/contact">{tNav("contact")}</Link>
             </Button>
           </div>
         </div>

@@ -4,7 +4,7 @@ import { Link } from "@/lib/i18n-navigation";
 import { env } from "@/lib/env";
 
 export const metadata: Metadata = {
-  title: "Authentication",
+  title: "प्रमाणीकरण",
 };
 
 export default async function AuthLayout({
@@ -24,7 +24,7 @@ export default async function AuthLayout({
       <aside className="relative hidden lg:flex flex-col gradient-union p-10 text-white">
         <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
           <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/15 backdrop-blur">
-            SJ
+            श्र
           </span>
           {tCommon("appName")}
         </Link>
@@ -34,9 +34,9 @@ export default async function AuthLayout({
             <footer className="text-sm opacity-90">{tAuth("quoteAuthor")}</footer>
           </blockquote>
           <div className="grid grid-cols-3 gap-4 pt-6">
-            <Stat label="Members" value="120K+" />
-            <Stat label="Branches" value="80+" />
-            <Stat label="Districts" value="77" />
+            <Stat label="सदस्यहरू" value="१.२ लाख+" />
+            <Stat label="शाखाहरू" value="८०+" />
+            <Stat label="जिल्लाहरू" value="७७" />
           </div>
         </div>
       </aside>

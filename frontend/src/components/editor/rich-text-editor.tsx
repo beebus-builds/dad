@@ -28,7 +28,7 @@ type RichTextEditorProps = {
   minHeight?: number;
 };
 
-export function RichTextEditor({ value, onChange, placeholder = "Start writing…", minHeight = 300 }: RichTextEditorProps) {
+export function RichTextEditor({ value, onChange, placeholder = "लेख्न सुरु गर्नुहोस्…", minHeight = 300, urlPrompt = "URL प्रविष्ट गर्नुहोस्:" }: RichTextEditorProps & { urlPrompt?: string }) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -85,7 +85,7 @@ export function RichTextEditor({ value, onChange, placeholder = "Start writing�
         </ToolBtn>
         <div className="mx-1 w-px bg-border" />
         <ToolBtn onClick={() => {
-          const url = window.prompt("Enter URL:");
+          const url = window.prompt(urlPrompt);
           if (url) editor.chain().focus().setLink({ href: url }).run();
         }} active={editor.isActive("link")}>
           <LinkIcon className="h-4 w-4" />

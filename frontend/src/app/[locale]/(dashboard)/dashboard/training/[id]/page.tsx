@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { use } from "react";
+import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -28,12 +29,20 @@ const STATUS_VARIANT: Record<TrainingProgram["status"], "secondary" | "warning" 
   COMPLETED: "success",
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  UPCOMING: "आगामी",
+  ONGOING: "चलिरहेको",
+  COMPLETED: "सम्पन्न",
+};
+
 export default function TrainingDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const t = useTranslations("trainingAdmin.detail");
+  const tCommon = useTranslations("common");
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["training", { pageSize: 200 }],
     queryFn: () => trainingService.list({ page: 1, pageSize: 200 }),
@@ -45,7 +54,7 @@ export default function TrainingDetailPage({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16 text-muted-foreground">
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading programme…
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("loading")}
       </div>
     );
   }
@@ -54,12 +63,12 @@ export default function TrainingDetailPage({
     return (
       <div className="space-y-4">
         <PageHeader
-          title="Training programme"
-          description={`Could not load programme ${id}`}
+          title={t("title")}
+          description={t("loadError", { id })}
           actions={
             <Button variant="outline" size="sm" asChild>
               <Link href="/dashboard/training">
-                <ArrowLeft className="h-4 w-4" /> Back
+                <ArrowLeft className="h-4 w-4" /> {tCommon("back")}
               </Link>
             </Button>
           }
@@ -75,12 +84,12 @@ export default function TrainingDetailPage({
     return (
       <div className="space-y-4">
         <PageHeader
-          title="Programme not found"
-          description={`No programme with id ${id}`}
+          title={t("notFound")}
+          description={t("notFoundDesc", { id })}
           actions={
             <Button variant="outline" size="sm" asChild>
               <Link href="/dashboard/training">
-                <ArrowLeft className="h-4 w-4" /> Back
+                <ArrowLeft className="h-4 w-4" /> {tCommon("back")}
               </Link>
             </Button>
           }
@@ -99,11 +108,11 @@ export default function TrainingDetailPage({
       <div className="space-y-6">
         <PageHeader
           title={program.title}
-          description={program.titleNepali || "Training programme"}
+          description={program.titleNepali || t("title")}
           actions={
             <Button variant="outline" size="sm" asChild>
               <Link href="/dashboard/training">
-                <ArrowLeft className="h-4 w-4" /> Back
+                <ArrowLeft className="h-4 w-4" /> {tCommon("back")}
               </Link>
             </Button>
           }
@@ -115,7 +124,7 @@ export default function TrainingDetailPage({
                 <div className="inline-flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">
                   <GraduationCap className="h-6 w-6" />
                 </div>
-                <Badge variant={STATUS_VARIANT[program.status]}>{program.status}</Badge>
+                <Badge variant={STATUS_VARIANT[program.status]}>{STATUS_LABELS[program.status]}</Badge>
               </div>
               <CardTitle>{program.title}</CardTitle>
               {program.titleNepali && (
@@ -138,7 +147,7 @@ export default function TrainingDetailPage({
                 {program.trainer && (
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <GraduationCap className="h-4 w-4" />
-                    Trainer: {program.trainer}
+                    {t("trainer")}: {program.trainer}
                   </div>
                 )}
               </div>
@@ -147,11 +156,11 @@ export default function TrainingDetailPage({
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Registration</CardTitle>
+                <CardTitle>{t("registration")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Enrolled</span>
+                  <span className="text-muted-foreground">{t("enrolled")}</span>
                   <span className="font-medium">
                     {program.registeredCount} {program.capacity ? `/ ${program.capacity}` : ""}
                   </span>
@@ -165,30 +174,30 @@ export default function TrainingDetailPage({
                         aria-hidden
                       />
                     </div>
-                    <p className="mt-1 text-xs text-muted-foreground">{pct}% capacity used</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{pct}% {t("capacityUsed")}</p>
                   </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground">Unlimited capacity</p>
+                  <p className="text-xs text-muted-foreground">{t("unlimitedCapacity")}</p>
                 )}
                 <Button className="w-full" disabled>
-                  <Users className="h-4 w-4" /> View enrolments
+                  <Users className="h-4 w-4" /> {t("viewEnrolments")}
                 </Button>
               </CardContent>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Schedule</CardTitle>
+                <CardTitle>{t("schedule")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-1 text-sm">
                 <p>
-                  <span className="text-muted-foreground">Starts:</span>{" "}
+                  <span className="text-muted-foreground">{t("starts")}:</span>{" "}
                   {formatDate(program.startsAt)}
                 </p>
                 <p>
-                  <span className="text-muted-foreground">Ends:</span> {formatDate(program.endsAt)}
+                  <span className="text-muted-foreground">{t("ends")}:</span> {formatDate(program.endsAt)}
                 </p>
                 <p>
-                  <span className="text-muted-foreground">Location:</span> {program.location}
+                  <span className="text-muted-foreground">{t("location")}:</span> {program.location}
                 </p>
               </CardContent>
             </Card>

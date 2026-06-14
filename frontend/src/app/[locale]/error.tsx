@@ -21,9 +21,9 @@ export default function Error({
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-8 text-center">
       <div className="text-9xl font-bold text-destructive/20">500</div>
-      <h1 className="mt-4 text-3xl font-bold">Something went wrong</h1>
+      <h1 className="mt-4 text-3xl font-bold">केही गलत भयो</h1>
       <p className="mt-2 max-w-md text-muted-foreground">
-        An unexpected error occurred. Please try again or contact support if the issue persists.
+        अनपेक्षित त्रुटि भयो। कृपया फेरि प्रयास गर्नुहोस् वा समस्या भइरहेमा सहायतामा सम्पर्क गर्नुहोस्।
       </p>
       <div className="mt-6 flex gap-2">
         <Button onClick={reset}>{t("tryAgain")}</Button>

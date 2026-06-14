@@ -22,14 +22,14 @@ export default function DonatePage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    try {
-      await publicService.donate({ ...form, amount, method: "KHALTI" });
-      toast.success("Thank you for your support!");
-      setForm({ donorName: "", donorEmail: "", donorPhone: "", purpose: "" });
-      setAmount(1000);
-    } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "Donation failed. Please try again.");
-    } finally {
+      try {
+        await publicService.donate({ ...form, amount, method: "KHALTI" });
+        toast.success(t("success"));
+        setForm({ donorName: "", donorEmail: "", donorPhone: "", purpose: "" });
+        setAmount(1000);
+      } catch (err) {
+        toast.error(err instanceof ApiError ? err.message : t("error"));
+      } finally {
       setSubmitting(false);
     }
   };

@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { InputProps } from "@/components/ui/input";
 
-const PasswordInput = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, ...props }, ref) => {
+const PasswordInput = forwardRef<HTMLInputElement, InputProps & { showPasswordLabel?: string; hidePasswordLabel?: string }>(
+  ({ className, showPasswordLabel = "Show password", hidePasswordLabel = "Hide password", ...props }, ref) => {
     const [visible, setVisible] = useState(false);
 
     return (
@@ -28,7 +28,7 @@ const PasswordInput = forwardRef<HTMLInputElement, InputProps>(
           className="absolute right-0 top-0 h-10 w-10 text-muted-foreground hover:text-foreground"
           onClick={() => setVisible(!visible)}
           tabIndex={-1}
-          aria-label={visible ? "Hide password" : "Show password"}
+          aria-label={visible ? hidePasswordLabel : showPasswordLabel}
         >
           {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </Button>

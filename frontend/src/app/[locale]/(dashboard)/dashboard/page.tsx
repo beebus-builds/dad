@@ -36,12 +36,11 @@ const QUICK_ACTIONS = [
   { href: "/dashboard/events/new", icon: CalendarPlus, labelKey: "createEvent", color: "text-purple-600 bg-purple-50" },
 ];
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
 export default function DashboardPage() {
   const t = useTranslations("dashboard.home");
   const tStats = useTranslations("dashboard.home.stats");
   const tActions = useTranslations("dashboard.home.quickActions");
+  const tCommon = useTranslations("common");
   const user = useAuthStore((s) => s.user);
   const [chartMetric, setChartMetric] = useState<"members" | "complaints">("members");
 
@@ -63,10 +62,10 @@ export default function DashboardPage() {
   }
 
   const summaryCards = [
-    { label: tStats("members"), value: formatNumber(stats?.totalMembers ?? 0), sub: `${formatNumber(stats?.activeMembers ?? 0)} active`, icon: Users, trend: "up" as const },
-    { label: tStats("openComplaints"), value: formatNumber(stats?.openComplaints ?? 0), sub: `${formatNumber(stats?.resolvedComplaints ?? 0)} resolved`, icon: MessageSquareWarning, trend: "down" as const },
-    { label: tStats("upcomingEvents"), value: formatNumber(stats?.upcomingEvents ?? 0), sub: `${formatNumber(stats?.activeLegalCases ?? 0)} active legal cases`, icon: BarChart3, trend: "up" as const },
-    { label: tStats("donations"), value: formatCurrency(stats?.totalDonations ?? 0), sub: "Total all time", icon: HandHeart, trend: "up" as const },
+    { label: tStats("members"), value: formatNumber(stats?.totalMembers ?? 0), sub: `${formatNumber(stats?.activeMembers ?? 0)} ${t("activeMembers")}`, icon: Users, trend: "up" as const },
+    { label: tStats("openComplaints"), value: formatNumber(stats?.openComplaints ?? 0), sub: `${formatNumber(stats?.resolvedComplaints ?? 0)} ${t("resolvedComplaints")}`, icon: MessageSquareWarning, trend: "down" as const },
+    { label: tStats("upcomingEvents"), value: formatNumber(stats?.upcomingEvents ?? 0), sub: `${formatNumber(stats?.activeLegalCases ?? 0)} ${t("activeLegalCases")}`, icon: BarChart3, trend: "up" as const },
+    { label: tStats("donations"), value: formatCurrency(stats?.totalDonations ?? 0), sub: t("totalAllTime"), icon: HandHeart, trend: "up" as const },
   ];
 
   const growth = stats?.monthlyGrowth ?? [];
@@ -80,14 +79,14 @@ export default function DashboardPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            {t("welcome", { name: user?.fullName?.split(" ")[0] ?? "Member" })}
+            {t("welcome", { name: user?.fullName?.split(" ")[0] ?? t("defaultName") })}
           </h1>
           <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
-        <Badge variant="success" className="w-fit">Live</Badge>
+        <Badge variant="success" className="w-fit">{t("liveBadge")}</Badge>
       </div>
 
-      <section aria-label="Quick actions" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <section aria-label={t("quickActionsAria")} className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StaggerList className="contents">
           {QUICK_ACTIONS.map((action, i) => (
             <StaggerItem key={action.href} index={i}>
@@ -106,7 +105,7 @@ export default function DashboardPage() {
         </StaggerList>
       </section>
 
-      <section aria-label="Key metrics" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section aria-label={t("keyMetricsAria")} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StaggerList className="contents">
           {summaryCards.map((s, i) => (
             <StaggerItem key={s.label} index={i}>
@@ -128,29 +127,29 @@ export default function DashboardPage() {
       <section className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Monthly Growth</CardTitle>
+            <CardTitle>{t("monthlyGrowth")}</CardTitle>
             <div className="flex gap-1 rounded-lg border p-0.5">
               <button
                 onClick={() => setChartMetric("members")}
                 className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${chartMetric === "members" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
               >
-                Members
+                {t("membersChart")}
               </button>
               <button
                 onClick={() => setChartMetric("complaints")}
                 className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${chartMetric === "complaints" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
               >
-                Complaints
+                {t("complaintsChart")}
               </button>
             </div>
           </CardHeader>
           <CardContent>
             {chartData.length === 0 ? (
               <div className="flex h-56 items-center justify-center text-sm text-muted-foreground">
-                No data yet
+                {t("noData")}
               </div>
             ) : (
-              <div className="h-56" role="img" aria-label={`Monthly ${chartMetric} growth chart`}>
+              <div className="h-56" role="img" aria-label={t("chartAria", { metric: chartMetric === "members" ? t("membersChart") : t("complaintsChart") })}>
                 <div className="flex h-full items-end gap-2">
                   {chartData.map((d) => (
                     <div key={d.label} className="group relative flex flex-1 flex-col items-center gap-2">
@@ -172,11 +171,11 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+            <CardTitle>{t("recentActivity")}</CardTitle>
           </CardHeader>
           <CardContent>
             {!stats?.recentActivity?.length ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">No recent activity</p>
+              <p className="py-8 text-center text-sm text-muted-foreground">{t("noRecentActivity")}</p>
             ) : (
               <ul className="space-y-4">
                 {stats.recentActivity.map((a) => (
@@ -197,7 +196,7 @@ export default function DashboardPage() {
               href="/dashboard/reports"
               className="btn-hover inline-flex items-center gap-1 text-sm font-medium text-primary"
             >
-              View full reports →
+              {t("viewReports")}
             </Link>
           </CardContent>
         </Card>

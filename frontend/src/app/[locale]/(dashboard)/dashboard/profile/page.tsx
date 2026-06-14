@@ -71,7 +71,7 @@ export default function ProfilePage() {
         </Card>
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>{t("accountDetails") || "Account Details"}</CardTitle>
+            <CardTitle>{t("accountDetails")}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSave} className="grid gap-4 sm:grid-cols-2">

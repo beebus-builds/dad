@@ -37,11 +37,11 @@ export default function SupportPage() {
             <div className="inline-flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">
               <Phone className="h-5 w-5" />
             </div>
-            <CardTitle className="mt-3">{t("helpline") || "Helpline"}</CardTitle>
+            <CardTitle className="mt-3">{t("helpline")}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">1660-01-XXXXX</p>
-            <p className="mt-1 text-sm text-muted-foreground">{t("helplineHours") || "Sun–Fri · 9:00–18:00 NPT"}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{t("helplineHours")}</p>
           </CardContent>
         </Card>
         <Card>
@@ -49,11 +49,11 @@ export default function SupportPage() {
             <div className="inline-flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">
               <Mail className="h-5 w-5" />
             </div>
-            <CardTitle className="mt-3">{t("emailTitle") || "Email"}</CardTitle>
+            <CardTitle className="mt-3">{t("emailTitle")}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-lg font-semibold">support@shramjagaran.np</p>
-            <p className="mt-1 text-sm text-muted-foreground">{t("emailResponse") || "Response within 24 hours"}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{t("emailResponse")}</p>
           </CardContent>
         </Card>
         <Card>
@@ -61,12 +61,12 @@ export default function SupportPage() {
             <div className="inline-flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">
               <MessageCircle className="h-5 w-5" />
             </div>
-            <CardTitle className="mt-3">{t("liveChat") || "Live chat"}</CardTitle>
+            <CardTitle className="mt-3">{t("liveChat")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">{t("chatHours") || "Available 9 am – 5 pm on working days."}</p>
+            <p className="text-sm text-muted-foreground">{t("chatHours")}</p>
             <Button className="mt-3">
-              <LifeBuoy className="h-4 w-4" /> {t("startChat") || "Start chat"}
+                <LifeBuoy className="h-4 w-4" /> {t("startChat")}
             </Button>
           </CardContent>
         </Card>
@@ -74,7 +74,7 @@ export default function SupportPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>{t("sendMessage") || "Send us a message"}</CardTitle>
+          <CardTitle>{t("sendMessage")}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

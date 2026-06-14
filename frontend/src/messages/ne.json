@@ -54,6 +54,8 @@
     "legal": "कानुनी सहायता",
     "membership": "सदस्यता",
     "contact": "सम्पर्क",
+    "donate": "दान गर्नुहोस्",
+    "branches": "शाखाहरू",
     "dashboard": "ड्यासबोर्ड",
     "signIn": "साइन इन",
     "joinNow": "अहिलै सदस्य बन्नुहोस्"
@@ -370,15 +372,34 @@
       "auditLog": "अडिट लग",
       "myProfile": "मेरो प्रोफाइल",
       "settings": "सेटिङहरू",
-      "support": "सहायता"
+      "support": "सहायता",
+      "navAria": "ड्यासबोर्ड नेभिगेसन"
     },
     "header": {
       "searchPlaceholder": "सदस्य, उजुरी, कार्यक्रम खोज्नुहोस्…",
-      "notificationsAria": "सूचनाहरू"
+      "notificationsAria": "सूचनाहरू",
+      "openNav": "नेभिगेसन मेनु खोल्नुहोस्",
+      "userMenu": "प्रयोगकर्ता मेनु"
     },
     "home": {
       "welcome": "पुनः स्वागत छ, {name}",
+      "defaultName": "सदस्य",
       "subtitle": "आज संघभरि के भइरहेको छ।",
+      "liveBadge": "लाइभ",
+      "quickActionsAria": "छिटो कार्यहरू",
+      "keyMetricsAria": "मुख्य मापन",
+      "activeMembers": "सक्रिय सदस्य",
+      "resolvedComplaints": "समाधान भएका उजुरी",
+      "activeLegalCases": "सक्रिय कानुनी मुद्दा",
+      "totalAllTime": "कुल समय",
+      "monthlyGrowth": "मासिक वृद्धि",
+      "membersChart": "सदस्यहरू",
+      "complaintsChart": "उजुरीहरू",
+      "noData": "अहिलेसम्म कुनै डेटा छैन",
+      "chartAria": "{metric} को मासिक वृद्धि चार्ट",
+      "recentActivity": "हालैका गतिविधिहरू",
+      "noRecentActivity": "हालै कुनै गतिविधि छैन",
+      "viewReports": "पूर्ण रिपोर्टहरू हेर्नुहोस् →",
       "stats": {
         "members": "सक्रिय सदस्य",
         "openComplaints": "खुला उजुरी",

@@ -45,7 +45,7 @@ export function DashboardHeader() {
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur sm:px-6">
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="md:hidden shrink-0" aria-label="Open navigation menu">
+          <Button variant="ghost" size="icon" className="md:hidden shrink-0" aria-label={t("openNav")}>
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </SheetTrigger>
@@ -78,11 +78,11 @@ export function DashboardHeader() {
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="flex items-center gap-3 h-auto px-2 py-1.5"
-              aria-label="User menu"
-            >
+                <Button
+                  variant="ghost"
+                  className="flex items-center gap-3 h-auto px-2 py-1.5"
+                  aria-label={t("userMenu")}
+                >
               <Avatar className="h-8 w-8">
                 <AvatarImage src={user?.avatarUrl} alt="" />
                 <AvatarFallback>{getInitials(user?.fullName ?? "?")}</AvatarFallback>

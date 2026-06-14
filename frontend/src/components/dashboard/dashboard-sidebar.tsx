@@ -115,7 +115,7 @@ export function DashboardSidebar({ onNavClick }: { onNavClick?: () => void }) {
         </Link>
       </div>
       <ScrollArea className="flex-1">
-        <nav aria-label="Dashboard" className="space-y-6 px-3 py-4">
+        <nav aria-label={t("navAria")} className="space-y-6 px-3 py-4">
           {SECTIONS.map((section) => {
             const visibleItems = section.items.filter(
               (item) => !item.permission || can(item.permission),

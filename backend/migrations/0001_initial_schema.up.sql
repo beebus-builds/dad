@@ -37,9 +37,9 @@ CREATE TABLE IF NOT EXISTS branches (
     updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at    TIMESTAMPTZ
 );
-CREATE INDEX idx_branches_province ON branches(province_code);
-CREATE INDEX idx_branches_district ON branches(district_code);
-CREATE INDEX idx_branches_active   ON branches(is_active) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_branches_province ON branches(province_code);
+CREATE INDEX IF NOT EXISTS idx_branches_district ON branches(district_code);
+CREATE INDEX IF NOT EXISTS idx_branches_active   ON branches(is_active) WHERE deleted_at IS NULL;
 
 CREATE TABLE IF NOT EXISTS users (
     id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -58,9 +58,9 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at     TIMESTAMPTZ
 );
-CREATE INDEX idx_users_role   ON users(role);
-CREATE INDEX idx_users_branch ON users(branch_id);
-CREATE INDEX idx_users_active ON users(is_active) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_users_role   ON users(role);
+CREATE INDEX IF NOT EXISTS idx_users_branch ON users(branch_id);
+CREATE INDEX IF NOT EXISTS idx_users_active ON users(is_active) WHERE deleted_at IS NULL;
 
 CREATE TABLE IF NOT EXISTS members (
     id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -86,10 +86,10 @@ CREATE TABLE IF NOT EXISTS members (
     updated_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at         TIMESTAMPTZ
 );
-CREATE INDEX idx_members_branch ON members(branch_id);
-CREATE INDEX idx_members_status ON members(status);
-CREATE INDEX idx_members_tier   ON members(tier);
-CREATE INDEX idx_members_search ON members USING gin(to_tsvector('simple', full_name || ' ' || membership_number || ' ' || phone));
+CREATE INDEX IF NOT EXISTS idx_members_branch ON members(branch_id);
+CREATE INDEX IF NOT EXISTS idx_members_status ON members(status);
+CREATE INDEX IF NOT EXISTS idx_members_tier   ON members(tier);
+CREATE INDEX IF NOT EXISTS idx_members_search ON members USING gin(to_tsvector('simple', full_name || ' ' || membership_number || ' ' || phone));
 
 CREATE TABLE IF NOT EXISTS membership_cards (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS membership_cards (
     is_active   BOOLEAN NOT NULL DEFAULT TRUE,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_cards_member ON membership_cards(member_id);
+CREATE INDEX IF NOT EXISTS idx_cards_member ON membership_cards(member_id);
 
 CREATE TABLE IF NOT EXISTS membership_payments (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -115,8 +115,8 @@ CREATE TABLE IF NOT EXISTS membership_payments (
     valid_until   TIMESTAMPTZ,
     created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_payments_member ON membership_payments(member_id);
-CREATE INDEX idx_payments_status ON membership_payments(status);
+CREATE INDEX IF NOT EXISTS idx_payments_member ON membership_payments(member_id);
+CREATE INDEX IF NOT EXISTS idx_payments_status ON membership_payments(status);
 
 CREATE TABLE IF NOT EXISTS complaints (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -134,10 +134,10 @@ CREATE TABLE IF NOT EXISTS complaints (
     resolved_at   TIMESTAMPTZ,
     deleted_at    TIMESTAMPTZ
 );
-CREATE INDEX idx_complaints_status   ON complaints(status);
-CREATE INDEX idx_complaints_priority ON complaints(priority);
-CREATE INDEX idx_complaints_branch   ON complaints(branch_id);
-CREATE INDEX idx_complaints_created ON complaints(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_complaints_status   ON complaints(status);
+CREATE INDEX IF NOT EXISTS idx_complaints_priority ON complaints(priority);
+CREATE INDEX IF NOT EXISTS idx_complaints_branch   ON complaints(branch_id);
+CREATE INDEX IF NOT EXISTS idx_complaints_created ON complaints(created_at DESC);
 
 CREATE TABLE IF NOT EXISTS complaint_comments (
     id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -167,9 +167,9 @@ CREATE TABLE IF NOT EXISTS events (
     created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_events_status  ON events(status);
-CREATE INDEX idx_events_starts  ON events(starts_at);
-CREATE INDEX idx_events_branch  ON events(branch_id);
+CREATE INDEX IF NOT EXISTS idx_events_status  ON events(status);
+CREATE INDEX IF NOT EXISTS idx_events_starts  ON events(starts_at);
+CREATE INDEX IF NOT EXISTS idx_events_branch  ON events(branch_id);
 
 CREATE TABLE IF NOT EXISTS event_registrations (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -198,8 +198,8 @@ CREATE TABLE IF NOT EXISTS news (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_news_status  ON news(status);
-CREATE INDEX idx_news_pubdate ON news(published_at DESC);
+CREATE INDEX IF NOT EXISTS idx_news_status  ON news(status);
+CREATE INDEX IF NOT EXISTS idx_news_pubdate ON news(published_at DESC);
 
 CREATE TABLE IF NOT EXISTS documents (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -214,8 +214,8 @@ CREATE TABLE IF NOT EXISTS documents (
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_documents_visibility ON documents(visibility);
-CREATE INDEX idx_documents_category  ON documents(category);
+CREATE INDEX IF NOT EXISTS idx_documents_visibility ON documents(visibility);
+CREATE INDEX IF NOT EXISTS idx_documents_category  ON documents(category);
 
 CREATE TABLE IF NOT EXISTS donations (
     id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -231,8 +231,8 @@ CREATE TABLE IF NOT EXISTS donations (
     created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_donations_status ON donations(status);
-CREATE INDEX idx_donations_method ON donations(method);
+CREATE INDEX IF NOT EXISTS idx_donations_status ON donations(status);
+CREATE INDEX IF NOT EXISTS idx_donations_method ON donations(method);
 
 CREATE TABLE IF NOT EXISTS notifications (
     id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -244,7 +244,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     is_read    BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_notifications_user ON notifications(user_id, is_read, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_read, created_at DESC);
 
 CREATE TABLE IF NOT EXISTS audit_logs (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -257,9 +257,9 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     metadata    JSONB,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_audit_user     ON audit_logs(user_id);
-CREATE INDEX idx_audit_resource ON audit_logs(resource, resource_id);
-CREATE INDEX idx_audit_created  ON audit_logs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_user     ON audit_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_resource ON audit_logs(resource, resource_id);
+CREATE INDEX IF NOT EXISTS idx_audit_created  ON audit_logs(created_at DESC);
 
 CREATE TABLE IF NOT EXISTS legal_cases (
     id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -277,8 +277,8 @@ CREATE TABLE IF NOT EXISTS legal_cases (
     created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_legal_status ON legal_cases(status);
-CREATE INDEX idx_legal_type   ON legal_cases(type);
+CREATE INDEX IF NOT EXISTS idx_legal_status ON legal_cases(status);
+CREATE INDEX IF NOT EXISTS idx_legal_type   ON legal_cases(type);
 
 CREATE TABLE IF NOT EXISTS training_programs (
     id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -297,8 +297,8 @@ CREATE TABLE IF NOT EXISTS training_programs (
     created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_training_status ON training_programs(status);
-CREATE INDEX idx_training_starts ON training_programs(starts_at);
+CREATE INDEX IF NOT EXISTS idx_training_status ON training_programs(status);
+CREATE INDEX IF NOT EXISTS idx_training_starts ON training_programs(starts_at);
 
 CREATE TABLE IF NOT EXISTS worker_incidents (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -315,5 +315,5 @@ CREATE TABLE IF NOT EXISTS worker_incidents (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_incidents_severity ON worker_incidents(severity);
-CREATE INDEX idx_incidents_status   ON worker_incidents(status);
+CREATE INDEX IF NOT EXISTS idx_incidents_severity ON worker_incidents(severity);
+CREATE INDEX IF NOT EXISTS idx_incidents_status   ON worker_incidents(status);

@@ -35,6 +35,10 @@ export const authService = {
     const { data } = await api.get<ApiResponse<User>>("/auth/me");
     return data.data;
   },
+  async updateProfile(payload: { fullName?: string; phone?: string }): Promise<User> {
+    const { data } = await api.patch<ApiResponse<User>>("/auth/profile", payload);
+    return data.data;
+  },
   async forgotPassword(email: string): Promise<void> {
     await api.post("/auth/forgot-password", { email });
   },

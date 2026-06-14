@@ -1,7 +1,8 @@
 "use client";
 
-import { Bell, LogOut, Search, Settings, User as UserIcon } from "lucide-react";
+import { Bell, LogOut, Menu, Search, Settings, User as UserIcon, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { Link } from "@/lib/i18n-navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -15,10 +16,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { useAuthStore } from "@/stores/auth-store";
 import { useLogout } from "@/hooks/use-auth";
 import { getInitials } from "@/lib/utils";
 import { LocaleSwitcher } from "@/components/i18n/locale-switcher";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const ROLE_KEYS = {
   SUPER_ADMIN: "SUPER_ADMIN",
@@ -36,9 +40,20 @@ export function DashboardHeader() {
   const tRoles = useTranslations("roles");
   const user = useAuthStore((s) => s.user);
   const logout = useLogout();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur sm:px-6">
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetTrigger asChild>
+          <Button variant="ghost" size="icon" className="md:hidden shrink-0" aria-label="Open navigation menu">
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="w-64 p-0">
+          <DashboardSidebar onNavClick={() => setMobileOpen(false)} />
+        </SheetContent>
+      </Sheet>
       <form className="flex-1 max-w-xl">
         <label htmlFor="dashboard-search" className="sr-only">
           {tCommon("search")}
@@ -58,6 +73,7 @@ export function DashboardHeader() {
       </form>
       <div className="flex items-center gap-2">
         <LocaleSwitcher />
+        <ThemeToggle />
         <Button variant="ghost" size="icon" aria-label={t("notificationsAria")} className="relative">
           <Bell className="h-5 w-5" />
           <span className="absolute right-2 top-2 inline-flex h-2 w-2 rounded-full bg-union-red" />

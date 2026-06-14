@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Menu, Search, X } from "lucide-react";
 import { LocaleSwitcher } from "@/components/i18n/locale-switcher";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const NAV_KEYS = ["about", "news", "events", "legal", "membership", "contact"] as const;
 
@@ -63,6 +64,7 @@ export function PublicHeader() {
             </Button>
           )}
           <LocaleSwitcher />
+          <ThemeToggle />
           <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
             <Link href="/login">{t("signIn")}</Link>
           </Button>

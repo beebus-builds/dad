@@ -98,16 +98,16 @@ const SECTIONS: NavSection[] = [
   },
 ];
 
-export function DashboardSidebar() {
+export function DashboardSidebar({ onNavClick }: { onNavClick?: () => void }) {
   const t = useTranslations("dashboard.sidebar");
   const tCommon = useTranslations("common");
   const pathname = usePathname();
   const can = useAuthStore((s) => s.can);
 
   return (
-    <aside className="hidden h-screen w-64 shrink-0 border-r bg-muted/30 md:flex md:flex-col">
+    <aside className="flex h-screen w-full shrink-0 flex-col border-r bg-muted/30 md:w-64">
       <div className="flex h-16 items-center gap-2 border-b px-5">
-        <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
+        <Link href="/dashboard" className="flex items-center gap-2 font-semibold" onClick={onNavClick}>
           <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-gradient-to-br from-union-red to-govt-blue text-sm font-bold text-white">
             SJ
           </span>
@@ -135,15 +135,16 @@ export function DashboardSidebar() {
                     <Link
                       key={item.href}
                       href={item.href}
+                      onClick={onNavClick}
                       aria-current={active ? "page" : undefined}
                       className={cn(
-                        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                        "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-200",
                         active
                           ? "bg-primary text-primary-foreground"
                           : "text-muted-foreground hover:bg-accent hover:text-foreground",
                       )}
                     >
-                      <Icon className="h-4 w-4" />
+                      <Icon className="h-4 w-4 shrink-0" />
                       {t(item.key)}
                     </Link>
                   );

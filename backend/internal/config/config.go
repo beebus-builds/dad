@@ -21,6 +21,14 @@ type Config struct {
 	Sentry     SentryConfig
 	RateLimit  RateLimitConfig
 	CORS       CORSConfig
+	Admin      AdminConfig
+}
+
+type AdminConfig struct {
+	Email    string
+	Password string
+	Phone    string
+	FullName string
 }
 
 type SMTPConfig struct {
@@ -153,6 +161,12 @@ func Load() (*Config, error) {
 		},
 		CORS: CORSConfig{
 			Origins: strings.Split(getEnv("CORS_ORIGINS", "http://localhost:3000"), ","),
+		},
+		Admin: AdminConfig{
+			Email:    getEnv("ADMIN_EMAIL", "admin@shramjagaran.np"),
+			Password: getEnv("ADMIN_PASSWORD", "Admin@123"),
+			Phone:    getEnv("ADMIN_PHONE", "+977-9800000001"),
+			FullName: getEnv("ADMIN_FULL_NAME", "Platform Admin"),
 		},
 	}
 

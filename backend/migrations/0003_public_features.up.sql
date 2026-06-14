@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS public_event_registrations (
     status      VARCHAR(20) NOT NULL DEFAULT 'CONFIRMED',
     registered_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_public_event_reg_event ON public_event_registrations(event_id);
+CREATE INDEX IF NOT EXISTS idx_public_event_reg_event ON public_event_registrations(event_id);
 
 CREATE TABLE IF NOT EXISTS member_applications (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS member_applications (
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_member_applications_status ON member_applications(status);
+CREATE INDEX IF NOT EXISTS idx_member_applications_status ON member_applications(status);
 
 CREATE TABLE IF NOT EXISTS contact_messages (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS contact_messages (
     is_read     BOOLEAN NOT NULL DEFAULT FALSE,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_contact_messages_read ON contact_messages(is_read);
+CREATE INDEX IF NOT EXISTS idx_contact_messages_read ON contact_messages(is_read);
 
 CREATE TABLE IF NOT EXISTS organisation_settings (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),

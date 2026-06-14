@@ -14,6 +14,10 @@ export const documentService = {
     const { data } = await api.get<Paginated<DocumentItem>>("/documents", { params });
     return data;
   },
+  async detail(id: string): Promise<DocumentItem> {
+    const { data } = await api.get<ApiResponse<DocumentItem>>(`/documents/${id}`);
+    return data.data;
+  },
   async create(payload: { title: string; description?: string; category: DocumentItem["category"]; visibility: DocumentItem["visibility"]; fileUrl: string; fileType: string; fileSize: number }): Promise<DocumentItem> {
     const { data } = await api.post<ApiResponse<DocumentItem>>("/documents", payload);
     return data.data;

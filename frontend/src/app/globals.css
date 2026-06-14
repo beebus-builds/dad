@@ -102,8 +102,17 @@
     @apply bg-background text-foreground font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+  .font-devanagari {
+    font-size: 1.0625em;
+    line-height: 1.65;
+    letter-spacing: 0.01em;
+    font-weight: 450;
+  }
   :focus-visible {
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+  ::selection {
+    @apply bg-primary/15 text-foreground;
   }
 }
 
@@ -127,5 +136,35 @@
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+  }
+}
+
+@layer components {
+  .btn-hover {
+    @apply transition-all duration-200 ease-out;
+  }
+  .btn-hover:hover {
+    @apply scale-[1.02];
+  }
+  .btn-hover:active {
+    @apply scale-[0.98];
+  }
+  .card-hover {
+    @apply transition-all duration-300 ease-out;
+  }
+  .card-hover:hover {
+    @apply -translate-y-0.5 shadow-card;
+  }
+  .prose-editorial {
+    @apply prose prose-neutral mx-auto max-w-[720px] prose-headings:font-devanagari prose-headings:tracking-tight prose-h2:text-2xl prose-h3:text-xl prose-p:leading-relaxed prose-p:text-[1.0625rem] prose-a:text-primary prose-blockquote:border-l-primary prose-blockquote:pl-6 prose-blockquote:italic prose-img:rounded-xl prose-img:shadow-soft;
+  }
+  .prose-editorial :where(p):not(:where([class~="not-prose"] *)) {
+    text-wrap: pretty;
+  }
+  .prose-editorial :where(h2):not(:where([class~="not-prose"] *)) {
+    margin-top: 2.5em;
+  }
+  .pull-quote {
+    @apply my-10 border-l-4 border-primary pl-6 text-2xl font-devanagari italic leading-snug text-foreground;
   }
 }

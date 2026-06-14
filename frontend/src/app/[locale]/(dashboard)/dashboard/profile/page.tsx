@@ -31,11 +31,11 @@ export default function ProfilePage() {
     e.preventDefault();
     setSaving(true);
     try {
-      const updated = await authService.me();
-      setUser({ ...updated, fullName, phone });
+      const updated = await authService.updateProfile({ fullName, phone });
+      setUser(updated);
       toast.success(tCommon("save"));
     } catch {
-      toast.success(tCommon("save"));
+      toast.error(tCommon("error"));
     } finally {
       setSaving(false);
     }

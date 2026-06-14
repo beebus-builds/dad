@@ -162,6 +162,7 @@ func (s *DonationService) List(ctx context.Context, opts repository.ListDonation
 	return s.repo.List(ctx, opts)
 }
 func (s *DonationService) Total(ctx context.Context) (float64, error) { return s.repo.SumTotal(ctx) }
+func (s *DonationService) Get(ctx context.Context, id string) (*entity.Donation, error) { return s.repo.GetByID(ctx, id) }
 
 type LegalCaseService struct{ repo repository.LegalCaseRepository }
 

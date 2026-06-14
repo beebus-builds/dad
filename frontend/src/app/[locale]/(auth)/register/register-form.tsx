@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,6 +53,12 @@ export function RegisterForm() {
           />
         </Field>
       </div>
+      {registerMutation.error && (
+        <div className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>{registerMutation.error.message}</span>
+        </div>
+      )}
       <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
         {registerMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
         {registerMutation.isPending ? t("submitting") : t("submit")}

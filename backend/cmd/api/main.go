@@ -15,6 +15,7 @@ import (
 	"github.com/shramjagaran/cms-backend/internal/http/router"
 	"github.com/shramjagaran/cms-backend/internal/infrastructure/cache"
 	"github.com/shramjagaran/cms-backend/internal/infrastructure/db"
+	"github.com/shramjagaran/cms-backend/internal/infrastructure/migrator"
 	"github.com/shramjagaran/cms-backend/internal/infrastructure/postgres"
 	"github.com/shramjagaran/cms-backend/internal/infrastructure/storage"
 	"github.com/shramjagaran/cms-backend/internal/usecase"
@@ -54,6 +55,26 @@ func run() error {
 	}
 	defer pool.Close()
 	logger.L.Info("db pool ready")
+
+	if err := migrator.RunSchema(ctx, pool); err != nil {
+		logger.L.Fatal("schema migration failed", zap.Error(err))
+	}
+	logger.L.Info("schema applied")
+
+	if err := migrator.SeedAdmin(ctx, pool, migrator.AdminSeed{
+		Email:    cfg.Admin.Email,
+		Password: cfg.Admin.Password,
+		Phone:    cfg.Admin.Phone,
+		FullName: cfg.Admin.FullName,
+	}); err != nil {
+		logger.L.Fatal("seed admin failed", zap.Error(err))
+	}
+	logger.L.Info("admin seed ok", zap.String("email", cfg.Admin.Email))
+
+	if err := migrator.RunSeed(ctx, pool); err != nil {
+		logger.L.Fatal("seed migration failed", zap.Error(err))
+	}
+	logger.L.Info("seed data applied")
 
 	c, err := cache.New(cfg.Redis)
 	if err != nil {

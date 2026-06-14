@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { PermissionGate } from "@/components/auth/permission-gate";
+import { EmptyState } from "@/components/dashboard/empty-state";
 import { PERMISSIONS } from "@/lib/rbac";
 import { api, ApiError, type ApiResponse } from "@/lib/api-client";
 import { useLocaleFormat } from "@/lib/use-locale-format";
@@ -61,6 +62,14 @@ export default function BranchesPage() {
           </div>
           {isLoading ? (
             <div className="flex items-center justify-center py-12"><Loader2 className="h-4 w-4 animate-spin" /></div>
+          ) : !branches?.length ? (
+            <EmptyState
+              icon={Building2}
+              title="No branches yet"
+              description="Branches are the local offices of your organisation. Add your first branch to get started."
+              hint="You can add province, district and local-level branches."
+              action={<Button variant="union" size="sm"><Plus className="mr-2 h-4 w-4" />Add Branch</Button>}
+            />
           ) : (
             <Table>
               <TableHeader>

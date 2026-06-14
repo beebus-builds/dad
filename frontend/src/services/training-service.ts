@@ -12,6 +12,10 @@ export const trainingService = {
     const { data } = await api.get<Paginated<TrainingProgram>>("/training", { params });
     return data;
   },
+  async detail(id: string): Promise<TrainingProgram> {
+    const { data } = await api.get<ApiResponse<TrainingProgram>>(`/training/${id}`);
+    return data.data;
+  },
   async create(payload: Partial<TrainingProgram>): Promise<TrainingProgram> {
     const { data } = await api.post<ApiResponse<TrainingProgram>>("/training", payload);
     return data.data;

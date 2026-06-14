@@ -13,6 +13,10 @@ export const incidentService = {
     const { data } = await api.get<Paginated<WorkerIncident>>("/incidents", { params });
     return data;
   },
+  async detail(id: string): Promise<WorkerIncident> {
+    const { data } = await api.get<ApiResponse<WorkerIncident>>(`/incidents/${id}`);
+    return data.data;
+  },
   async create(payload: Partial<WorkerIncident>): Promise<WorkerIncident> {
     const { data } = await api.post<ApiResponse<WorkerIncident>>("/incidents", payload);
     return data.data;

@@ -42,6 +42,7 @@ func New(cfg *config.Config, h *handler.Handlers, jm *jwt.Manager, auditRepo rep
 			authed.PATCH("/notifications/:id/read", h.MarkRead)
 			authed.POST("/notifications/read-all", h.MarkAllRead)
 			authed.GET("/reports/dashboard", h.ReportsDashboard)
+		authed.PATCH("/auth/profile", h.UpdateProfile)
 		}
 
 		api.Group("/users").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermUsersManage)).
@@ -79,12 +80,12 @@ func New(cfg *config.Config, h *handler.Handlers, jm *jwt.Manager, auditRepo rep
 			POST("", h.CreateNews).PATCH("/:id", h.UpdateNews).DELETE("/:id", h.DeleteNews)
 
 		api.Group("/documents").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermDocumentsRead)).
-			GET("", h.ListDocuments)
+			GET("", h.ListDocuments).GET("/:id", h.GetDocument)
 		api.Group("/documents").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermDocumentsWrite)).
 			POST("", h.CreateDocument).DELETE("/:id", h.DeleteDocument)
 
 		api.Group("/payments").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermDonationsRead)).
-			GET("", h.ListDonations).GET("/total", h.DonationsTotal)
+			GET("", h.ListDonations).GET("/total", h.DonationsTotal).GET("/:id", h.GetDonation)
 		api.Group("/payments").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermDonationsWrite)).
 			POST("", h.CreateDonation)
 
@@ -94,12 +95,12 @@ func New(cfg *config.Config, h *handler.Handlers, jm *jwt.Manager, auditRepo rep
 			POST("", h.CreateLegal).PATCH("/:id", h.UpdateLegal)
 
 		api.Group("/training").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermTrainingRead)).
-			GET("", h.ListTrainings)
+			GET("", h.ListTrainings).GET("/:id", h.GetTraining)
 		api.Group("/training").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermTrainingWrite)).
 			POST("", h.CreateTraining).DELETE("/:id", h.DeleteTraining)
 
 		api.Group("/incidents").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermIncidentsRead)).
-			GET("", h.ListIncidents)
+			GET("", h.ListIncidents).GET("/:id", h.GetIncident)
 		api.Group("/incidents").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermIncidentsWrite)).
 			POST("", h.CreateIncident)
 

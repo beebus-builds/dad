@@ -191,6 +191,15 @@ func (h *Handlers) DeleteDocument(c *gin.Context) {
 	response.NoContent(c)
 }
 
+func (h *Handlers) GetDocument(c *gin.Context) {
+	m, err := h.Documents.Get(c.Request.Context(), c.Param("id"))
+	if err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.OK(c, m)
+}
+
 func (h *Handlers) ListDonations(c *gin.Context) {
 	page, size := listOpts(c)
 	opts := repository.ListDonationsOptions{
@@ -325,6 +334,15 @@ func (h *Handlers) DeleteTraining(c *gin.Context) {
 	response.NoContent(c)
 }
 
+func (h *Handlers) GetTraining(c *gin.Context) {
+	m, err := h.Training.Get(c.Request.Context(), c.Param("id"))
+	if err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.OK(c, m)
+}
+
 func (h *Handlers) ListIncidents(c *gin.Context) {
 	page, size := listOpts(c)
 	opts := repository.ListIncidentsOptions{
@@ -356,6 +374,46 @@ func (h *Handlers) CreateIncident(c *gin.Context) {
 		return
 	}
 	response.Created(c, m)
+}
+
+func (h *Handlers) GetIncident(c *gin.Context) {
+	m, err := h.Incidents.Get(c.Request.Context(), c.Param("id"))
+	if err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.OK(c, m)
+}
+
+func (h *Handlers) GetDonation(c *gin.Context) {
+	m, err := h.Donations.Get(c.Request.Context(), c.Param("id"))
+	if err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.OK(c, m)
+}
+
+func (h *Handlers) UpdateProfile(c *gin.Context) {
+	uid, _ := c.Get(middleware.CtxUserID)
+	userID, _ := uid.(string)
+	var body struct {
+		FullName *string `json:"fullName"`
+		Phone    *string `json:"phone"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		response.Error(c, 422, "VALIDATION", err.Error())
+		return
+	}
+	u, err := h.Auth.UpdateUser(c.Request.Context(), userID, usecase.UpdateUserInput{
+		FullName: body.FullName,
+		Phone:    body.Phone,
+	})
+	if err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.OK(c, u)
 }
 
 func (h *Handlers) ListNotifications(c *gin.Context) {

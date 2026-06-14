@@ -192,6 +192,10 @@
       "description": "Whether you're a worker seeking support, a union leader managing thousands, or a donor backing the movement — Shram Jagaran is the platform that scales with you.",
       "join": "Join Today",
       "donate": "Donate"
+    },
+    "testimonials": {
+      "heading": "Real voices from the workforce",
+      "subheading": "The people we stand with every day."
     }
   },
   "about": {
@@ -364,7 +368,13 @@
         "members": "Active Members",
         "openComplaints": "Open Complaints",
         "upcomingEvents": "Upcoming Events",
-        "donationsThisMonth": "Donations this month"
+        "donations": "Total Donations"
+      },
+      "quickActions": {
+        "addMember": "Add Member",
+        "fileComplaint": "File Complaint",
+        "publishNews": "Publish News",
+        "createEvent": "Create Event"
       }
     }
   },
@@ -769,11 +779,6 @@
       "REPORT": "Report",
       "FORM": "Form",
       "OTHER": "Other"
-    },
-    "visibility": {
-      "PUBLIC": "Public",
-      "MEMBERS": "Members",
-      "ADMIN": "Admin"
     },
     "visibility": {
       "PUBLIC": "Public",

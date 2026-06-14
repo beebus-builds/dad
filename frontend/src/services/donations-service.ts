@@ -13,6 +13,10 @@ export const donationService = {
     const { data } = await api.get<Paginated<Donation>>("/payments", { params });
     return data;
   },
+  async detail(id: string): Promise<Donation> {
+    const { data } = await api.get<ApiResponse<Donation>>(`/payments/${id}`);
+    return data.data;
+  },
   async create(payload: Partial<Donation>): Promise<Donation> {
     const { data } = await api.post<ApiResponse<Donation>>("/payments", payload);
     return data.data;

@@ -7,7 +7,8 @@ INSERT INTO roles (name, description) VALUES
     ('DISTRICT_ADMIN', 'District level administrator'),
     ('BRANCH_ADMIN',   'Single branch administrator'),
     ('MEMBER',         'Registered union member'),
-    ('PUBLIC',         'Anonymous public visitor');
+    ('PUBLIC',         'Anonymous public visitor')
+ON CONFLICT (name) DO NOTHING;
 
 INSERT INTO permissions (name, description) VALUES
     ('members:read','View members'),
@@ -35,7 +36,8 @@ INSERT INTO permissions (name, description) VALUES
     ('reports:view','View reports'),
     ('settings:manage','Manage system settings'),
     ('audit:view','View audit logs'),
-    ('users:manage','Manage user accounts');
+    ('users:manage','Manage user accounts')
+ON CONFLICT (name) DO NOTHING;
 
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r CROSS JOIN permissions p WHERE r.name = 'SUPER_ADMIN';
@@ -81,29 +83,30 @@ WHERE r.name = 'PUBLIC';
 
 INSERT INTO branches (id, name, name_nepali, province_code, district_code, address, contact_email, contact_phone)
 VALUES
-    ('11111111-1111-1111-1111-111111111111','Kathmandu Central','काठमाडौं केन्द्रीय','P3','KTM-CENTRAL','Putalisadak, Kathmandu','kathmandu@shramjagaran.np','+977-1-4444444'),
+    ('11111111-1111-1111-1111-111111111111','Kathmandu Central','काठमाडौं केन्द्रीय','P3','KTM','Putalisadak, Kathmandu','kathmandu@shramjagaran.np','+977-1-4444444'),
     ('22222222-2222-2222-2222-222222222222','Pokhara','पोखरा','P4','POK','Baidam, Pokhara','pokhara@shramjagaran.np','+977-61-555555'),
     ('33333333-3333-3333-3333-333333333333','Biratnagar','विराटनगर','P1','BRT','Main Road, Biratnagar','biratnagar@shramjagaran.np','+977-21-555555'),
     ('44444444-4444-4444-4444-444444444444','Birgunj','वीरगंज','P2','BRG','Ghantaghar, Birgunj','birgunj@shramjagaran.np','+977-51-555555'),
-    ('55555555-5555-5555-5555-555555555555','Butwal','बुटवल','P5','BTW','Traffic Chowk, Butwal','butwal@shramjagaran.np','+977-71-555555');
+    ('55555555-5555-5555-5555-555555555555','Butwal','बुटवल','P5','BTW','Traffic Chowk, Butwal','butwal@shramjagaran.np','+977-71-555555')
+ON CONFLICT (id) DO NOTHING;
 
--- Default super admin (password: Admin@123)
--- bcrypt hash of "Admin@123"
-INSERT INTO users (id, email, password_hash, full_name, phone, role, is_active)
-VALUES
-    ('00000000-0000-0000-0000-000000000001','admin@shramjagaran.np','$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy','Platform Admin','+977-9800000001','SUPER_ADMIN',true);
+-- Default super admin is created at application startup
+-- from ADMIN_EMAIL / ADMIN_PASSWORD env vars (see .env)
 
 INSERT INTO news (slug, title, excerpt, content, category, status, author_id, tags, published_at)
 VALUES
     ('welcome-to-shram-jagaran','Welcome to Shram Jagaran CMS','A unified digital home for Nepalese trade unions.','Shram Jagaran CMS is now live across all 7 provinces.','ANNOUNCEMENT','PUBLISHED','00000000-0000-0000-0000-000000000001','{"launch","announcement"}',NOW()),
-    ('minimum-wage-2026','Updated Minimum Wage Guidelines','The Government of Nepal has issued revised minimum wage guidelines.','Effective from 2026, the minimum monthly wage has been revised to NPR 19,500.','POLICY','PUBLISHED','00000000-0000-0000-0000-000000000001','{"policy","wages"}',NOW());
+    ('minimum-wage-2026','Updated Minimum Wage Guidelines','The Government of Nepal has issued revised minimum wage guidelines.','Effective from 2026, the minimum monthly wage has been revised to NPR 19,500.','POLICY','PUBLISHED','00000000-0000-0000-0000-000000000001','{"policy","wages"}',NOW())
+ON CONFLICT (slug) DO NOTHING;
 
 INSERT INTO events (title, title_nepali, slug, description, category, status, starts_at, ends_at, location, capacity, registered_count, created_by)
 VALUES
     ('National Workers Convention 2026','राष्ट्रिय श्रमिक सम्मेलन २०८३','national-workers-convention-2026','The flagship annual convention of the union.','CONFERENCE','PUBLISHED',NOW() + INTERVAL '14 days',NOW() + INTERVAL '16 days','Bhrikutimandap, Kathmandu',2000,1240,'00000000-0000-0000-0000-000000000001'),
-    ('OSH Awareness Workshop','OSH जनचेतना कार्यशाला','osh-awareness-workshop','Practical safety training for garment workers.','WORKSHOP','PUBLISHED',NOW() + INTERVAL '21 days',NOW() + INTERVAL '21 days' + INTERVAL '6 hours','Birgunj',300,220,'00000000-0000-0000-0000-000000000001');
+    ('OSH Awareness Workshop','OSH जनचेतना कार्यशाला','osh-awareness-workshop','Practical safety training for garment workers.','WORKSHOP','PUBLISHED',NOW() + INTERVAL '21 days',NOW() + INTERVAL '21 days' + INTERVAL '6 hours','Birgunj',300,220,'00000000-0000-0000-0000-000000000001')
+ON CONFLICT (slug) DO NOTHING;
 
 INSERT INTO complaints (ticket_number, title, description, category, priority, status, submitted_by, branch_id)
 VALUES
     ('CMP-2104','Wage withheld for 3 months','The employer has not paid wages for the last three months.','WAGES','HIGH','IN_REVIEW','00000000-0000-0000-0000-000000000001','11111111-1111-1111-1111-111111111111'),
-    ('CMP-2105','Unsafe workplace - no helmets','Construction site has not provided safety helmets.','SAFETY','URGENT','OPEN','00000000-0000-0000-0000-000000000001','22222222-2222-2222-2222-222222222222');
+    ('CMP-2105','Unsafe workplace - no helmets','Construction site has not provided safety helmets.','SAFETY','URGENT','OPEN','00000000-0000-0000-0000-000000000001','22222222-2222-2222-2222-222222222222')
+ON CONFLICT (ticket_number) DO NOTHING;

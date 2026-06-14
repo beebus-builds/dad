@@ -2,6 +2,7 @@ import { setRequestLocale } from "next-intl/server";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { PageTransition } from "@/components/page-transition";
 
 export default async function DashboardLayout({
   children,
@@ -19,7 +20,9 @@ export default async function DashboardLayout({
         <div className="flex flex-1 flex-col overflow-hidden">
           <DashboardHeader />
           <main id="main-content" className="flex-1 overflow-y-auto bg-background">
-            <div className="container max-w-screen-2xl py-6 sm:py-8">{children}</div>
+            <PageTransition>
+              <div className="container max-w-screen-2xl py-6 sm:py-8">{children}</div>
+            </PageTransition>
           </main>
         </div>
       </div>

@@ -16,6 +16,14 @@ type UserRepository interface {
 	List(ctx context.Context, opts ListUsersOptions) ([]entity.User, int, error)
 	UpdateLastLogin(ctx context.Context, id string) error
 	Deactivate(ctx context.Context, id string) error
+	MarkEmailVerified(ctx context.Context, id string) error
+}
+
+type VerificationCodeRepository interface {
+	Create(ctx context.Context, v *entity.VerificationCode) error
+	GetByUserIDAndCode(ctx context.Context, userID, code, codeType string) (*entity.VerificationCode, error)
+	MarkUsed(ctx context.Context, id string) error
+	DeleteByUserID(ctx context.Context, userID, codeType string) error
 }
 
 type ListUsersOptions struct {

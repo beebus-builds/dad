@@ -8,7 +8,7 @@ import (
 
 type Envelope struct {
 	Data  any            `json:"data,omitempty"`
-	Meta  any            `json:"meta,omitempty"`
+	Meta  any            `json:"pagination,omitempty"`
 	Error *ErrorEnvelope `json:"error,omitempty"`
 }
 

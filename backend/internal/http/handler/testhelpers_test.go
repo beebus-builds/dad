@@ -79,7 +79,7 @@ func (hStubAuditRepo) List(_ context.Context, _ repository.ListAuditOptions) ([]
 func hNewTestAuthService() (*usecase.AuthService, *jwt.Manager, *hStubUserRepo) {
 	repo := newHStubUserRepo()
 	mgr := jwt.NewManager("test-secret-key-must-be-32-chars-long-xx", 15*time.Minute, 24*time.Hour, "test")
-	svc := usecase.NewAuthService(repo, hStubAuditRepo{}, nil, mgr)
+	svc := usecase.NewAuthService(repo, hStubAuditRepo{}, nil, nil, mgr)
 	return svc, mgr, repo
 }
 

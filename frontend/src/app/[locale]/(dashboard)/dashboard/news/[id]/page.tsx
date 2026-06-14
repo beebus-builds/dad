@@ -117,9 +117,11 @@ export default function NewsDetailPage({
                 </Link>
               </Button>
               <PermissionGate permission={PERMISSIONS.NEWS_WRITE} fallback={null}>
-                <Button variant="outline" size="sm" disabled>
+              <Button variant="outline" size="sm" asChild>
+                <Link href={`/dashboard/news/${id}/edit`}>
                   <Pencil className="h-4 w-4" /> {t("detail.editArticle")}
-                </Button>
+                </Link>
+              </Button>
                 <Button
                   variant="destructive"
                   size="sm"
@@ -157,7 +159,7 @@ export default function NewsDetailPage({
               )}
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
-              <p className="whitespace-pre-wrap">{n.content || n.excerpt}</p>
+              <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: n.content }} />
               {n.tags && n.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {n.tags.map((tag) => (

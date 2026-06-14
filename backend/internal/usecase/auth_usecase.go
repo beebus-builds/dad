@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math/big"
 	"strings"
 	"time"
 
@@ -24,20 +25,22 @@ import (
 type Mailer interface {
 	SendHTML(to, subject, html string) error
 	PasswordResetHTML(to, resetLink, appName string) string
+	VerificationOTPHTML(code, appName string) string
 }
 
 type AuthService struct {
-	users      repository.UserRepository
-	audit      repository.AuditLogRepository
-	tokens     repository.PasswordResetTokenRepository
-	jwtMgr     *jwt.Manager
-	mailer     Mailer
+	users       repository.UserRepository
+	audit       repository.AuditLogRepository
+	tokens      repository.PasswordResetTokenRepository
+	codes       repository.VerificationCodeRepository
+	jwtMgr      *jwt.Manager
+	mailer      Mailer
 	frontendURL string
-	appName    string
+	appName     string
 }
 
-func NewAuthService(u repository.UserRepository, a repository.AuditLogRepository, t repository.PasswordResetTokenRepository, j *jwt.Manager) *AuthService {
-	return &AuthService{users: u, audit: a, tokens: t, jwtMgr: j}
+func NewAuthService(u repository.UserRepository, a repository.AuditLogRepository, t repository.PasswordResetTokenRepository, c repository.VerificationCodeRepository, j *jwt.Manager) *AuthService {
+	return &AuthService{users: u, audit: a, tokens: t, codes: c, jwtMgr: j}
 }
 
 func (s *AuthService) SetJWTManager(j *jwt.Manager) { s.jwtMgr = j }
@@ -70,6 +73,12 @@ type AuthResult struct {
 	RefreshToken string       `json:"refreshToken"`
 }
 
+type RegisterResult struct {
+	UserID string `json:"userId"`
+	Email  string `json:"email"`
+	Message string `json:"message"`
+}
+
 func (s *AuthService) Login(ctx context.Context, in LoginInput) (*AuthResult, error) {
 	u, err := s.users.GetByEmail(ctx, strings.ToLower(in.Email))
 	if err != nil {
@@ -97,7 +106,7 @@ func (s *AuthService) Login(ctx context.Context, in LoginInput) (*AuthResult, er
 	return &AuthResult{User: u, AccessToken: access, RefreshToken: refresh}, nil
 }
 
-func (s *AuthService) Register(ctx context.Context, in RegisterInput) (*AuthResult, error) {
+func (s *AuthService) Register(ctx context.Context, in RegisterInput) (*RegisterResult, error) {
 	if !validator.IsPhone(in.Phone) {
 		return nil, apperror.New(422, "VALIDATION", "invalid phone number")
 	}
@@ -119,9 +128,85 @@ func (s *AuthService) Register(ctx context.Context, in RegisterInput) (*AuthResu
 		FullName:     in.FullName,
 		Phone:        &in.Phone,
 		Role:         entity.RoleMember,
-		IsActive:     true,
+		IsActive:     false,
 	}
 	if err := s.users.Create(ctx, u); err != nil {
+		return nil, err
+	}
+	if err := s.sendVerificationOTP(ctx, u.ID, u.Email); err != nil {
+		return nil, err
+	}
+	_ = s.audit.Create(ctx, &entity.AuditLog{
+		UserID: &u.ID, Action: "REGISTER", Resource: "User",
+		ResourceID: &u.ID,
+	})
+	return &RegisterResult{UserID: u.ID, Email: u.Email, Message: "verification code sent to email"}, nil
+}
+
+func (s *AuthService) sendVerificationOTP(ctx context.Context, userID, email string) error {
+	if s.codes == nil || s.mailer == nil {
+		return apperror.New(500, "CONFIG", "email verification is not configured")
+	}
+	code, err := generateOTP()
+	if err != nil {
+		return err
+	}
+	if err := s.codes.DeleteByUserID(ctx, userID, "EMAIL_VERIFICATION"); err != nil {
+		return err
+	}
+	v := &entity.VerificationCode{
+		ID:        uuid.NewString(),
+		UserID:    userID,
+		Code:      code,
+		Type:      "EMAIL_VERIFICATION",
+		ExpiresAt: time.Now().Add(10 * time.Minute),
+	}
+	if err := s.codes.Create(ctx, v); err != nil {
+		return err
+	}
+	html := s.mailer.VerificationOTPHTML(code, s.appName)
+	return s.mailer.SendHTML(email, "Shram Jagaran — Verify Your Email", html)
+}
+
+func generateOTP() (string, error) {
+	code := make([]byte, 6)
+	for i := range code {
+		n, err := rand.Int(rand.Reader, big.NewInt(10))
+		if err != nil {
+			return "", fmt.Errorf("generate otp: %w", err)
+		}
+		code[i] = byte('0') + byte(n.Int64())
+	}
+	return string(code), nil
+}
+
+type VerifyEmailInput struct {
+	UserID string `json:"userId" binding:"required"`
+	Code   string `json:"code" binding:"required,len=6"`
+}
+
+func (s *AuthService) VerifyEmail(ctx context.Context, in VerifyEmailInput) (*AuthResult, error) {
+	if s.codes == nil {
+		return nil, apperror.New(500, "CONFIG", "email verification is not configured")
+	}
+	v, err := s.codes.GetByUserIDAndCode(ctx, in.UserID, in.Code, "EMAIL_VERIFICATION")
+	if err != nil {
+		return nil, apperror.New(400, "INVALID_CODE", "verification code is invalid or expired")
+	}
+	if v.UsedAt != nil {
+		return nil, apperror.New(400, "CODE_USED", "verification code has already been used")
+	}
+	if time.Now().After(v.ExpiresAt) {
+		return nil, apperror.New(400, "CODE_EXPIRED", "verification code has expired")
+	}
+	if err := s.codes.MarkUsed(ctx, v.ID); err != nil {
+		return nil, err
+	}
+	if err := s.users.MarkEmailVerified(ctx, in.UserID); err != nil {
+		return nil, err
+	}
+	u, err := s.users.GetByID(ctx, in.UserID)
+	if err != nil {
 		return nil, err
 	}
 	perms := rbac.PermissionsForRole(u.Role)
@@ -133,7 +218,22 @@ func (s *AuthService) Register(ctx context.Context, in RegisterInput) (*AuthResu
 	if err != nil {
 		return nil, err
 	}
+	_ = s.audit.Create(ctx, &entity.AuditLog{
+		UserID: &u.ID, Action: "EMAIL_VERIFIED", Resource: "User",
+		ResourceID: &u.ID,
+	})
 	return &AuthResult{User: u, AccessToken: access, RefreshToken: refresh}, nil
+}
+
+func (s *AuthService) ResendOTP(ctx context.Context, userID string) error {
+	u, err := s.users.GetByID(ctx, userID)
+	if err != nil {
+		return apperror.New(404, "NOT_FOUND", "user not found")
+	}
+	if u.EmailVerifiedAt != nil {
+		return apperror.New(400, "ALREADY_VERIFIED", "email is already verified")
+	}
+	return s.sendVerificationOTP(ctx, u.ID, u.Email)
 }
 
 func (s *AuthService) Me(ctx context.Context, userID string) (*entity.User, error) {

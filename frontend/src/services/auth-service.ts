@@ -13,6 +13,12 @@ export type RegisterPayload = {
   password: string;
 };
 
+export type RegisterResult = {
+  userId: string;
+  email: string;
+  message: string;
+};
+
 export type AuthResult = {
   user: User;
   accessToken: string;
@@ -24,10 +30,21 @@ export const authService = {
     const { data } = await api.post<ApiResponse<AuthResult>>("/auth/login", payload);
     return data.data;
   },
-  async register(payload: RegisterPayload): Promise<AuthResult> {
-    const { data } = await api.post<ApiResponse<AuthResult>>("/auth/register", payload);
+
+  async register(payload: RegisterPayload): Promise<RegisterResult> {
+    const { data } = await api.post<ApiResponse<RegisterResult>>("/auth/register", payload);
     return data.data;
   },
+
+  async verifyEmail(userId: string, code: string): Promise<AuthResult> {
+    const { data } = await api.post<ApiResponse<AuthResult>>("/auth/verify-email", { userId, code });
+    return data.data;
+  },
+
+  async resendOTP(userId: string): Promise<void> {
+    await api.post("/auth/resend-otp", { userId });
+  },
+
   async logout(): Promise<void> {
     await api.post("/auth/logout").catch(() => undefined);
   },

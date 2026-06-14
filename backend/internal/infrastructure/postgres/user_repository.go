@@ -17,12 +17,12 @@ type userRepo struct{ pool *pgxpool.Pool }
 
 func NewUserRepository(p *pgxpool.Pool) repository.UserRepository { return &userRepo{pool: p} }
 
-const userColumns = `id,email,password_hash,full_name,phone,avatar_url,role,branch_id,province_code,district_code,is_active,last_login_at,created_at,updated_at`
+const userColumns = `id,email,password_hash,full_name,phone,avatar_url,role,branch_id,province_code,district_code,is_active,email_verified_at,last_login_at,created_at,updated_at`
 
 func scanUser(u *entity.User, scanner pgx.Row) error {
 	return scanner.Scan(
 		&u.ID, &u.Email, &u.PasswordHash, &u.FullName, &u.Phone, &u.AvatarURL, &u.Role,
-		&u.BranchID, &u.ProvinceCode, &u.DistrictCode, &u.IsActive, &u.LastLoginAt, &u.CreatedAt, &u.UpdatedAt,
+		&u.BranchID, &u.ProvinceCode, &u.DistrictCode, &u.IsActive, &u.EmailVerifiedAt, &u.LastLoginAt, &u.CreatedAt, &u.UpdatedAt,
 	)
 }
 
@@ -69,6 +69,11 @@ func (r *userRepo) UpdateLastLogin(ctx context.Context, id string) error {
 
 func (r *userRepo) Deactivate(ctx context.Context, id string) error {
 	_, err := r.pool.Exec(ctx, `UPDATE users SET is_active=FALSE,updated_at=NOW() WHERE id=$1`, id)
+	return err
+}
+
+func (r *userRepo) MarkEmailVerified(ctx context.Context, id string) error {
+	_, err := r.pool.Exec(ctx, `UPDATE users SET email_verified_at=NOW(),is_active=TRUE,updated_at=NOW() WHERE id=$1`, id)
 	return err
 }
 

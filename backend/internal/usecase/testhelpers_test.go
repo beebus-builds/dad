@@ -117,7 +117,7 @@ func (r *stubAuditRepo) List(_ context.Context, _ repository.ListAuditOptions) (
 
 func newTestAuthService(repo *stubUserRepo, audit *stubAuditRepo) (*AuthService, *jwt.Manager) {
 	mgr := jwt.NewManager("test-secret-key-must-be-32-chars-long-xx", 15*time.Minute, 24*time.Hour, "test")
-	svc := NewAuthService(repo, audit, nil, mgr)
+	svc := NewAuthService(repo, audit, nil, nil, mgr)
 	return svc, mgr
 }
 

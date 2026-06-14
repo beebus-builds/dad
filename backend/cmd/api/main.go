@@ -109,8 +109,9 @@ func run() error {
 	memberAppRepo := postgres.NewMemberApplicationRepository(pool)
 	contactRepo := postgres.NewContactRepository(pool)
 	resetTokenRepo := postgres.NewPasswordResetTokenRepository(pool)
+	verificationCodeRepo := postgres.NewVerificationCodeRepository(pool)
 
-	authSvc := usecase.NewAuthService(userRepo, auditRepo, resetTokenRepo, nil)
+	authSvc := usecase.NewAuthService(userRepo, auditRepo, resetTokenRepo, verificationCodeRepo, nil)
 	memberSvc := usecase.NewMemberService(memberRepo)
 	complaintSvc := usecase.NewComplaintService(complaintRepo)
 	eventSvc := usecase.NewEventService(eventRepo)

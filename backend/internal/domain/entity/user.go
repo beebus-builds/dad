@@ -33,8 +33,9 @@ type User struct {
 	BranchID     *string   `json:"branchId,omitempty" db:"branch_id"`
 	ProvinceCode *string   `json:"provinceCode,omitempty" db:"province_code"`
 	DistrictCode *string   `json:"districtCode,omitempty" db:"district_code"`
-	IsActive     bool      `json:"isActive" db:"is_active"`
-	LastLoginAt  *time.Time `json:"lastLoginAt,omitempty" db:"last_login_at"`
+	IsActive         bool       `json:"isActive" db:"is_active"`
+	EmailVerifiedAt  *time.Time `json:"emailVerifiedAt,omitempty" db:"email_verified_at"`
+	LastLoginAt      *time.Time `json:"lastLoginAt,omitempty" db:"last_login_at"`
 	CreatedAt    time.Time `json:"createdAt" db:"created_at"`
 	UpdatedAt    time.Time `json:"updatedAt" db:"updated_at"`
 }

@@ -37,8 +37,35 @@ func (h *Handlers) Register(c *gin.Context) {
 		handleErr(c, err)
 		return
 	}
-	setAuthCookies(c, res.AccessToken, res.RefreshToken)
 	response.Created(c, res)
+}
+
+func (h *Handlers) VerifyEmail(c *gin.Context) {
+	var in usecase.VerifyEmailInput
+	if err := c.ShouldBindJSON(&in); err != nil {
+		response.Error(c, 422, "VALIDATION", err.Error())
+		return
+	}
+	res, err := h.Auth.VerifyEmail(c.Request.Context(), in)
+	if err != nil {
+		handleErr(c, err)
+		return
+	}
+	setAuthCookies(c, res.AccessToken, res.RefreshToken)
+	response.OK(c, res)
+}
+
+func (h *Handlers) ResendOTP(c *gin.Context) {
+	var body struct{ UserID string `json:"userId" binding:"required"` }
+	if err := c.ShouldBindJSON(&body); err != nil {
+		response.Error(c, 422, "VALIDATION", err.Error())
+		return
+	}
+	if err := h.Auth.ResendOTP(c.Request.Context(), body.UserID); err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.OK(c, gin.H{"message": "verification code resent"})
 }
 
 func (h *Handlers) Logout(c *gin.Context) {

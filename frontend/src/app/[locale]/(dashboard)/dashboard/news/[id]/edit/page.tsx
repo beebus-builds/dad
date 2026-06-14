@@ -1,10 +1,11 @@
 "use client";
 
+import { use, useEffect } from "react";
 import { useRouter } from "@/lib/i18n-navigation";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -27,55 +28,79 @@ import { newsService } from "@/services/news-service";
 import { ApiError } from "@/lib/api-client";
 import { z } from "zod";
 
-const newsSchema = z.object({
+const editSchema = z.object({
   title: z.string().min(5),
   titleNepali: z.string().optional(),
   excerpt: z.string().min(20),
   content: z.string().min(50),
   category: z.enum(["ANNOUNCEMENT", "POLICY", "EVENT", "PRESS_RELEASE", "OTHER"]),
 });
-type NewsInput = z.infer<typeof newsSchema>;
+type EditInput = z.infer<typeof editSchema>;
 
-const CATEGORIES = [
-  "ANNOUNCEMENT",
-  "POLICY",
-  "EVENT",
-  "PRESS_RELEASE",
-  "OTHER",
-] as const;
+const CATEGORIES = ["ANNOUNCEMENT", "POLICY", "EVENT", "PRESS_RELEASE", "OTHER"] as const;
 
-export default function NewNewsPage() {
+export default function EditNewsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const t = useTranslations("newsAdmin");
   const tCategory = useTranslations("newsAdmin.new.categories");
   const tCommon = useTranslations("common");
   const router = useRouter();
+
+  const { data: news, isLoading } = useQuery({
+    queryKey: ["news", id],
+    queryFn: () => newsService.detail(id),
+    enabled: Boolean(id),
+  });
+
   const {
     register,
     handleSubmit,
     setValue,
     watch,
     trigger,
+    reset,
     formState: { errors },
-  } = useForm<NewsInput>({
-    resolver: zodResolver(newsSchema),
-    defaultValues: { category: "ANNOUNCEMENT" },
+  } = useForm<EditInput>({
+    resolver: zodResolver(editSchema),
   });
 
-  const createMutation = useMutation({
-    mutationFn: (payload: NewsInput) => newsService.create(payload),
+  useEffect(() => {
+    if (news) {
+      reset({
+        title: news.title,
+        titleNepali: news.titleNepali || "",
+        excerpt: news.excerpt,
+        content: news.content,
+        category: news.category as EditInput["category"],
+      });
+    }
+  }, [news, reset]);
+
+  const updateMutation = useMutation({
+    mutationFn: (payload: EditInput) => newsService.update(id, payload),
     onSuccess: () => {
-      toast.success(t("new.created"));
+      toast.success("Article updated");
       router.push("/dashboard/news");
     },
-    onError: (err: ApiError) => toast.error(err.message || t("new.createFailed")),
+    onError: (err: ApiError) => toast.error(err.message || "Update failed"),
   });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-16 text-muted-foreground">
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {tCommon("loading")}
+      </div>
+    );
+  }
+
+  if (!news) return null;
 
   return (
     <PermissionGate permission={PERMISSIONS.NEWS_WRITE}>
       <div className="space-y-6">
         <PageHeader
-          title={t("new.title")}
-          description={t("new.subtitle")}
+          title="Edit Article"
+          description={news.title}
           actions={
             <Button variant="outline" size="sm" onClick={() => router.back()}>
               <ArrowLeft className="h-4 w-4" /> {tCommon("back")}
@@ -83,13 +108,13 @@ export default function NewNewsPage() {
           }
         />
         <form
-          onSubmit={handleSubmit((values) => createMutation.mutate(values))}
+          onSubmit={handleSubmit((values) => updateMutation.mutate(values))}
           className="grid gap-6 lg:grid-cols-3"
           noValidate
         >
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle>{t("new.details")}</CardTitle>
+              <CardTitle>Article Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
@@ -106,9 +131,7 @@ export default function NewNewsPage() {
               <div className="space-y-2">
                 <Label htmlFor="excerpt">{`${t("new.fields.excerpt")} *`}</Label>
                 <Textarea id="excerpt" rows={2} {...register("excerpt")} />
-                {errors.excerpt && (
-                  <p className="text-sm text-destructive">{errors.excerpt.message}</p>
-                )}
+                {errors.excerpt && <p className="text-sm text-destructive">{errors.excerpt.message}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="content">{`${t("new.fields.content")} *`}</Label>
@@ -117,22 +140,20 @@ export default function NewNewsPage() {
                   onChange={(html) => { setValue("content", html); trigger("content"); }}
                   placeholder="Write your article content here…"
                 />
-                {errors.content && (
-                  <p className="text-sm text-destructive">{errors.content.message}</p>
-                )}
+                {errors.content && <p className="text-sm text-destructive">{errors.content.message}</p>}
               </div>
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>{t("new.classification")}</CardTitle>
+              <CardTitle>Classification</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>{`${t("new.fields.category")} *`}</Label>
                 <Select
                   value={watch("category")}
-                  onValueChange={(v) => setValue("category", v as NewsInput["category"])}
+                  onValueChange={(v) => setValue("category", v as EditInput["category"])}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -146,11 +167,10 @@ export default function NewNewsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button type="submit" className="w-full" disabled={createMutation.isPending}>
-                {createMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-                {t("new.publish")}
+              <Button type="submit" className="w-full" disabled={updateMutation.isPending}>
+                {updateMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                Save Changes
               </Button>
-              <p className="text-xs text-muted-foreground">{t("new.submitHint")}</p>
             </CardContent>
           </Card>
         </form>

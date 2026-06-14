@@ -36,18 +36,32 @@ export function useLogin() {
 }
 
 export function useRegister() {
+  return useMutation({
+    mutationFn: (payload: RegisterPayload) => authService.register(payload),
+    onError: (err: Error) => toast.error(err.message ?? "Registration failed"),
+  });
+}
+
+export function useVerifyEmail() {
   const router = useRouter();
   const setUser = useAuthStore((s) => s.setUser);
 
   return useMutation({
-    mutationFn: (payload: RegisterPayload) => authService.register(payload),
+    mutationFn: ({ userId, code }: { userId: string; code: string }) => authService.verifyEmail(userId, code),
     onSuccess: (result) => {
       persistTokens(result.accessToken, result.refreshToken);
       setUser(result.user);
-      toast.success("Account created successfully");
+      toast.success("Email verified successfully");
       router.push("/dashboard");
     },
-    onError: (err: Error) => toast.error(err.message ?? "Registration failed"),
+    onError: (err: Error) => toast.error(err.message ?? "Verification failed"),
+  });
+}
+
+export function useResendOTP() {
+  return useMutation({
+    mutationFn: (userId: string) => authService.resendOTP(userId),
+    onError: (err: Error) => toast.error(err.message ?? "Failed to resend code"),
   });
 }
 

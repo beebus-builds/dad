@@ -31,6 +31,8 @@ func New(cfg *config.Config, h *handler.Handlers, jm *jwt.Manager, auditRepo rep
 			auth.POST("/refresh", h.Refresh)
 			auth.POST("/forgot-password", h.ForgotPassword)
 			auth.POST("/reset-password", h.ResetPassword)
+			auth.POST("/verify-email", h.VerifyEmail)
+			auth.POST("/resend-otp", h.ResendOTP)
 		}
 
 		authed := api.Group("")

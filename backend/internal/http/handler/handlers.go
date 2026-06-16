@@ -9,21 +9,24 @@ import (
 type Handlers struct {
 	Auth          *usecase.AuthService
 	Members       *usecase.MemberService
-	Complaints    *usecase.ComplaintService
-	Events        *usecase.EventService
 	News          *usecase.NewsService
+	Events        *usecase.EventService
+	Pages         *usecase.PageUsecase
+	Menus         *usecase.MenuUsecase
+	Users         *usecase.AuthService // Reuse auth service for user mgmt
+	Settings      *usecase.SettingsService
+	Complaints    *usecase.ComplaintService
 	Documents     *usecase.DocumentService
+	Notifications *usecase.NotificationService
 	Donations     *usecase.DonationService
 	LegalCases    *usecase.LegalCaseService
 	Training      *usecase.TrainingService
 	Incidents     *usecase.IncidentService
-	Notifications *usecase.NotificationService
+	AuditLog      *usecase.AuditLogService
+	Branches      *usecase.BranchService
 	PublicEvents  *usecase.PublicEventService
 	MemberApps    *usecase.MemberApplicationService
 	Contact       *usecase.ContactService
-	Branches      *usecase.BranchService
-	AuditLog      *usecase.AuditLogService
-	Settings      *usecase.SettingsService
 	DB            *pgxpool.Pool
 	Cache         *cache.Cache
 }

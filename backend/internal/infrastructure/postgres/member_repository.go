@@ -68,7 +68,7 @@ func (r *memberRepo) Update(ctx context.Context, id string, m *entity.Member) er
 }
 
 func (r *memberRepo) Delete(ctx context.Context, id string) error {
-	_, err := r.pool.Exec(ctx, `UPDATE members SET deleted_at=NOW() WHERE id=$1`, id)
+	_, err := r.pool.Exec(ctx, `DELETE FROM members WHERE id=$1`, id)
 	return err
 }
 

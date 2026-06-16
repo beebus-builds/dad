@@ -40,6 +40,7 @@ type NavItem = {
     | "complaints"
     | "events"
     | "news"
+    | "pages"
     | "documents"
     | "legalCases"
     | "training"
@@ -76,6 +77,7 @@ const SECTIONS: NavSection[] = [
       { href: "/dashboard/complaints", key: "complaints", icon: MessageSquareWarning, permission: PERMISSIONS.COMPLAINTS_READ },
       { href: "/dashboard/events", key: "events", icon: Calendar, permission: PERMISSIONS.EVENTS_READ },
       { href: "/dashboard/news", key: "news", icon: Newspaper, permission: PERMISSIONS.NEWS_READ },
+      { href: "/dashboard/pages", key: "pages", icon: FileText, permission: PERMISSIONS.USERS_MANAGE },
       { href: "/dashboard/documents", key: "documents", icon: FileText, permission: PERMISSIONS.DOCUMENTS_READ },
     ],
   },

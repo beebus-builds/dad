@@ -17,6 +17,7 @@ type UserRepository interface {
 	UpdateLastLogin(ctx context.Context, id string) error
 	Deactivate(ctx context.Context, id string) error
 	MarkEmailVerified(ctx context.Context, id string) error
+	Delete(ctx context.Context, id string) error
 }
 
 type VerificationCodeRepository interface {
@@ -24,6 +25,23 @@ type VerificationCodeRepository interface {
 	GetByUserIDAndCode(ctx context.Context, userID, code, codeType string) (*entity.VerificationCode, error)
 	MarkUsed(ctx context.Context, id string) error
 	DeleteByUserID(ctx context.Context, userID, codeType string) error
+}
+
+type PageRepository interface {
+	Create(ctx context.Context, p *entity.Page) error
+	GetByID(ctx context.Context, id string) (*entity.Page, error)
+	GetBySlug(ctx context.Context, slug string) (*entity.Page, error)
+	Update(ctx context.Context, id string, p *entity.Page) error
+	Delete(ctx context.Context, id string) error
+	List(ctx context.Context) ([]entity.Page, error)
+}
+
+type MenuRepository interface {
+	Create(ctx context.Context, m *entity.MenuItem) error
+	GetByID(ctx context.Context, id string) (*entity.MenuItem, error)
+	Update(ctx context.Context, id string, m *entity.MenuItem) error
+	Delete(ctx context.Context, id string) error
+	List(ctx context.Context) ([]entity.MenuItem, error)
 }
 
 type ListUsersOptions struct {

@@ -186,6 +186,27 @@ export type Notification = {
   createdAt: string;
 };
 
+export type MenuItem = {
+  id: string;
+  label: string;
+  href: string;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type Page = {
+  id: string;
+  slug: string;
+  title: string;
+  titleNepali: string;
+  content: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type DashboardStats = {
   totalMembers: number;
   activeMembers: number;

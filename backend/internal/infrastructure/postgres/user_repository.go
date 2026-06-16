@@ -77,6 +77,11 @@ func (r *userRepo) MarkEmailVerified(ctx context.Context, id string) error {
 	return err
 }
 
+func (r *userRepo) Delete(ctx context.Context, id string) error {
+	_, err := r.pool.Exec(ctx, `DELETE FROM users WHERE id=$1`, id)
+	return err
+}
+
 func (r *userRepo) List(ctx context.Context, opts repository.ListUsersOptions) ([]entity.User, int, error) {
 	conds := []string{"deleted_at IS NULL"}
 	args := []any{}

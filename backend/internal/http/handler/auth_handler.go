@@ -194,6 +194,14 @@ func (h *Handlers) DeactivateUser(c *gin.Context) {
 	response.OK(c, gin.H{"message": "user deactivated"})
 }
 
+func (h *Handlers) DeleteUser(c *gin.Context) {
+	if err := h.Auth.DeleteUser(c.Request.Context(), c.Param("id")); err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.NoContent(c)
+}
+
 func (h *Handlers) ListAuditLogs(c *gin.Context) {
 	page, size := listOpts(c)
 	opts := repository.ListAuditOptions{

@@ -94,59 +94,66 @@ func run() error {
 
 	userRepo := postgres.NewUserRepository(pool)
 	memberRepo := postgres.NewMemberRepository(pool)
-	branchRepo := postgres.NewBranchRepository(pool)
-	complaintRepo := postgres.NewComplaintRepository(pool)
+	pageRepo := postgres.NewPageRepository(pool)
+	menuRepo := postgres.NewMenuRepository(pool)
 	eventRepo := postgres.NewEventRepository(pool)
 	newsRepo := postgres.NewNewsRepository(pool)
-	documentRepo := postgres.NewDocumentRepository(pool)
-	donationRepo := postgres.NewDonationRepository(pool)
-	legalRepo := postgres.NewLegalCaseRepository(pool)
-	trainingRepo := postgres.NewTrainingRepository(pool)
-	incidentRepo := postgres.NewIncidentRepository(pool)
-	notifRepo := postgres.NewNotificationRepository(pool)
-	auditRepo := postgres.NewAuditLogRepository(pool)
-	pubEventRegRepo := postgres.NewPublicEventRegistrationRepository(pool)
-	memberAppRepo := postgres.NewMemberApplicationRepository(pool)
-	contactRepo := postgres.NewContactRepository(pool)
 	resetTokenRepo := postgres.NewPasswordResetTokenRepository(pool)
 	verificationCodeRepo := postgres.NewVerificationCodeRepository(pool)
-
-	authSvc := usecase.NewAuthService(userRepo, auditRepo, resetTokenRepo, verificationCodeRepo, nil)
+	complaintRepo := postgres.NewComplaintRepository(pool)
+	documentRepo := postgres.NewDocumentRepository(pool)
+	notificationRepo := postgres.NewNotificationRepository(pool)
+	donationRepo := postgres.NewDonationRepository(pool)
+	legalCaseRepo := postgres.NewLegalCaseRepository(pool)
+	trainingRepo := postgres.NewTrainingRepository(pool)
+	incidentRepo := postgres.NewIncidentRepository(pool)
+	auditRepo := postgres.NewAuditLogRepository(pool)
+	branchRepo := postgres.NewBranchRepository(pool)
+	publicEventRegRepo := postgres.NewPublicEventRegistrationRepository(pool)
+	memberAppRepo := postgres.NewMemberApplicationRepository(pool)
+	contactRepo := postgres.NewContactRepository(pool)
+	
+	authSvc := usecase.NewAuthService(userRepo, nil, resetTokenRepo, verificationCodeRepo, nil)
 	memberSvc := usecase.NewMemberService(memberRepo)
-	complaintSvc := usecase.NewComplaintService(complaintRepo)
 	eventSvc := usecase.NewEventService(eventRepo)
 	newsSvc := usecase.NewNewsService(newsRepo)
+	pageSvc := usecase.NewPageUsecase(pageRepo)
+	menuSvc := usecase.NewMenuUsecase(menuRepo)
+	settingsSvc := usecase.NewSettingsService(pool)
+	complaintSvc := usecase.NewComplaintService(complaintRepo)
 	documentSvc := usecase.NewDocumentService(documentRepo)
+	notificationSvc := usecase.NewNotificationService(notificationRepo)
 	donationSvc := usecase.NewDonationService(donationRepo)
-	legalSvc := usecase.NewLegalCaseService(legalRepo)
+	legalSvc := usecase.NewLegalCaseService(legalCaseRepo)
 	trainingSvc := usecase.NewTrainingService(trainingRepo)
 	incidentSvc := usecase.NewIncidentService(incidentRepo)
-	notifSvc := usecase.NewNotificationService(notifRepo)
-	pubEventSvc := usecase.NewPublicEventService(eventRepo, pubEventRegRepo)
+	auditSvc := usecase.NewAuditLogService(auditRepo)
+	branchSvc := usecase.NewBranchService(branchRepo)
+	publicEventSvc := usecase.NewPublicEventService(eventRepo, publicEventRegRepo)
 	memberAppSvc := usecase.NewMemberApplicationService(memberAppRepo)
 	contactSvc := usecase.NewContactService(contactRepo)
-	branchSvc := usecase.NewBranchService(branchRepo)
-	auditLogSvc := usecase.NewAuditLogService(auditRepo)
-	settingsSvc := usecase.NewSettingsService(pool)
-
+	
 	handlers := &handler.Handlers{
 		Auth:          authSvc,
 		Members:       memberSvc,
-		Complaints:    complaintSvc,
 		Events:        eventSvc,
 		News:          newsSvc,
+		Pages:         pageSvc,
+		Menus:         menuSvc,
+		Users:         authSvc,
+		Settings:      settingsSvc,
+		Complaints:    complaintSvc,
 		Documents:     documentSvc,
+		Notifications: notificationSvc,
 		Donations:     donationSvc,
 		LegalCases:    legalSvc,
 		Training:      trainingSvc,
 		Incidents:     incidentSvc,
-		Notifications: notifSvc,
-		PublicEvents:  pubEventSvc,
+		AuditLog:      auditSvc,
+		Branches:      branchSvc,
+		PublicEvents:  publicEventSvc,
 		MemberApps:    memberAppSvc,
 		Contact:       contactSvc,
-		Branches:      branchSvc,
-		AuditLog:      auditLogSvc,
-		Settings:      settingsSvc,
 		DB:            pool,
 		Cache:         c,
 	}

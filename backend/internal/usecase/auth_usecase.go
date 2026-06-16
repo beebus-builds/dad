@@ -469,6 +469,10 @@ func (s *AuthService) DeactivateUser(ctx context.Context, id string) error {
 	return s.users.Deactivate(ctx, id)
 }
 
+func (s *AuthService) DeleteUser(ctx context.Context, id string) error {
+	return s.users.Delete(ctx, id)
+}
+
 func (s *AuthService) ListUsers(ctx context.Context, opts repository.ListUsersOptions) ([]entity.User, int, error) {
 	return s.users.List(ctx, opts)
 }

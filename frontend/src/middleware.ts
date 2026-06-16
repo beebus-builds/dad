@@ -9,26 +9,27 @@ const intlMiddleware = createMiddleware({
   localeDetection: true,
 });
 
-const PROTECTED_PREFIXES_REGEX = /^\/(ne)\/dashboard/;
-const PUBLIC_AUTH_REGEX = /^\/(ne)\/(login|register|forgot-password)$/;
+const PROTECTED_PREFIXES_REGEX = /^\/(?:(ne)\/)?dashboard/;
+const PUBLIC_AUTH_REGEX = /^\/(?:(ne)\/)?(login|register|forgot-password)$/;
 
 export default function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const cookieName = process.env.NEXT_PUBLIC_AUTH_COOKIE_NAME ?? "sj_token";
   const token = request.cookies.get(cookieName)?.value;
 
+  const hasLocalePrefix = locales.some(loc => pathname.startsWith(`/${loc}/`));
+  const locale = hasLocalePrefix ? pathname.split("/")[1] : defaultLocale;
+
   if (PROTECTED_PREFIXES_REGEX.test(pathname) && !token) {
     const url = request.nextUrl.clone();
-    const locale = pathname.split("/")[1] || defaultLocale;
-    url.pathname = `/${locale}/login`;
+    url.pathname = locale === defaultLocale ? `/login` : `/${locale}/login`;
     url.searchParams.set("redirect", pathname);
     return NextResponse.redirect(url);
   }
 
   if (token && PUBLIC_AUTH_REGEX.test(pathname)) {
     const url = request.nextUrl.clone();
-    const locale = pathname.split("/")[1] || defaultLocale;
-    url.pathname = `/${locale}/dashboard`;
+    url.pathname = locale === defaultLocale ? `/dashboard` : `/${locale}/dashboard`;
     return NextResponse.redirect(url);
   }
 

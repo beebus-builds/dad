@@ -24,9 +24,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useQuery } from "@tanstack/react-query";
+import { menuService } from "@/services/menu-service";
+import type { MenuItem } from "@/types";
 
-const MAIN_NAV = ["about", "news", "events", "donate"] as const;
-const RESOURCES_NAV = ["legal", "membership", "contact", "branches"] as const;
+const FALLBACK_NAV = [
+  { label: "हाम्रो बारेमा", href: "/about" },
+  { label: "समाचार", href: "/news" },
+  { label: "कार्यक्रमहरू", href: "/events" },
+  { label: "दान गर्नुहोस्", href: "/donate" },
+];
+const FALLBACK_RESOURCES = [
+  { label: "कानुनी सहायता", href: "/legal" },
+  { label: "सदस्यता", href: "/membership" },
+  { label: "सम्पर्क", href: "/contact" },
+  { label: "शाखाहरू", href: "/branches" },
+];
 
 export function PublicHeader() {
   const t = useTranslations("nav");
@@ -37,6 +50,16 @@ export function PublicHeader() {
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const { data: menuData } = useQuery({
+    queryKey: ["public-menu"],
+    queryFn: () => menuService.list(),
+  });
+
+  const menus = menuData?.data ?? [];
+  const navItems = menus.length > 0 ? menus : FALLBACK_NAV;
+  const resourceItems = menus.length > 0 ? menus.slice(4) : FALLBACK_RESOURCES;
+  const mainItems = menus.length > 0 ? menus.slice(0, 4) : FALLBACK_NAV;
 
   useEffect(() => {
     setOpen(false);
@@ -60,9 +83,13 @@ export function PublicHeader() {
           <span className="text-xl font-bold tracking-tight">{tCommon("appName")}</span>
         </Link>
         <nav aria-label="Primary" className="hidden gap-1 md:flex items-center">
-          {MAIN_NAV.map((k) => (
-            <Link key={k} href={`/${k}`} className="rounded-lg px-4 py-2 text-sm font-semibold text-foreground/80 transition-all hover:bg-primary/10 hover:text-primary">
-              {t(k as Parameters<typeof t>[0])}
+          {mainItems.map((item) => (
+            <Link
+              key={item.id || item.href}
+              href={item.href}
+              className="rounded-lg px-4 py-2 text-sm font-semibold text-foreground/80 transition-all hover:bg-primary/10 hover:text-primary"
+            >
+              {item.label}
             </Link>
           ))}
           <DropdownMenu>
@@ -72,13 +99,13 @@ export function PublicHeader() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              {RESOURCES_NAV.map((k) => (
-                <DropdownMenuItem key={k} asChild>
-                  <Link href={`/${k}`} className="flex items-center gap-2">
-                    {k === 'legal' && <Gavel className="h-4 w-4"/>}
-                    {k === 'membership' && <Users className="h-4 w-4"/>}
-                    {k === 'contact' && <Phone className="h-4 w-4"/>}
-                    {t(k as Parameters<typeof t>[0])}
+              {resourceItems.map((item) => (
+                <DropdownMenuItem key={item.id || item.href} asChild>
+                  <Link href={item.href} className="flex items-center gap-2">
+                    {item.href.includes("legal") && <Gavel className="h-4 w-4" />}
+                    {item.href.includes("membership") && <Users className="h-4 w-4" />}
+                    {item.href.includes("contact") && <Phone className="h-4 w-4" />}
+                    {item.label}
                   </Link>
                 </DropdownMenuItem>
               ))}
@@ -113,9 +140,13 @@ export function PublicHeader() {
       {open && (
         <div className="border-t bg-background md:hidden">
           <nav aria-label="Primary mobile" className="container flex flex-col gap-1 py-4">
-            {[...MAIN_NAV, ...RESOURCES_NAV].map((k) => (
-              <Link key={k} href={`/${k}`} className="rounded-lg px-4 py-3 text-base font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary">
-                {t(k as Parameters<typeof t>[0])}
+            {navItems.map((item) => (
+              <Link
+                key={item.id || item.href}
+                href={item.href}
+                className="rounded-lg px-4 py-3 text-base font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+              >
+                {item.label}
               </Link>
             ))}
             <div className="mt-4 flex gap-3 border-t pt-4">

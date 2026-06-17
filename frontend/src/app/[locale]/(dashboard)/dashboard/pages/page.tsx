@@ -30,14 +30,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -213,76 +206,50 @@ export default function PagesDashboardPage() {
                 {editingItem ? "पृष्ठ सम्पादन गर्नुहोस्" : "नयाँ स्थिर पृष्ठ सिर्जना गर्नुहोस्"}
               </DialogDescription>
             </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit((v) => saveMutation.mutate(v))} className="space-y-4">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("new.fields.title")}</FormLabel>
-                        <FormControl>
-                          <Input placeholder="About Us" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="titleNepali"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("new.fields.titleNepali")}</FormLabel>
-                        <FormControl>
-                          <Input placeholder="हाम्रो बारेमा" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+            <form onSubmit={form.handleSubmit((v) => saveMutation.mutate(v))} className="space-y-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>{t("new.fields.title")}</Label>
+                  <Input placeholder="About Us" {...form.register("title")} />
+                  {form.formState.errors.title && (
+                    <span className="text-xs text-destructive">{form.formState.errors.title.message}</span>
+                  )}
                 </div>
-                <FormField
-                  control={form.control}
-                  name="slug"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("new.fields.slug")}</FormLabel>
-                      <FormControl>
-                        <Input placeholder="about-us" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                <div className="space-y-2">
+                  <Label>{t("new.fields.titleNepali")}</Label>
+                  <Input placeholder="हाम्रो बारेमा" {...form.register("titleNepali")} />
+                  {form.formState.errors.titleNepali && (
+                    <span className="text-xs text-destructive">{form.formState.errors.titleNepali.message}</span>
                   )}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>{t("new.fields.slug")}</Label>
+                <Input placeholder="about-us" {...form.register("slug")} />
+                {form.formState.errors.slug && (
+                  <span className="text-xs text-destructive">{form.formState.errors.slug.message}</span>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label>{t("new.fields.content")}</Label>
+                <RichTextEditor 
+                  value={form.watch("content")} 
+                  onChange={(val) => form.setValue("content", val)} 
                 />
-                <FormField
-                  control={form.control}
-                  name="content"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("new.fields.content")}</FormLabel>
-                      <FormControl>
-                        <RichTextEditor 
-                          value={field.value} 
-                          onChange={(val) => field.onChange(val)} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                    {tCommon("cancel")}
-                  </Button>
-                  <Button type="submit" disabled={saveMutation.isPending}>
-                    {saveMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {t("new.submit")}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
+                {form.formState.errors.content && (
+                  <span className="text-xs text-destructive">{form.formState.errors.content.message}</span>
+                )}
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  {tCommon("cancel")}
+                </Button>
+                <Button type="submit" disabled={saveMutation.isPending}>
+                  {saveMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {t("new.submit")}
+                </Button>
+              </DialogFooter>
+            </form>
           </DialogContent>
         </Dialog>
       </div>

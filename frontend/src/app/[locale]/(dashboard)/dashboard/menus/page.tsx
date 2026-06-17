@@ -30,16 +30,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -208,58 +200,38 @@ export default function MenuManagementPage() {
                 {editingItem ? "मेनु आइटम सम्पादन गर्नुहोस्" : "नयाँ मेनु आइटम थप्नुहोस्"}
               </DialogDescription>
             </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit((v) => saveMutation.mutate(v))} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="label"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("new.fields.label")}</FormLabel>
-                      <FormControl>
-                        <Input placeholder="गृहपृष्ठ" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="href"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("new.fields.href")}</FormLabel>
-                      <FormControl>
-                        <Input placeholder="/about" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="sortOrder"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("new.fields.order")}</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                    {tCommon("cancel")}
-                  </Button>
-                  <Button type="submit" disabled={saveMutation.isPending}>
-                    {saveMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {t("new.submit")}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
+            <form onSubmit={form.handleSubmit((v) => saveMutation.mutate(v))} className="space-y-4">
+              <div className="space-y-2">
+                <Label>{t("new.fields.label")}</Label>
+                <Input placeholder="गृहपृष्ठ" {...form.register("label")} />
+                {form.formState.errors.label && (
+                  <span className="text-xs text-destructive">{form.formState.errors.label.message}</span>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label>{t("new.fields.href")}</Label>
+                <Input placeholder="/about" {...form.register("href")} />
+                {form.formState.errors.href && (
+                  <span className="text-xs text-destructive">{form.formState.errors.href.message}</span>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label>{t("new.fields.order")}</Label>
+                <Input type="number" {...form.register("sortOrder")} />
+                {form.formState.errors.sortOrder && (
+                  <span className="text-xs text-destructive">{form.formState.errors.sortOrder.message}</span>
+                )}
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  {tCommon("cancel")}
+                </Button>
+                <Button type="submit" disabled={saveMutation.isPending}>
+                  {saveMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {t("new.submit")}
+                </Button>
+              </DialogFooter>
+            </form>
           </DialogContent>
         </Dialog>
       </div>

@@ -21,6 +21,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { DhakaPattern } from "@/components/decorative-pattern";
+import { HeroInteractive } from "@/components/public/hero-interactive";
 
 type Story = { quote: string; name: string; role: string; impact: string };
 
@@ -48,9 +49,16 @@ const stories: Story[] = [
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const heroT = await getTranslations("home.hero");
   return (
     <div>
-      <Hero />
+      <HeroInteractive
+        badge={heroT("badge")}
+        title={heroT("title")}
+        subtitle={heroT("subtitle")}
+        primaryCta={heroT("primaryCta")}
+        secondaryCta={heroT("secondaryCta")}
+      />
       <Stats />
       <Testimonials />
       <Services />
@@ -60,41 +68,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   );
 }
 
-async function Hero() {
-  const t = await getTranslations("home.hero");
-  return (
-    <section className="relative overflow-hidden border-b">
-      <div className="absolute inset-0 -z-10 gradient-union opacity-95" />
-      <DhakaPattern className="pointer-events-none absolute inset-0 -z-10 h-full w-full text-white opacity-[0.04]" />
-      <div className="container py-20 text-white sm:py-28">
-        <div className="max-w-3xl space-y-6">
-          <Badge variant="outline" className="border-white/40 bg-white/10 text-white">
-            {t("badge")}
-          </Badge>
-          <h1 className="text-balance text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-            {t("title")}
-          </h1>
-          <p className="text-pretty text-lg text-white/90">{t("subtitle")}</p>
-          <div className="flex flex-wrap gap-3">
-            <Button size="lg" variant="secondary" asChild>
-              <Link href="/register">
-                {t("primaryCta")} <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white"
-              asChild
-            >
-              <Link href="/legal">{t("secondaryCta")}</Link>
-            </Button>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 async function Stats() {
   const t = await getTranslations("home.stats");

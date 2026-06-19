@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/shramjagaran/cms-backend/internal/domain/entity"
 	"github.com/shramjagaran/cms-backend/internal/domain/repository"
 	"github.com/shramjagaran/cms-backend/internal/usecase"
 	"github.com/shramjagaran/cms-backend/pkg/response"
@@ -117,6 +118,20 @@ func (h *Handlers) PublicGetMemberProfile(c *gin.Context) {
 		return
 	}
 	response.OK(c, m)
+}
+
+func (h *Handlers) PublicListNews(c *gin.Context) {
+	opts := repository.ListNewsOptions{
+		Page:     1,
+		PageSize: 10,
+		Status:   entity.NewsStatusPublished,
+	}
+	list, _, err := h.News.List(c.Request.Context(), opts)
+	if err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.OK(c, list)
 }
 
 func (h *Handlers) PublicContactSubmit(c *gin.Context) {

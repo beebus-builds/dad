@@ -80,6 +80,7 @@ func New(cfg *config.Config, h *handler.Handlers, jm *jwt.Manager, auditRepo rep
 		{
 			public.GET("/menu", h.PublicGetMenu)
 			public.GET("/search", h.PublicSearch)
+			public.GET("/news", h.PublicListNews)
 			public.GET("/news/:slug", h.PublicGetNewsBySlug)
 			public.GET("/pages/:slug", h.GetPageBySlug)
 			public.POST("/events/:id/register", h.PublicRegisterForEvent)

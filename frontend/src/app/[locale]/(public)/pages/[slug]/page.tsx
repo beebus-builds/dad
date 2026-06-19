@@ -19,16 +19,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function DynamicPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  
-export default async function DynamicPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  
+
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/public/pages/${slug}`, {
     next: { revalidate: 60 }
   });
 
   if (!res.ok) notFound();
-  
+
   const json = await res.json();
   const page = json.data;
 

@@ -15,6 +15,10 @@ export const publicService = {
     const { data } = await api.get<ApiResponse<News>>(`/public/news/${slug}`);
     return data.data;
   },
+  async newsList(): Promise<News[]> {
+    const { data } = await api.get<ApiResponse<News[]>>("/public/news");
+    return data.data;
+  },
   async registerForEvent(eventId: string, payload: { fullName: string; email?: string; phone?: string }): Promise<void> {
     await api.post(`/public/events/${eventId}/register`, payload);
   },

@@ -142,82 +142,85 @@ export function PublicHeader() {
     }
   };
 
-  return (
-    <div className="w-full">
-      {/* Top Contact Bar */}
-      <div className="hidden border-b md:block bg-gradient-to-r from-primary/5 via-background to-primary/5 py-2.5">
-        <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <Phone className="h-4 w-4 text-primary" />
-              <span className="text-sm font-bold">{tCon("phone")}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Mail className="h-4 w-4 text-primary" />
-              <span className="text-sm font-bold">cstunepal2019@gmail.com</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-primary" />
-              <span className="text-sm font-bold">{tCon("address")}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-primary" />
-              <span className="text-sm font-bold">आइत-शुक्र: १०:०० - १७:००</span>
+    return (
+      <div className="w-full">
+        {/* Sticky Utility Header */}
+        <div className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md shadow-sm">
+          {/* Top Contact Bar */}
+          <div className="hidden border-b md:block bg-gradient-to-r from-primary/5 via-background to-primary/5 py-2">
+            <div className="container mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2">
+                  <Phone className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-xs font-bold">९८५११४७७२७, ९८५१०१९५९४</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Mail className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-xs font-bold">cstunepal2019@gmail.com</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-xs font-bold">कोटेश्वर-३२, काठमाडौं, नेपाल</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-xs font-bold">आइत-शुक्र: १०:०० - १७:००</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-5">
+                <Link href="/news" className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors">
+                  <Newspaper className="h-3 w-3 inline mr-1" />ताजा समाचार
+                </Link>
+                <span className="text-muted-foreground/20">|</span>
+                <Link href="/events" className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors">
+                  <Calendar className="h-3 w-3 inline mr-1" />आगामी कार्यक्रम
+                </Link>
+                <span className="text-muted-foreground/20">|</span>
+                <Link href="/dashboard" className="text-xs font-bold text-primary hover:underline">
+                  <Shield className="h-3 w-3 inline mr-1" />{t("dashboard")}
+                </Link>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-5">
-            <Link href="/news" className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors">
-              <Newspaper className="h-3.5 w-3.5 inline mr-1" />ताजा समाचार
-            </Link>
-            <span className="text-muted-foreground/20">|</span>
-            <Link href="/events" className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors">
-              <Calendar className="h-3.5 w-3.5 inline mr-1" />आगामी कार्यक्रम
-            </Link>
-            <span className="text-muted-foreground/20">|</span>
-            <Link href="/dashboard" className="text-sm font-bold text-primary hover:underline">
-              <Shield className="h-3.5 w-3.5 inline mr-1" />{t("dashboard")}
-            </Link>
+
+          {/* News Ticker Bar */}
+          <div className="hidden md:block border-b bg-gradient-to-r from-primary/5 via-background to-primary/5">
+            <div className="container flex items-center gap-4 py-1.5 overflow-hidden">
+              <span className="flex items-center gap-1.5 shrink-0 text-xs font-bold text-primary bg-primary/10 rounded-full px-3 py-0.5">
+                <Newspaper className="h-3 w-3" />
+                ताजा समाचार
+              </span>
+              <div className="overflow-hidden relative flex-1">
+                <div className="flex gap-12 marquee-content" style={{ animation: "tickerScroll 35s linear infinite" }}>
+                  {(tickerData ?? []).length > 0 ? (
+                    <>
+                      {[...tickerData!, ...tickerData!].map((item, idx) => (
+                        <Link
+                          key={`${item.id}-${idx}`}
+                          href={`/news/${item.slug}`}
+                          className="shrink-0 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
+                        >
+                          {item.title}
+                        </Link>
+                      ))}
+                    </>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">कुनै समाचार उपलब्ध छैन</span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <style>{`
+              @keyframes tickerScroll {
+                0% { transform: translateX(0); }
+                100% { transform: translateX(-50%); }
+              }
+            `}</style>
           </div>
         </div>
-      </div>
 
-      {/* News Ticker Bar */}
-      <div className="hidden md:block border-b bg-gradient-to-r from-primary/5 via-background to-primary/5">
-        <div className="container flex items-center gap-4 py-1.5 overflow-hidden">
-          <span className="flex items-center gap-1.5 shrink-0 text-xs font-bold text-primary bg-primary/10 rounded-full px-3 py-0.5">
-            <Newspaper className="h-3 w-3" />
-            ताजा समाचार
-          </span>
-          <div className="overflow-hidden relative flex-1">
-            <div className="flex gap-12 marquee-content" style={{ animation: "tickerScroll 35s linear infinite" }}>
-              {(tickerData ?? []).length > 0 ? (
-                <>
-                  {[...tickerData!, ...tickerData!].map((item, idx) => (
-                    <Link
-                      key={`${item.id}-${idx}`}
-                      href={`/news/${item.slug}`}
-                      className="shrink-0 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
-                    >
-                      {item.title}
-                    </Link>
-                  ))}
-                </>
-              ) : (
-                <span className="text-xs text-muted-foreground">कुनै समाचार उपलब्ध छैन</span>
-              )}
-            </div>
-          </div>
-        </div>
-        <style>{`
-          @keyframes tickerScroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-          }
-        `}</style>
-      </div>
-
-      {/* Main Header */}
-      <header className="w-full border-b bg-background py-5">
+        {/* Main Header - Now scrolls away */}
+        <header className="w-full border-b bg-background py-5">
         <div className="container flex items-center justify-between">
           {/* Logo - bigger */}
           <Link href="/" className="flex items-center gap-4 transition-opacity hover:opacity-90 group min-w-fit">

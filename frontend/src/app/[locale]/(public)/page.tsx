@@ -59,6 +59,15 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         primaryCta={heroT("primaryCta")}
         secondaryCta={heroT("secondaryCta")}
       />
+
+      {/* Himalayan Mountain Divider */}
+      <div className="relative h-24 sm:h-32 overflow-hidden bg-gradient-to-b from-transparent to-muted/20">
+        <svg className="absolute bottom-0 w-full h-32 text-foreground/5" viewBox="0 0 1200 120" preserveAspectRatio="none" fill="currentColor">
+          <path d="M0,120 L40,90 L80,100 L130,60 L180,80 L240,35 L290,55 L360,18 L410,40 L480,28 L530,50 L590,22 L640,45 L700,35 L750,58 L800,25 L850,48 L910,38 L960,62 L1020,30 L1070,55 L1130,45 L1170,70 L1200,85 L1200,120 Z" />
+          <path d="M0,120 L50,105 L100,110 L160,80 L220,95 L280,65 L330,80 L400,55 L450,70 L520,60 L570,78 L640,55 L690,72 L760,62 L810,80 L870,55 L920,72 L980,65 L1030,82 L1090,60 L1140,78 L1200,95 L1200,120 Z" opacity="0.5" />
+        </svg>
+      </div>
+
       <Stats />
       <Testimonials />
       <Services />

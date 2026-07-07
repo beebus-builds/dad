@@ -208,9 +208,3 @@ func (s *MemberService) ImportCSV(ctx context.Context, reader *csv.Reader) (*CSV
 	return result, nil
 }
 
-func strPtr(s string) *string {
-	if s == "" {
-		return nil
-	}
-	return &s
-}

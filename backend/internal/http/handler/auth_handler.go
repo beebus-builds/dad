@@ -272,12 +272,3 @@ func atoiDefault(s string, def int) int {
 	return n
 }
 
-func buildListOpts(c *gin.Context, page, size int) repository.ListMembersOptions {
-	return repository.ListMembersOptions{
-		Page: page, PageSize: size,
-		Search:   c.Query("search"),
-		BranchID: c.Query("branchId"),
-		Status:   c.Query("status"),
-		Tier:     c.Query("tier"),
-	}
-}

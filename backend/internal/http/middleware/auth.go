@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/shramjagaran/cms-backend/pkg/apperror"
@@ -80,14 +79,6 @@ func RequireRole(roles ...string) gin.HandlerFunc {
 		}
 		e := apperror.ErrForbidden
 		response.Error(c, e.Status, e.Code, "insufficient role")
-	}
-}
-
-func Logger() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		start := time.Now()
-		c.Next()
-		_ = start
 	}
 }
 

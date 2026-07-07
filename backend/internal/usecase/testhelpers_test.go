@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"sync"
 	"testing"
 	"time"
@@ -138,4 +137,3 @@ func seedUser(t *testing.T, repo *stubUserRepo, email, role, plain string, activ
 	return u
 }
 
-var _ = errors.New

@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/shramjagaran/cms-backend/pkg/apperror"
 )
@@ -66,4 +65,3 @@ type OrganisationSettings struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-var _ = uuid.NewString

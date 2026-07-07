@@ -477,4 +477,3 @@ func (s *AuthService) ListUsers(ctx context.Context, opts repository.ListUsersOp
 	return s.users.List(ctx, opts)
 }
 
-var _ = time.Now

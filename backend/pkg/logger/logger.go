@@ -7,7 +7,9 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-var L *zap.Logger
+// L defaults to a no-op logger so any code path that logs before Init runs
+// (or in tests, which never call Init) doesn't panic on a nil pointer.
+var L = zap.NewNop()
 
 func Init(env string) error {
 	level := zapcore.InfoLevel

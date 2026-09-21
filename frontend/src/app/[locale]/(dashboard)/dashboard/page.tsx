@@ -17,7 +17,6 @@ import {
   Users,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
 import { Link } from "@/lib/i18n-navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +27,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import { reportsService } from "@/services/reports-service";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import { StaggerList, StaggerItem } from "@/components/stagger-list";
+import { LineChartWidget } from "@/components/dashboard/charts/line-chart";
 
 const QUICK_ACTIONS = [
   { href: "/dashboard/members/new", icon: UserPlus, labelKey: "addMember", color: "text-blue-600 bg-blue-50" },
@@ -42,7 +42,6 @@ export default function DashboardPage() {
   const tActions = useTranslations("dashboard.home.quickActions");
   const tCommon = useTranslations("common");
   const user = useAuthStore((s) => s.user);
-  const [chartMetric, setChartMetric] = useState<"members" | "complaints">("members");
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ["dashboard"],
@@ -69,10 +68,11 @@ export default function DashboardPage() {
   ];
 
   const growth = stats?.monthlyGrowth ?? [];
-  const chartData = chartMetric === "members"
-    ? growth.map((g) => ({ label: g.month.slice(5), value: g.members }))
-    : growth.map((g) => ({ label: g.month.slice(5), value: g.complaints }));
-  const maxVal = Math.max(...chartData.map((d) => d.value), 1);
+  const chartData = growth.map((g) => ({
+    label: g.month.slice(5),
+    members: g.members,
+    complaints: g.complaints,
+  }));
 
   return (
     <div className="space-y-8 p-6">
@@ -126,22 +126,8 @@ export default function DashboardPage() {
 
       <section className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader>
             <CardTitle>{t("monthlyGrowth")}</CardTitle>
-            <div className="flex gap-1 rounded-lg border p-0.5">
-              <button
-                onClick={() => setChartMetric("members")}
-                className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${chartMetric === "members" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-              >
-                {t("membersChart")}
-              </button>
-              <button
-                onClick={() => setChartMetric("complaints")}
-                className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${chartMetric === "complaints" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-              >
-                {t("complaintsChart")}
-              </button>
-            </div>
           </CardHeader>
           <CardContent>
             {chartData.length === 0 ? (
@@ -149,22 +135,14 @@ export default function DashboardPage() {
                 {t("noData")}
               </div>
             ) : (
-              <div className="h-56" role="img" aria-label={t("chartAria", { metric: chartMetric === "members" ? t("membersChart") : t("complaintsChart") })}>
-                <div className="flex h-full items-end gap-2">
-                  {chartData.map((d) => (
-                    <div key={d.label} className="group relative flex flex-1 flex-col items-center gap-2">
-                      <span className="text-xs font-medium text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
-                        {d.value}
-                      </span>
-                      <div
-                        className={`w-full rounded-t transition-all duration-300 ${chartMetric === "members" ? "bg-gradient-to-t from-govt-blue to-union-red" : "bg-gradient-to-t from-amber-500 to-orange-400"}`}
-                        style={{ height: `${(d.value / maxVal) * 100}%` }}
-                      />
-                      <span className="text-xs text-muted-foreground">{d.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <LineChartWidget
+                data={chartData}
+                xKey="label"
+                series={[
+                  { key: "members", label: t("membersChart"), color: "hsl(var(--govt-blue))" },
+                  { key: "complaints", label: t("complaintsChart"), color: "hsl(var(--union-red))" },
+                ]}
+              />
             )}
           </CardContent>
         </Card>

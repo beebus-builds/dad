@@ -70,16 +70,24 @@ type complaintRepo struct{ pool *pgxpool.Pool }
 
 func NewComplaintRepository(p *pgxpool.Pool) repository.ComplaintRepository { return &complaintRepo{pool: p} }
 
-const complaintColumns = `id,ticket_number,title,description,category,priority,status,submitted_by,assigned_to,branch_id,created_at,updated_at,resolved_at`
+const complaintColumns = `id,ticket_number,title,description,category,priority,status,submitted_by,assigned_to,branch_id,created_at,updated_at,resolved_at,due_at,first_responded_at`
 
 func scanComplaint(c *entity.Complaint, row pgx.Row) error {
-	return row.Scan(&c.ID, &c.TicketNumber, &c.Title, &c.Description, &c.Category, &c.Priority, &c.Status, &c.SubmittedBy, &c.AssignedTo, &c.BranchID, &c.CreatedAt, &c.UpdatedAt, &c.ResolvedAt)
+	if err := row.Scan(&c.ID, &c.TicketNumber, &c.Title, &c.Description, &c.Category, &c.Priority, &c.Status, &c.SubmittedBy, &c.AssignedTo, &c.BranchID, &c.CreatedAt, &c.UpdatedAt, &c.ResolvedAt, &c.DueAt, &c.FirstRespondedAt); err != nil {
+		return err
+	}
+	c.ComputeOverdue()
+	return nil
 }
 
 func (r *complaintRepo) Create(ctx context.Context, c *entity.Complaint) error {
-	const q = `INSERT INTO complaints (ticket_number,title,description,category,priority,status,submitted_by,assigned_to,branch_id)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id,created_at,updated_at`
-	return r.pool.QueryRow(ctx, q, c.TicketNumber, c.Title, c.Description, c.Category, c.Priority, c.Status, c.SubmittedBy, c.AssignedTo, c.BranchID).Scan(&c.ID, &c.CreatedAt, &c.UpdatedAt)
+	const q = `INSERT INTO complaints (ticket_number,title,description,category,priority,status,submitted_by,assigned_to,branch_id,due_at)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id,created_at,updated_at`
+	if err := r.pool.QueryRow(ctx, q, c.TicketNumber, c.Title, c.Description, c.Category, c.Priority, c.Status, c.SubmittedBy, c.AssignedTo, c.BranchID, c.DueAt).Scan(&c.ID, &c.CreatedAt, &c.UpdatedAt); err != nil {
+		return err
+	}
+	c.ComputeOverdue()
+	return nil
 }
 
 func (r *complaintRepo) GetByID(ctx context.Context, id string) (*entity.Complaint, error) {
@@ -92,9 +100,13 @@ func (r *complaintRepo) GetByID(ctx context.Context, id string) (*entity.Complai
 }
 
 func (r *complaintRepo) Update(ctx context.Context, id string, c *entity.Complaint) error {
-	const q = `UPDATE complaints SET title=$2,description=$3,category=$4,priority=$5,status=$6,assigned_to=$7,resolved_at=$8,updated_at=NOW() WHERE id=$1`
-	_, err := r.pool.Exec(ctx, q, id, c.Title, c.Description, c.Category, c.Priority, c.Status, c.AssignedTo, c.ResolvedAt)
-	return err
+	const q = `UPDATE complaints SET title=$2,description=$3,category=$4,priority=$5,status=$6,assigned_to=$7,resolved_at=$8,first_responded_at=$9,updated_at=NOW() WHERE id=$1`
+	_, err := r.pool.Exec(ctx, q, id, c.Title, c.Description, c.Category, c.Priority, c.Status, c.AssignedTo, c.ResolvedAt, c.FirstRespondedAt)
+	if err != nil {
+		return err
+	}
+	c.ComputeOverdue()
+	return nil
 }
 
 func (r *complaintRepo) Delete(ctx context.Context, id string) error {
@@ -120,6 +132,9 @@ func (r *complaintRepo) List(ctx context.Context, opts repository.ListComplaints
 	if opts.BranchID != "" {
 		args = append(args, opts.BranchID)
 		conds = append(conds, fmt.Sprintf("branch_id=$%d", len(args)))
+	} else if len(opts.BranchIDs) > 0 {
+		args = append(args, opts.BranchIDs)
+		conds = append(conds, fmt.Sprintf("branch_id=ANY($%d)", len(args)))
 	}
 	if opts.UserID != "" {
 		args = append(args, opts.UserID)

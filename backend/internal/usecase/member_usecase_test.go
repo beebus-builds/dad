@@ -88,6 +88,18 @@ func (r *stubMemberRepo) List(_ context.Context, _ repository.ListMembersOptions
 	return r.all, len(r.all), nil
 }
 
+func (r *stubMemberRepo) GetTimeline(_ context.Context, _ string, _, _ int) ([]entity.TimelineEntry, int, error) {
+	return nil, 0, nil
+}
+
+func (r *stubMemberRepo) ListExpiringWithin(_ context.Context, _ int) ([]entity.Member, error) {
+	return nil, nil
+}
+
+func (r *stubMemberRepo) MarkRenewalReminderSent(_ context.Context, _ string) error {
+	return nil
+}
+
 func TestMemberCreate_DefaultsTierAndStatus(t *testing.T) {
 	repo := newStubMemberRepo()
 	svc := NewMemberService(repo)

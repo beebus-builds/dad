@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { useMutation } from "@tanstack/react-query";
@@ -40,7 +40,7 @@ export default function NewTrainingPage() {
     handleSubmit,
     formState: { errors },
   } = useForm<TrainingInput>({
-    resolver: zodResolver(trainingSchema),
+    resolver: zodResolver(trainingSchema) as unknown as Resolver<TrainingInput>,
   });
 
   const createMutation = useMutation({

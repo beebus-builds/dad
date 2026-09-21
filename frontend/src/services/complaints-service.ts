@@ -1,5 +1,5 @@
 import { api, type ApiResponse, type Paginated } from "@/lib/api-client";
-import type { Complaint } from "@/types";
+import type { CaseNote, Complaint } from "@/types";
 
 export type ComplaintListParams = {
   page?: number;
@@ -29,6 +29,18 @@ export const complaintService = {
   },
   async stats(): Promise<Record<string, number>> {
     const { data } = await api.get<ApiResponse<Record<string, number>>>("/complaints/stats");
+    return data.data;
+  },
+  async notes(id: string): Promise<CaseNote[]> {
+    const { data } = await api.get<ApiResponse<CaseNote[]>>(`/complaints/${id}/notes`);
+    return data.data;
+  },
+  async addNote(id: string, body: string): Promise<CaseNote> {
+    const { data } = await api.post<ApiResponse<CaseNote>>(`/complaints/${id}/notes`, { body });
+    return data.data;
+  },
+  async resolve(id: string): Promise<Complaint> {
+    const { data } = await api.patch<ApiResponse<Complaint>>(`/complaints/${id}`, { status: "RESOLVED" });
     return data.data;
   },
 };

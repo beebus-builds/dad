@@ -2,13 +2,16 @@ package handler
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/shramjagaran/cms-backend/internal/domain/repository"
 	"github.com/shramjagaran/cms-backend/internal/http/middleware"
 	"github.com/shramjagaran/cms-backend/internal/usecase"
 	"github.com/shramjagaran/cms-backend/pkg/apperror"
+	"github.com/shramjagaran/cms-backend/pkg/logger"
 	"github.com/shramjagaran/cms-backend/pkg/response"
+	"go.uber.org/zap"
 )
 
 func (h *Handlers) Login(c *gin.Context) {
@@ -221,7 +224,13 @@ func (h *Handlers) ListAuditLogs(c *gin.Context) {
 }
 
 func setAuthCookies(c *gin.Context, access, refresh string) {
-	secure := c.Request.TLS != nil
+	// Behind Render / any TLS-terminating LB, Request.TLS is nil on the
+	// app side — trust X-Forwarded-Proto, plus explicit opt-in via
+	// COOKIE_SECURE=true or APP_ENV=production.
+	secure := c.Request.TLS != nil ||
+		c.GetHeader("X-Forwarded-Proto") == "https" ||
+		os.Getenv("COOKIE_SECURE") == "true" ||
+		os.Getenv("APP_ENV") == "production"
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie("sj_token", access, 900, "/", "", secure, true)
 	c.SetCookie("sj_refresh", refresh, 604800, "/", "", secure, true)
@@ -232,7 +241,12 @@ func handleErr(c *gin.Context, err error) {
 		response.Error(c, e.Status, e.Code, e.Message)
 		return
 	}
-	response.Error(c, 500, "INTERNAL", err.Error())
+	logger.L.Error("unhandled error",
+		zap.Error(err),
+		zap.String("path", c.Request.URL.Path),
+		zap.Any("requestID", c.Value("requestID")),
+	)
+	response.Error(c, 500, "INTERNAL", "something went wrong")
 }
 
 func totalPages(total, pageSize int) int {

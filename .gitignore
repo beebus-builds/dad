@@ -25,13 +25,17 @@ infrastructure/.terraform/
 infrastructure/**/*.tfstate
 infrastructure/**/*.tfstate.*
 infrastructure/**/*.tfvars
-infrastructure/**/.terraform.lock.hcl
 infrastructure/**/crash.log
 infrastructure/**/crash.*.log
 infrastructure/**/override.tf
 infrastructure/**/override.tf.json
 infrastructure/**/*_override.tf
 infrastructure/**/*_override.tf.json
+# NOTE: .terraform.lock.hcl is intentionally COMMITTED for reproducible builds.
+
+# ─── Database backups (NEVER commit dumps) ──────────────────────────────────
+backups/*
+!backups/.gitkeep
 
 # ─── OS / IDE ───────────────────────────────────────────────────────────────
 .DS_Store

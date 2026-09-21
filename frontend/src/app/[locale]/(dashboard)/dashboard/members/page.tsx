@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/lib/i18n-navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Download, Filter, Search, Upload, UserPlus, Loader2 } from "lucide-react";
+import { Download, Filter, Upload, UserPlus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,17 +19,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { PageHeader } from "@/components/dashboard/page-header";
-import { EmptyState } from "@/components/dashboard/empty-state";
+import { DataTable, type DataTableColumn } from "@/components/dashboard/data-table";
+import { FilterBar } from "@/components/dashboard/filter-bar";
 import { PermissionGate } from "@/components/auth/permission-gate";
 import { Link } from "@/lib/i18n-navigation";
 import { PERMISSIONS } from "@/lib/rbac";
@@ -57,6 +50,7 @@ export default function MembersPage() {
   const { date } = useLocaleFormat();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"" | Member["status"]>("");
+  const [tagFilter, setTagFilter] = useState("");
   const [page, setPage] = useState(1);
   const [importOpen, setImportOpen] = useState(false);
   const [importResult, setImportResult] = useState<{ imported: number; skipped: number; errors?: string[] } | null>(null);
@@ -68,6 +62,7 @@ export default function MembersPage() {
     pageSize: PAGE_SIZE,
     search: search || undefined,
     status: statusFilter || undefined,
+    tag: tagFilter || undefined,
   };
 
   const { data, isLoading, isError, error } = useQuery({
@@ -132,6 +127,61 @@ export default function MembersPage() {
   const items = data?.data ?? [];
   const total = data?.pagination.total ?? 0;
   const totalPages = data?.pagination.totalPages ?? 1;
+
+  const columns: DataTableColumn<Member>[] = [
+    {
+      key: "member",
+      header: t("list.headers.member"),
+      cell: (m) => (
+        <div className="flex items-center gap-3">
+          <Avatar className="h-9 w-9">
+            <AvatarFallback>{getInitials(m.fullName)}</AvatarFallback>
+          </Avatar>
+          <div>
+            <div className="font-medium">{m.fullName}</div>
+            <div className="text-xs text-muted-foreground">{m.phone}</div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "membershipNumber",
+      header: t("list.headers.membershipNumber"),
+      className: "font-mono text-xs",
+      cell: (m) => m.membershipNumber,
+    },
+    {
+      key: "branch",
+      header: t("list.headers.branch"),
+      cell: (m) => m.branchName ?? m.branchId,
+    },
+    {
+      key: "tier",
+      header: t("list.headers.tier"),
+      cell: (m) => <Badge variant="outline">{tTier(m.tier as "STANDARD" | "LIFETIME" | "HONORARY")}</Badge>,
+    },
+    {
+      key: "status",
+      header: t("list.headers.status"),
+      cell: (m) => <Badge variant={STATUS_VARIANT[m.status]}>{tStatus(m.status)}</Badge>,
+    },
+    {
+      key: "joined",
+      header: t("list.headers.joined"),
+      className: "text-sm text-muted-foreground",
+      cell: (m) => date(m.joinedAt),
+    },
+    {
+      key: "actions",
+      header: t("list.headers.actions"),
+      className: "text-right",
+      cell: (m) => (
+        <Button variant="ghost" size="sm" asChild>
+          <Link href={`/dashboard/members/${m.id}`}>{t("list.view")}</Link>
+        </Button>
+      ),
+    },
+  ];
 
   return (
     <PermissionGate permission={PERMISSIONS.MEMBERS_READ}>
@@ -200,137 +250,71 @@ export default function MembersPage() {
         />
         <Card>
           <CardContent className="space-y-4 p-4 sm:p-6">
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value);
+            <FilterBar
+              search={search}
+              onSearchChange={(v) => {
+                setSearch(v);
+                setPage(1);
+              }}
+              searchPlaceholder={t("list.search")}
+              selects={[
+                {
+                  key: "status",
+                  value: statusFilter,
+                  onChange: (v) => {
+                    setStatusFilter(v as typeof statusFilter);
                     setPage(1);
-                  }}
-                  placeholder={t("list.search")}
-                  className="pl-9"
-                />
-              </div>
-              <select
-                value={statusFilter}
+                  },
+                  options: [
+                    { value: "", label: t("list.allStatuses") },
+                    { value: "ACTIVE", label: tStatus("ACTIVE") },
+                    { value: "INACTIVE", label: tStatus("INACTIVE") },
+                    { value: "SUSPENDED", label: tStatus("SUSPENDED") },
+                    { value: "EXPIRED", label: tStatus("EXPIRED") },
+                  ],
+                },
+              ]}
+            >
+              <Input
+                value={tagFilter}
                 onChange={(e) => {
-                  setStatusFilter(e.target.value as typeof statusFilter);
+                  setTagFilter(e.target.value);
                   setPage(1);
                 }}
-                className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-              >
-                <option value="">{t("list.allStatuses")}</option>
-                <option value="ACTIVE">{tStatus("ACTIVE")}</option>
-                <option value="INACTIVE">{tStatus("INACTIVE")}</option>
-                <option value="SUSPENDED">{tStatus("SUSPENDED")}</option>
-                <option value="EXPIRED">{tStatus("EXPIRED")}</option>
-              </select>
+                placeholder={t("list.filterByTag")}
+                className="sm:w-40"
+              />
               <Button variant="outline" size="icon" aria-label={t("list.moreFilters")}>
                 <Filter className="h-4 w-4" />
               </Button>
-            </div>
+            </FilterBar>
 
-            {isLoading ? (
-              <div className="flex items-center justify-center py-12 text-muted-foreground">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("list.loading")}
-              </div>
-            ) : isError ? (
-              <div className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-                {(error as ApiError).message}
-              </div>
-            ) : items.length === 0 ? (
-              <EmptyState
-                icon={UserPlus}
-                title={t("list.noResults")}
-                description={t("list.noResultsDesc")}
-              />
-            ) : (
-              <>
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>{t("list.headers.member")}</TableHead>
-                        <TableHead>{t("list.headers.membershipNumber")}</TableHead>
-                        <TableHead>{t("list.headers.branch")}</TableHead>
-                        <TableHead>{t("list.headers.tier")}</TableHead>
-                        <TableHead>{t("list.headers.status")}</TableHead>
-                        <TableHead>{t("list.headers.joined")}</TableHead>
-                        <TableHead className="text-right">{t("list.headers.actions")}</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {items.map((m) => (
-                        <TableRow key={m.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-9 w-9">
-                                <AvatarFallback>{getInitials(m.fullName)}</AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <div className="font-medium">{m.fullName}</div>
-                                <div className="text-xs text-muted-foreground">{m.phone}</div>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="font-mono text-xs">
-                            {m.membershipNumber}
-                          </TableCell>
-                          <TableCell>{m.branchName ?? m.branchId}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{tTier(m.tier as "STANDARD" | "LIFETIME" | "HONORARY")}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={STATUS_VARIANT[m.status]}>{tStatus(m.status)}</Badge>
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {date(m.joinedAt)}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="ghost" size="sm" asChild>
-                              <Link href={`/dashboard/members/${m.id}`}>
-                                {t("list.view")}
-                              </Link>
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-                {totalPages > 1 && (
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <span>
-                      {tCommon("showing", {
-                        from: (page - 1) * PAGE_SIZE + 1,
-                        to: Math.min(page * PAGE_SIZE, total),
-                        total,
-                      })}
-                    </span>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={page <= 1}
-                      >
-                        {tCommon("previous")}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                        disabled={page >= totalPages}
-                      >
-                        {tCommon("next")}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
+            <DataTable
+              columns={columns}
+              data={items}
+              rowKey={(m) => m.id}
+              isLoading={isLoading}
+              isError={isError}
+              errorMessage={(error as ApiError)?.message}
+              loadingLabel={t("list.loading")}
+              emptyIcon={UserPlus}
+              emptyTitle={t("list.noResults")}
+              emptyDescription={t("list.noResultsDesc")}
+              pagination={{
+                page,
+                totalPages,
+                total,
+                pageSize: PAGE_SIZE,
+                onPageChange: setPage,
+                showingLabel: tCommon("showing", {
+                  from: (page - 1) * PAGE_SIZE + 1,
+                  to: Math.min(page * PAGE_SIZE, total),
+                  total,
+                }),
+                previousLabel: tCommon("previous"),
+                nextLabel: tCommon("next"),
+              }}
+            />
           </CardContent>
         </Card>
       </div>

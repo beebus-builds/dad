@@ -316,6 +316,9 @@ func NewNotificationService(r repository.NotificationRepository) *NotificationSe
 func (s *NotificationService) List(ctx context.Context, userID string) ([]entity.Notification, error) {
 	return s.repo.List(ctx, userID, 50)
 }
+func (s *NotificationService) Create(ctx context.Context, n *entity.Notification) error {
+	return s.repo.Create(ctx, n)
+}
 func (s *NotificationService) MarkRead(ctx context.Context, id, userID string) error {
 	return s.repo.MarkRead(ctx, id, userID)
 }

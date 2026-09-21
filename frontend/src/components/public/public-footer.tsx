@@ -2,6 +2,7 @@
 
 import { Link } from "@/lib/i18n-navigation";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { env } from "@/lib/env";
 
 type FooterSection = { heading: string; items: { href: string; label: string }[] };
@@ -46,11 +47,15 @@ export function PublicFooter() {
       <div className="container py-12">
         <div className="grid gap-8 md:grid-cols-4">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-gradient-to-br from-union-red to-govt-blue text-sm font-bold text-white">
-                SJ
-              </span>
-              <span className="text-base font-semibold">{tCommon("appName")}</span>
+            <div className="flex items-center gap-2.5">
+              <Image
+                src="/image/Logo.jpeg"
+                alt="Shram Jagaran Network Logo"
+                width={36}
+                height={36}
+                className="h-9 w-9 rounded-sm object-contain"
+              />
+              <span className="font-devanagari text-base font-semibold">{tCommon("appName")}</span>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">{t("tagline")}</p>
           </div>

@@ -68,7 +68,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </svg>
       </div>
 
-      <Stats />
       <Testimonials />
       <Services />
       <Modules />
@@ -77,29 +76,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   );
 }
 
-
-async function Stats() {
-  const t = await getTranslations("home.stats");
-  const items = [
-    { label: t("members"), value: "१,२०,०००+" },
-    { label: t("branches"), value: "८०+" },
-    { label: t("districts"), value: "७७" },
-    { label: t("cases"), value: "५,४००+" },
-  ];
-  return (
-    
-      <section className="border-b bg-muted/20">
-      <div className="container grid grid-cols-2 gap-6 py-12 sm:grid-cols-4">
-        {items.map((s) => (
-          <div key={s.label} className="text-center">
-            <div className="text-3xl font-bold text-primary">{s.value}</div>
-            <div className="mt-1 text-sm text-muted-foreground">{s.label}</div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
 
 async function Testimonials() {
   const t = await getTranslations("home.testimonials");

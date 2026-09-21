@@ -65,9 +65,11 @@ func (r *hStubUserRepo) List(_ context.Context, _ repository.ListUsersOptions) (
 	return nil, 0, nil
 }
 
-func (r *hStubUserRepo) UpdateLastLogin(_ context.Context, _ string) error  { return nil }
+func (r *hStubUserRepo) UpdateLastLogin(_ context.Context, _ string) error   { return nil }
 func (r *hStubUserRepo) UpdatePassword(_ context.Context, _, _ string) error { return nil }
 func (r *hStubUserRepo) Deactivate(_ context.Context, _ string) error       { return nil }
+func (r *hStubUserRepo) MarkEmailVerified(_ context.Context, _ string) error { return nil }
+func (r *hStubUserRepo) Delete(_ context.Context, _ string) error           { return nil }
 
 type hStubAuditRepo struct{}
 

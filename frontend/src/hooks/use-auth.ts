@@ -2,23 +2,11 @@
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "@/lib/i18n-navigation";
-import Cookies from "js-cookie";
 import { toast } from "sonner";
 import { authService, type LoginPayload, type RegisterPayload } from "@/services/auth-service";
-import { ApiError } from "@/lib/api-client";
+import { ApiError, persistTokens, clearTokens } from "@/lib/api-client";
 import { useAuthStore } from "@/stores/auth-store";
-import { env } from "@/lib/env";
 import { QUERY_KEYS } from "@/lib/constants";
-
-function persistTokens(access: string, refresh: string) {
-  Cookies.set(env.authCookieName, access, { sameSite: "lax", expires: 1 });
-  Cookies.set(env.authRefreshCookie, refresh, { sameSite: "lax", expires: 7 });
-}
-
-function clearTokens() {
-  Cookies.remove(env.authCookieName);
-  Cookies.remove(env.authRefreshCookie);
-}
 
 export function useLogin() {
   const router = useRouter();

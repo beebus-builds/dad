@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, Link } from "@/lib/i18n-navigation";
+import Image from "next/image";
 import {
   BarChart3,
   Bell,
@@ -12,6 +13,7 @@ import {
   HandHeart,
   Home,
   LifeBuoy,
+  Mail,
   MessageSquareWarning,
   Newspaper,
   Settings,
@@ -46,6 +48,7 @@ type NavItem = {
     | "training"
     | "incidents"
     | "donations"
+    | "campaigns"
     | "users"
     | "branches"
     | "auditLog"
@@ -88,6 +91,7 @@ const SECTIONS: NavSection[] = [
       { href: "/dashboard/training", key: "training", icon: GraduationCap, permission: PERMISSIONS.TRAINING_READ },
       { href: "/dashboard/incidents", key: "incidents", icon: Shield, permission: PERMISSIONS.INCIDENTS_READ },
       { href: "/dashboard/donations", key: "donations", icon: HandHeart, permission: PERMISSIONS.DONATIONS_READ },
+      { href: "/dashboard/campaigns", key: "campaigns", icon: Mail, permission: PERMISSIONS.CAMPAIGNS_READ },
     ],
   },
   {
@@ -108,12 +112,16 @@ export function DashboardSidebar({ onNavClick }: { onNavClick?: () => void }) {
 
   return (
     <aside className="flex h-screen w-full shrink-0 flex-col border-r bg-muted/30 md:w-64">
-      <div className="flex h-16 items-center gap-2 border-b px-5">
-        <Link href="/dashboard" className="flex items-center gap-2 font-semibold" onClick={onNavClick}>
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-gradient-to-br from-union-red to-govt-blue text-sm font-bold text-white">
-            SJ
-          </span>
-          <span className="text-sm">{tCommon("appName")}</span>
+      <div className="flex h-16 items-center gap-2.5 border-b px-5">
+        <Link href="/dashboard" className="flex items-center gap-2.5 font-semibold" onClick={onNavClick}>
+          <Image
+            src="/image/Logo.jpeg"
+            alt=""
+            width={32}
+            height={32}
+            className="h-8 w-8 rounded-sm object-contain"
+          />
+          <span className="font-devanagari text-sm">{tCommon("appName")}</span>
         </Link>
       </div>
       <ScrollArea className="flex-1">

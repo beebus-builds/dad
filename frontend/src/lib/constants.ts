@@ -58,19 +58,3 @@ export const QUERY_KEYS = {
     dashboard: ["reports", "dashboard"] as const,
   },
 } as const;
-
-export const NEPAL_PROVINCES = [
-  { code: "P1", name: "Koshi" },
-  { code: "P2", name: "Madhesh" },
-  { code: "P3", name: "Bagmati" },
-  { code: "P4", name: "Gandaki" },
-  { code: "P5", name: "Lumbini" },
-  { code: "P6", name: "Karnali" },
-  { code: "P7", name: "Sudurpashchim" },
-] as const;
-
-export const MEMBERSHIP_TIERS = [
-  { value: "STANDARD", label: "Standard" },
-  { value: "LIFETIME", label: "Lifetime" },
-  { value: "HONORARY", label: "Honorary" },
-] as const;

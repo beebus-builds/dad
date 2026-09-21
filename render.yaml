@@ -1,3 +1,5 @@
+# Render Blueprint — backend API (frontend lives on Vercel).
+# Update `repo` to your GitHub repo before using "New from Blueprint".
 services:
   - type: web
     name: shram-jagaran-api
@@ -7,26 +9,26 @@ services:
     rootDir: backend
     buildCommand: go build -o bin/server ./cmd/api
     startCommand: ./bin/server
-    healthCheckPath: /health
+    healthCheckPath: /ready
     envVars:
       - key: APP_ENV
         value: production
       - key: HTTP_PORT
         value: "8080"
       - key: FRONTEND_URL
-        fromService:
-          type: web
-          name: shram-jagaran-frontend
-          property: url
+        sync: false # set to your Vercel URL, e.g. https://your-app.vercel.app
       - key: CORS_ORIGINS
-        fromService:
-          type: web
-          name: shram-jagaran-frontend
-          property: url
+        sync: false # same as FRONTEND_URL
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: TRUSTED_PROXIES
+        value: "10.0.0.0/8"
       - key: DATABASE_URL
         sync: false
       - key: JWT_SECRET
         sync: false
+      - key: ADMIN_PASSWORD
+        sync: false # required: boot refuses default in production
       - key: JWT_ACCESS_EXPIRES_IN
         value: 15m
       - key: JWT_REFRESH_EXPIRES_IN
@@ -36,10 +38,16 @@ services:
       - key: R2_ENABLED
         value: "false"
       - key: REDIS_URL
-        value: redis://localhost:6379
+        sync: false # set to Upstash URL when enabled; empty = caching disabled
       - key: SENTRY_ENABLED
         value: "false"
       - key: RATE_LIMIT_REQUESTS
-        value: "200"
-    plan: free
+        value: "100"
+      - key: HTTP_IDLE_TIMEOUT
+        value: 120s
+      - key: HTTP_READ_HEADER_TIMEOUT
+        value: 10s
+    # NOTE: `free` sleeps when idle (cold starts + dropped connections).
+    # Use `starter` or above for production.
+    plan: starter
     region: singapore

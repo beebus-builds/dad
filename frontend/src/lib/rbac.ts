@@ -38,6 +38,8 @@ export const PERMISSIONS = {
   AUDIT_VIEW: "audit:view",
   USERS_MANAGE: "users:manage",
   BRANCHES_MANAGE: "branches:manage",
+  CAMPAIGNS_READ: "campaigns:read",
+  CAMPAIGNS_WRITE: "campaigns:write",
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -71,6 +73,8 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.AUDIT_VIEW,
     PERMISSIONS.USERS_MANAGE,
     PERMISSIONS.BRANCHES_MANAGE,
+    PERMISSIONS.CAMPAIGNS_READ,
+    PERMISSIONS.CAMPAIGNS_WRITE,
   ],
   PROVINCE_ADMIN: [
     PERMISSIONS.MEMBERS_READ,

@@ -16,6 +16,31 @@ export class ApiError extends Error {
   }
 }
 
+type RetryableConfig = InternalAxiosRequestConfig & { _retry?: boolean };
+
+function cookieOpts(days: number): Cookies.CookieAttributes {
+  return {
+    sameSite: "lax",
+    expires: days,
+    // js-cookie cannot set HttpOnly (server-only); mark Secure on HTTPS
+    // so tokens are never sent over plaintext. Real HttpOnly cookies
+    // should be set by the backend on login responses.
+    secure:
+      typeof window !== "undefined" &&
+      window.location.protocol === "https:",
+  };
+}
+
+export function persistTokens(access: string, refresh: string) {
+  Cookies.set(env.authCookieName, access, cookieOpts(1));
+  Cookies.set(env.authRefreshCookie, refresh, cookieOpts(7));
+}
+
+export function clearTokens() {
+  Cookies.remove(env.authCookieName);
+  Cookies.remove(env.authRefreshCookie);
+}
+
 function createApiClient(): AxiosInstance {
   const instance = axios.create({
     baseURL: env.apiUrl,
@@ -32,6 +57,11 @@ function createApiClient(): AxiosInstance {
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    // Correlate frontend requests with backend logs.
+    if (typeof window !== "undefined" && !config.headers["X-Request-ID"]) {
+      config.headers["X-Request-ID"] =
+        globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+    }
     return config;
   });
 
@@ -40,11 +70,30 @@ function createApiClient(): AxiosInstance {
     async (error: AxiosError<{ error?: { code?: string; message?: string; details?: unknown } }>) => {
       const status = error.response?.status ?? 0;
       const err = error.response?.data?.error;
+      const original = error.config as RetryableConfig | undefined;
 
-      if (status === 401 && typeof window !== "undefined") {
-        Cookies.remove(env.authCookieName);
-        Cookies.remove(env.authRefreshCookie);
-        if (!window.location.pathname.startsWith("/login")) {
+      // Attempt one silent refresh-token rotation before forcing login.
+      const isAuthCall = original?.url?.includes("/auth/");
+      if (status === 401 && typeof window !== "undefined" && original && !original._retry && !isAuthCall) {
+        original._retry = true;
+        try {
+          const refreshToken = Cookies.get(env.authRefreshCookie);
+          const res = await axios.post(
+            `${env.apiUrl}/auth/refresh`,
+            refreshToken ? { refreshToken } : {},
+            { timeout: env.apiTimeout, withCredentials: true },
+          );
+          const { accessToken, refreshToken: nextRefresh } = res.data?.data ?? res.data ?? {};
+          if (accessToken) {
+            persistTokens(accessToken, nextRefresh ?? refreshToken ?? "");
+            original.headers.Authorization = `Bearer ${accessToken}`;
+            return instance(original);
+          }
+        } catch {
+          // Refresh failed — fall through to logout below.
+        }
+        clearTokens();
+        if (!window.location.pathname.includes("/login")) {
           window.location.href = "/login";
         }
       }

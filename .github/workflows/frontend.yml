@@ -10,6 +10,13 @@ on:
       - "frontend/**"
       - ".github/workflows/frontend.yml"
 
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-${{ github.ref }}
+  cancel-in-progress: true
+
 defaults:
   run:
     working-directory: frontend
@@ -18,18 +25,22 @@ jobs:
   quality:
     name: typecheck + lint
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install
         run: npm ci
+
+      - name: npm audit (high+)
+        run: npm audit --audit-level=high
 
       - name: Typecheck
         run: npm run typecheck
@@ -40,6 +51,7 @@ jobs:
   build:
     name: build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: quality
     steps:
       - uses: actions/checkout@v4
@@ -47,7 +59,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 

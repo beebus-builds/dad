@@ -1,18 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { use } from "react";
+import { use, useState } from "react";
 import { useTranslations } from "next-intl";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   Calendar,
   Loader2,
   Mail,
   MapPin,
+  Pencil,
   Phone,
   ShieldAlert,
-  User,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -20,6 +21,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { PermissionGate } from "@/components/auth/permission-gate";
+import { MemberTimeline } from "@/components/dashboard/member-timeline";
+import { TagEditor } from "@/components/dashboard/tag-editor";
+import { LogInteractionDialog } from "@/components/dashboard/log-interaction-dialog";
 import { PERMISSIONS } from "@/lib/rbac";
 import { getInitials } from "@/lib/utils";
 import { useLocaleFormat } from "@/lib/use-locale-format";
@@ -48,10 +52,27 @@ export default function MemberDetailPage({
   const tGender = useTranslations("members.gender");
   const { date } = useLocaleFormat();
   const { id } = use(params);
+  const queryClient = useQueryClient();
+  const [editingTags, setEditingTags] = useState(false);
+  const [tagDraft, setTagDraft] = useState<string[]>([]);
+
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["member", id],
     queryFn: () => memberService.detail(id),
     enabled: Boolean(id),
+  });
+
+  const updateTagsMutation = useMutation({
+    mutationFn: (tags: string[]) => {
+      if (!data) throw new Error("Member not loaded");
+      return memberService.update(id, { ...data, tags });
+    },
+    onSuccess: () => {
+      toast.success(t("detail.tagsUpdated"));
+      setEditingTags(false);
+      queryClient.invalidateQueries({ queryKey: ["member", id] });
+    },
+    onError: (err: ApiError) => toast.error(err.message || t("detail.tagsUpdateFailed")),
   });
 
   if (isLoading) {
@@ -94,11 +115,16 @@ export default function MemberDetailPage({
           title={m.fullName}
           description={m.fullNameNepali || `#${m.membershipNumber}`}
           actions={
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/dashboard/members">
-                <ArrowLeft className="h-4 w-4" /> {t("detail.back")}
-              </Link>
-            </Button>
+            <>
+              <PermissionGate permission={PERMISSIONS.MEMBERS_WRITE} fallback={null}>
+                <LogInteractionDialog memberId={m.id} />
+              </PermissionGate>
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/dashboard/members">
+                  <ArrowLeft className="h-4 w-4" /> {t("detail.back")}
+                </Link>
+              </Button>
+            </>
           }
         />
         <div className="grid gap-6 lg:grid-cols-3">
@@ -118,6 +144,54 @@ export default function MemberDetailPage({
               <div className="flex flex-wrap justify-center gap-2">
                 <Badge variant={STATUS_VARIANT[m.status]}>{tStatus(m.status)}</Badge>
                 <Badge variant="outline">{tTier(m.tier as "STANDARD" | "LIFETIME" | "HONORARY")}</Badge>
+              </div>
+              <div className="border-t pt-3 text-left">
+                <div className="mb-1.5 flex items-center justify-between">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t("detail.tags")}
+                  </span>
+                  <PermissionGate permission={PERMISSIONS.MEMBERS_WRITE} fallback={null}>
+                    {!editingTags && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTagDraft(m.tags ?? []);
+                          setEditingTags(true);
+                        }}
+                        className="text-muted-foreground hover:text-foreground"
+                        aria-label={t("detail.editTags")}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </PermissionGate>
+                </div>
+                {editingTags ? (
+                  <div className="space-y-2">
+                    <TagEditor tags={tagDraft} onChange={setTagDraft} placeholder={t("detail.addTag")} />
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => updateTagsMutation.mutate(tagDraft)}
+                        disabled={updateTagsMutation.isPending}
+                      >
+                        {updateTagsMutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                        {tCommon("save")}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setEditingTags(false)}>
+                        {tCommon("cancel")}
+                      </Button>
+                    </div>
+                  </div>
+                ) : m.tags && m.tags.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {m.tags.map((tag) => (
+                      <Badge key={tag} variant="outline">{tag}</Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">{t("detail.noTags")}</p>
+                )}
               </div>
               <div className="space-y-2 pt-2 text-left text-sm text-muted-foreground">
                 {m.phone && (
@@ -179,10 +253,8 @@ export default function MemberDetailPage({
               <CardHeader>
                 <CardTitle>{t("detail.activity")}</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4" /> {t("detail.activityEmpty")}
-                </div>
+              <CardContent>
+                <MemberTimeline memberId={m.id} />
               </CardContent>
             </Card>
           </div>

@@ -22,6 +22,78 @@ func (h *Handlers) ListMembers(c *gin.Context) {
 	})
 }
 
+// scopedBranchFilter reconciles a client-supplied branchId filter with the
+// caller's branch scope (set by middleware.BranchScope): a scoped BRANCH_ADMIN
+// always overrides the query param, a scoped PROVINCE_ADMIN/DISTRICT_ADMIN
+// restricts to their region's branch IDs.
+func scopedBranchFilter(c *gin.Context, requested string) (string, []string) {
+	if scoped, ok := c.Get(middleware.CtxScopeBranchID); ok {
+		if id, ok := scoped.(string); ok && id != "" {
+			return id, nil
+		}
+	}
+	if scoped, ok := c.Get(middleware.CtxScopeBranchIDs); ok {
+		if ids, ok := scoped.([]string); ok && len(ids) > 0 {
+			return "", ids
+		}
+	}
+	return requested, nil
+}
+
+func buildListOpts(c *gin.Context, page, size int) repository.ListMembersOptions {
+	branchID, branchIDs := scopedBranchFilter(c, c.Query("branchId"))
+	return repository.ListMembersOptions{
+		Page:      page,
+		PageSize:  size,
+		Search:    c.Query("search"),
+		BranchID:  branchID,
+		BranchIDs: branchIDs,
+		Status:    c.Query("status"),
+		Tier:      c.Query("tier"),
+		Tag:       c.Query("tag"),
+	}
+}
+
+func (h *Handlers) GetMemberTimeline(c *gin.Context) {
+	page, size := listOpts(c)
+	items, total, err := h.Members.Timeline(c.Request.Context(), c.Param("id"), page, size)
+	if err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.Paginated(c, items, response.Pagination{
+		Page: page, PageSize: size, Total: total, TotalPages: totalPages(total, size),
+	})
+}
+
+func (h *Handlers) ListCommunicationLogs(c *gin.Context) {
+	page, size := listOpts(c)
+	items, total, err := h.CommunicationLogs.List(c.Request.Context(), c.Param("id"), page, size)
+	if err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.Paginated(c, items, response.Pagination{
+		Page: page, PageSize: size, Total: total, TotalPages: totalPages(total, size),
+	})
+}
+
+func (h *Handlers) CreateCommunicationLog(c *gin.Context) {
+	uid, _ := c.Get(middleware.CtxUserID)
+	userID, _ := uid.(string)
+	var in usecase.CreateCommLogInput
+	if err := c.ShouldBindJSON(&in); err != nil {
+		response.Error(c, 422, "VALIDATION", err.Error())
+		return
+	}
+	l, err := h.CommunicationLogs.Create(c.Request.Context(), c.Param("id"), userID, in)
+	if err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.Created(c, l)
+}
+
 func (h *Handlers) CreateMember(c *gin.Context) {
 	var in usecase.CreateMemberInput
 	if err := c.ShouldBindJSON(&in); err != nil {
@@ -94,12 +166,14 @@ func (h *Handlers) ImportMembers(c *gin.Context) {
 
 func (h *Handlers) ListComplaints(c *gin.Context) {
 	page, size := listOpts(c)
+	branchID, branchIDs := scopedBranchFilter(c, c.Query("branchId"))
 	opts := repository.ListComplaintsOptions{
 		Page: page, PageSize: size,
-		Search:   c.Query("search"),
-		Status:   c.Query("status"),
-		Priority: c.Query("priority"),
-		BranchID: c.Query("branchId"),
+		Search:    c.Query("search"),
+		Status:    c.Query("status"),
+		Priority:  c.Query("priority"),
+		BranchID:  branchID,
+		BranchIDs: branchIDs,
 	}
 	list, total, err := h.Complaints.List(c.Request.Context(), opts)
 	if err != nil {
@@ -161,4 +235,32 @@ func (h *Handlers) ComplaintStats(c *gin.Context) {
 		return
 	}
 	response.OK(c, stats)
+}
+
+func (h *Handlers) ListComplaintNotes(c *gin.Context) {
+	notes, err := h.ComplaintNotes.List(c.Request.Context(), c.Param("id"))
+	if err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.OK(c, notes)
+}
+
+func (h *Handlers) AddComplaintNote(c *gin.Context) {
+	uid, _ := c.Get(middleware.CtxUserID)
+	userID, _ := uid.(string)
+	var in struct {
+		Body       string `json:"body"`
+		IsInternal bool   `json:"isInternal"`
+	}
+	if err := c.ShouldBindJSON(&in); err != nil {
+		response.Error(c, 422, "VALIDATION", err.Error())
+		return
+	}
+	n, err := h.ComplaintNotes.Create(c.Request.Context(), c.Param("id"), userID, in.Body, in.IsInternal)
+	if err != nil {
+		handleErr(c, err)
+		return
+	}
+	response.Created(c, n)
 }

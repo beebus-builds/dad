@@ -11,17 +11,18 @@ import (
 )
 
 type Config struct {
-	App        AppConfig
-	HTTP       HTTPConfig
-	Database   DatabaseConfig
-	Redis      RedisConfig
-	JWT        JWTConfig
-	SMTP       SMTPConfig
-	R2         R2Config
-	Sentry     SentryConfig
-	RateLimit  RateLimitConfig
-	CORS       CORSConfig
-	Admin      AdminConfig
+	App       AppConfig
+	HTTP      HTTPConfig
+	Database  DatabaseConfig
+	Redis     RedisConfig
+	JWT       JWTConfig
+	SMTP      SMTPConfig
+	Mail      MailConfig
+	R2        R2Config
+	Sentry    SentryConfig
+	RateLimit RateLimitConfig
+	CORS      CORSConfig
+	Admin     AdminConfig
 }
 
 type AdminConfig struct {
@@ -40,17 +41,30 @@ type SMTPConfig struct {
 	FromName string
 }
 
+// MailConfig chooses the email provider. "smtp" (default) uses SMTPConfig
+// via pkg/mail.Sender; "resend" uses the Resend HTTP API. Either way the
+// result satisfies pkg/mail.Mailer, so call sites never branch on provider.
+type MailConfig struct {
+	Provider     string
+	ResendAPIKey string
+}
+
 type AppConfig struct {
-	Env         string
-	Name        string
-	Version     string
-	FrontendURL string
+	Env          string
+	Name         string
+	Version      string
+	FrontendURL  string
+	CookieSecure bool
 }
 
 type HTTPConfig struct {
-	Port         string
-	ReadTimeout  time.Duration
-	WriteTimeout time.Duration
+	Port              string
+	ReadTimeout       time.Duration
+	WriteTimeout      time.Duration
+	IdleTimeout       time.Duration
+	ReadHeaderTimeout time.Duration
+	MaxHeaderBytes    int
+	TrustedProxies    []string
 }
 
 type DatabaseConfig struct {
@@ -108,10 +122,11 @@ func Load() (*Config, error) {
 
 	cfg := &Config{
 		App: AppConfig{
-			Env:         getEnv("APP_ENV", "development"),
-			Name:        getEnv("APP_NAME", "Shram Jagaran CMS"),
-			Version:     getEnv("APP_VERSION", "0.1.0"),
-			FrontendURL: getEnv("FRONTEND_URL", "http://localhost:3000"),
+			Env:          getEnv("APP_ENV", "development"),
+			Name:         getEnv("APP_NAME", "Shram Jagaran CMS"),
+			Version:      getEnv("APP_VERSION", "0.1.0"),
+			FrontendURL:  getEnv("FRONTEND_URL", "http://localhost:3000"),
+			CookieSecure: getEnvBool("COOKIE_SECURE", false),
 		},
 		SMTP: SMTPConfig{
 			Host:     getEnv("SMTP_HOST", ""),
@@ -121,10 +136,18 @@ func Load() (*Config, error) {
 			From:     getEnv("SMTP_FROM", "noreply@shramjagaran.org"),
 			FromName: getEnv("SMTP_FROM_NAME", "Shram Jagaran"),
 		},
+		Mail: MailConfig{
+			Provider:     getEnv("MAIL_PROVIDER", "smtp"),
+			ResendAPIKey: getEnv("RESEND_API_KEY", ""),
+		},
 		HTTP: HTTPConfig{
-			Port:         getEnv("HTTP_PORT", "8080"),
-			ReadTimeout:  getEnvDuration("HTTP_READ_TIMEOUT", 15*time.Second),
-			WriteTimeout: getEnvDuration("HTTP_WRITE_TIMEOUT", 15*time.Second),
+			Port:              getEnv("HTTP_PORT", "8080"),
+			ReadTimeout:       getEnvDuration("HTTP_READ_TIMEOUT", 15*time.Second),
+			WriteTimeout:      getEnvDuration("HTTP_WRITE_TIMEOUT", 15*time.Second),
+			IdleTimeout:       getEnvDuration("HTTP_IDLE_TIMEOUT", 120*time.Second),
+			ReadHeaderTimeout: getEnvDuration("HTTP_READ_HEADER_TIMEOUT", 10*time.Second),
+			MaxHeaderBytes:    getEnvInt("HTTP_MAX_HEADER_BYTES", 1<<20),
+			TrustedProxies:    splitCSV(getEnv("TRUSTED_PROXIES", "")),
 		},
 		Database: DatabaseConfig{
 			URL:             getEnv("DATABASE_URL", ""),
@@ -186,7 +209,34 @@ func (c *Config) validate() error {
 	if len(c.JWT.Secret) < 32 {
 		return fmt.Errorf("JWT_SECRET must be at least 32 characters")
 	}
+	if c.App.Env == "production" {
+		if c.Admin.Password == "Admin@123" {
+			return fmt.Errorf("refusing to boot in production with default ADMIN_PASSWORD; set a strong ADMIN_PASSWORD")
+		}
+		if strings.HasPrefix(c.App.FrontendURL, "http://localhost") {
+			return fmt.Errorf("refusing to boot in production with localhost FRONTEND_URL; set FRONTEND_URL to the public URL")
+		}
+		for _, o := range c.CORS.Origins {
+			if strings.Contains(o, "localhost") {
+				return fmt.Errorf("refusing to boot in production with localhost CORS_ORIGINS; set CORS_ORIGINS to the public frontend URL")
+			}
+		}
+	}
 	return nil
+}
+
+func splitCSV(s string) []string {
+	if strings.TrimSpace(s) == "" {
+		return nil
+	}
+	parts := strings.Split(s, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if p = strings.TrimSpace(p); p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
 }
 
 func getEnv(key, def string) string {

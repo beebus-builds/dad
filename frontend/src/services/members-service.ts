@@ -1,5 +1,5 @@
 import { api, type ApiResponse, type Paginated } from "@/lib/api-client";
-import type { Member } from "@/types";
+import type { Member, MemberTimelineEvent } from "@/types";
 
 export type MemberListParams = {
   page?: number;
@@ -8,6 +8,7 @@ export type MemberListParams = {
   branchId?: string;
   status?: Member["status"];
   tier?: Member["tier"];
+  tag?: string;
 };
 
 export const memberService = {
@@ -37,5 +38,9 @@ export const memberService = {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return data.data;
+  },
+  async timeline(id: string, params: { page?: number; pageSize?: number } = {}): Promise<Paginated<MemberTimelineEvent>> {
+    const { data } = await api.get<Paginated<MemberTimelineEvent>>(`/members/${id}/timeline`, { params });
+    return data;
   },
 };

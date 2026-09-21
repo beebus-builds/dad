@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n-navigation";
 import { env } from "@/lib/env";
@@ -21,12 +22,16 @@ export default async function AuthLayout({
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
-      <aside className="relative hidden lg:flex flex-col gradient-union p-10 text-white">
-        <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/15 backdrop-blur">
-            श्र
-          </span>
-          {tCommon("appName")}
+      <aside className="relative hidden lg:flex flex-col bg-gradient-to-b from-govt-blue to-[hsl(221,70%,26%)] p-10 text-white">
+        <Link href="/" className="flex items-center gap-2.5 text-lg font-semibold">
+          <Image
+            src="/image/Logo.jpeg"
+            alt=""
+            width={36}
+            height={36}
+            className="h-9 w-9 rounded-sm object-contain"
+          />
+          <span className="font-devanagari">{tCommon("appName")}</span>
         </Link>
         <div className="mt-auto space-y-4">
           <blockquote className="space-y-2">

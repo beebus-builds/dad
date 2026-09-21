@@ -12,7 +12,9 @@ import (
 	"github.com/shramjagaran/cms-backend/pkg/apperror"
 )
 
-type ComplaintService struct{ repo repository.ComplaintRepository }
+type ComplaintService struct {
+	repo repository.ComplaintRepository
+}
 
 func NewComplaintService(r repository.ComplaintRepository) *ComplaintService {
 	return &ComplaintService{repo: r}
@@ -34,16 +36,19 @@ func (s *ComplaintService) Create(ctx context.Context, userID string, in CreateC
 		return nil, apperror.New(422, "VALIDATION", "description must be at least 20 characters")
 	}
 	tn := fmt.Sprintf("CMP-%d", time.Now().Unix()%1_000_000)
+	priority := defaultStr(in.Priority, entity.ComplaintPriorityMedium)
+	dueAt := time.Now().Add(entity.DueDurationForPriority(priority))
 	c := &entity.Complaint{
 		ID:           uuid.NewString(),
 		TicketNumber: tn,
 		Title:        strings.TrimSpace(in.Title),
 		Description:  in.Description,
 		Category:     in.Category,
-		Priority:     defaultStr(in.Priority, entity.ComplaintPriorityMedium),
+		Priority:     priority,
 		Status:       entity.ComplaintStatusOpen,
 		SubmittedBy:  userID,
 		BranchID:     strPtr(in.BranchID),
+		DueAt:        &dueAt,
 	}
 	if err := s.repo.Create(ctx, c); err != nil {
 		return nil, err
@@ -85,6 +90,46 @@ func (s *ComplaintService) List(ctx context.Context, opts repository.ListComplai
 
 func (s *ComplaintService) Stats(ctx context.Context) (map[string]int, error) {
 	return s.repo.GetStats(ctx)
+}
+
+type ComplaintNoteService struct {
+	notes      repository.ComplaintNoteRepository
+	complaints repository.ComplaintRepository
+}
+
+func NewComplaintNoteService(notes repository.ComplaintNoteRepository, complaints repository.ComplaintRepository) *ComplaintNoteService {
+	return &ComplaintNoteService{notes: notes, complaints: complaints}
+}
+
+func (s *ComplaintNoteService) Create(ctx context.Context, complaintID, userID, body string, isInternal bool) (*entity.ComplaintNote, error) {
+	if len(strings.TrimSpace(body)) < 2 {
+		return nil, apperror.New(422, "VALIDATION", "note body is required")
+	}
+	complaint, err := s.complaints.GetByID(ctx, complaintID)
+	if err != nil {
+		return nil, err
+	}
+	n := &entity.ComplaintNote{
+		ComplaintID: complaintID,
+		UserID:      userID,
+		Body:        strings.TrimSpace(body),
+		IsInternal:  isInternal,
+	}
+	if err := s.notes.Create(ctx, n); err != nil {
+		return nil, err
+	}
+	if complaint.FirstRespondedAt == nil {
+		now := time.Now()
+		complaint.FirstRespondedAt = &now
+		if err := s.complaints.Update(ctx, complaintID, complaint); err != nil {
+			return nil, err
+		}
+	}
+	return n, nil
+}
+
+func (s *ComplaintNoteService) List(ctx context.Context, complaintID string) ([]entity.ComplaintNote, error) {
+	return s.notes.ListByComplaint(ctx, complaintID)
 }
 
 type EventService struct{ repo repository.EventRepository }
@@ -181,4 +226,3 @@ func slugify(s string) string {
 	}
 	return out
 }
-

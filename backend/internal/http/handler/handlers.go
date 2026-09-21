@@ -15,7 +15,10 @@ type Handlers struct {
 	Menus         *usecase.MenuUsecase
 	Users         *usecase.AuthService // Reuse auth service for user mgmt
 	Settings      *usecase.SettingsService
-	Complaints    *usecase.ComplaintService
+	Complaints        *usecase.ComplaintService
+	ComplaintNotes    *usecase.ComplaintNoteService
+	CommunicationLogs *usecase.CommunicationLogService
+	Campaigns         *usecase.CampaignService
 	Documents     *usecase.DocumentService
 	Notifications *usecase.NotificationService
 	Donations     *usecase.DonationService

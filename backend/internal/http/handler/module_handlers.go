@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -455,6 +456,18 @@ func (h *Handlers) Health(c *gin.Context) {
 	})
 }
 
+// Ready is a readiness probe: verifies DB connectivity.
+// Render / orchestrators should gate traffic on this.
+func (h *Handlers) Ready(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 8*time.Second)
+	defer cancel()
+	if err := h.DB.Ping(ctx); err != nil {
+		c.JSON(503, gin.H{"status": "not_ready", "error": "db unreachable"})
+		return
+	}
+	c.JSON(200, gin.H{"status": "ready", "time": time.Now().UTC()})
+}
+
 func (h *Handlers) BranchesList(c *gin.Context) {
 	list, err := h.Branches.List(c.Request.Context())
 	if err != nil {
@@ -551,11 +564,22 @@ func (h *Handlers) ReportsDashboard(c *gin.Context) {
 	stats["totalDonations"] = totalDonations
 
 	monthlyRows, err := h.DB.Query(ctx, `
-		SELECT to_char(date_trunc('month', created_at), 'YYYY-MM') AS month,
-			COUNT(*) FILTER (WHERE deleted_at IS NULL) AS members,
-			0 AS complaints
-		FROM members WHERE created_at >= NOW() - INTERVAL '12 months'
-		GROUP BY month ORDER BY month`)
+		WITH months AS (
+			SELECT to_char(date_trunc('month', created_at), 'YYYY-MM') AS month,
+				COUNT(*) FILTER (WHERE deleted_at IS NULL) AS members
+			FROM members WHERE created_at >= NOW() - INTERVAL '12 months'
+			GROUP BY month
+		), comp AS (
+			SELECT to_char(date_trunc('month', created_at), 'YYYY-MM') AS month,
+				COUNT(*) AS complaints
+			FROM complaints WHERE created_at >= NOW() - INTERVAL '12 months' AND deleted_at IS NULL
+			GROUP BY month
+		)
+		SELECT COALESCE(months.month, comp.month) AS month,
+			COALESCE(months.members, 0) AS members,
+			COALESCE(comp.complaints, 0) AS complaints
+		FROM months FULL OUTER JOIN comp ON months.month = comp.month
+		ORDER BY month`)
 	if err == nil {
 		defer monthlyRows.Close()
 		type mg struct {
@@ -595,4 +619,39 @@ func (h *Handlers) ReportsDashboard(c *gin.Context) {
 	}
 
 	response.OK(c, stats)
+}
+
+func (h *Handlers) ReportsBranches(c *gin.Context) {
+	ctx := c.Request.Context()
+	rows, err := h.DB.Query(ctx, `
+		SELECT b.id, b.name,
+			COUNT(DISTINCT m.id) AS members,
+			COUNT(DISTINCT cm.id) AS complaints
+		FROM branches b
+		LEFT JOIN members m ON m.branch_id = b.id AND m.deleted_at IS NULL
+		LEFT JOIN complaints cm ON cm.branch_id = b.id AND cm.deleted_at IS NULL
+		GROUP BY b.id, b.name
+		ORDER BY members DESC, b.name`)
+	if err != nil {
+		handleErr(c, err)
+		return
+	}
+	defer rows.Close()
+
+	type branchBreakdown struct {
+		BranchID   string `json:"branchId"`
+		BranchName string `json:"branchName"`
+		Members    int    `json:"members"`
+		Complaints int    `json:"complaints"`
+	}
+	out := make([]branchBreakdown, 0)
+	for rows.Next() {
+		b := branchBreakdown{}
+		if err := rows.Scan(&b.BranchID, &b.BranchName, &b.Members, &b.Complaints); err != nil {
+			handleErr(c, err)
+			return
+		}
+		out = append(out, b)
+	}
+	response.OK(c, out)
 }

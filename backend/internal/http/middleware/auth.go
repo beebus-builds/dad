@@ -1,12 +1,16 @@
 package middleware
 
 import (
+	"fmt"
+	"runtime/debug"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/shramjagaran/cms-backend/pkg/apperror"
 	"github.com/shramjagaran/cms-backend/pkg/jwt"
+	"github.com/shramjagaran/cms-backend/pkg/logger"
 	"github.com/shramjagaran/cms-backend/pkg/response"
+	"go.uber.org/zap"
 )
 
 const (
@@ -86,7 +90,19 @@ func Recovery() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if r := recover(); r != nil {
-				response.Error(c, 500, "INTERNAL", "internal server error")
+				logger.L.Error("panic recovered",
+					zap.Any("panic", r),
+					zap.String("path", c.Request.URL.Path),
+					zap.Any("requestID", c.Value("requestID")),
+					zap.String("stack", string(debug.Stack())),
+				)
+				// Sentry hook: if SENTRY_ENABLED, the gin-sentry middleware
+				// (added when wired) captures this; keep the log as fallback.
+				_ = fmt.Sprint(r)
+				if !c.Writer.Written() {
+					response.Error(c, 500, "INTERNAL", "internal server error")
+				}
+				c.Abort()
 			}
 		}()
 		c.Next()

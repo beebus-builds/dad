@@ -39,6 +39,7 @@ type CreateMemberInput struct {
 	Address           string
 	BranchID          string
 	Tier              string
+	Tags              []string
 }
 
 func (s *MemberService) Create(ctx context.Context, in CreateMemberInput) (*entity.Member, error) {
@@ -57,21 +58,22 @@ func (s *MemberService) Create(ctx context.Context, in CreateMemberInput) (*enti
 		mn = fmt.Sprintf("SJ-%d", time.Now().Unix()%1_000_000)
 	}
 	m := &entity.Member{
-		ID:               uuid.NewString(),
-		MembershipNumber: mn,
-		FullName:         in.FullName,
-		FullNameNepali:   strPtr(in.FullNameNepali),
-		Email:            strPtr(in.Email),
-		Phone:            in.Phone,
-		Gender:           strPtr(in.Gender),
+		ID:                uuid.NewString(),
+		MembershipNumber:  mn,
+		FullName:          in.FullName,
+		FullNameNepali:    strPtr(in.FullNameNepali),
+		Email:             strPtr(in.Email),
+		Phone:             in.Phone,
+		Gender:            strPtr(in.Gender),
 		CitizenshipNumber: strPtr(in.CitizenshipNumber),
-		Occupation:       strPtr(in.Occupation),
-		Employer:         strPtr(in.Employer),
-		Address:          strPtr(in.Address),
-		BranchID:         in.BranchID,
-		Tier:             tier,
-		Status:           entity.MemberStatusActive,
-		JoinedAt:         time.Now(),
+		Occupation:        strPtr(in.Occupation),
+		Employer:          strPtr(in.Employer),
+		Address:           strPtr(in.Address),
+		BranchID:          in.BranchID,
+		Tier:              tier,
+		Tags:              in.Tags,
+		Status:            entity.MemberStatusActive,
+		JoinedAt:          time.Now(),
 	}
 	if in.DateOfBirth != "" {
 		if d, err := time.Parse("2006-01-02", in.DateOfBirth); err == nil {
@@ -106,6 +108,9 @@ func (s *MemberService) Update(ctx context.Context, id string, in CreateMemberIn
 	if in.Tier != "" {
 		existing.Tier = in.Tier
 	}
+	if in.Tags != nil {
+		existing.Tags = in.Tags
+	}
 	if err := s.repo.Update(ctx, id, existing); err != nil {
 		return nil, err
 	}
@@ -124,6 +129,16 @@ func (s *MemberService) List(ctx context.Context, opts repository.ListMembersOpt
 		opts.PageSize = 20
 	}
 	return s.repo.List(ctx, opts)
+}
+
+func (s *MemberService) Timeline(ctx context.Context, memberID string, page, pageSize int) ([]entity.TimelineEntry, int, error) {
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 20
+	}
+	return s.repo.GetTimeline(ctx, memberID, page, pageSize)
 }
 
 func (s *MemberService) ImportCSV(ctx context.Context, reader *csv.Reader) (*CSVImportResult, error) {
@@ -175,21 +190,21 @@ func (s *MemberService) ImportCSV(ctx context.Context, reader *csv.Reader) (*CSV
 		}
 
 		m := &entity.Member{
-			ID:               uuid.NewString(),
-			MembershipNumber: mn,
-			FullName:         fullName,
-			FullNameNepali:   strPtr(get("fullnamenepali")),
-			Email:            strPtr(get("email")),
-			Phone:            get("phone"),
-			Gender:           strPtr(get("gender")),
+			ID:                uuid.NewString(),
+			MembershipNumber:  mn,
+			FullName:          fullName,
+			FullNameNepali:    strPtr(get("fullnamenepali")),
+			Email:             strPtr(get("email")),
+			Phone:             get("phone"),
+			Gender:            strPtr(get("gender")),
 			CitizenshipNumber: strPtr(get("citizenshipnumber")),
-			Occupation:       strPtr(get("occupation")),
-			Employer:         strPtr(get("employer")),
-			Address:          strPtr(get("address")),
-			BranchID:         get("branchid"),
-			Tier:             tier,
-			Status:           entity.MemberStatusActive,
-			JoinedAt:         time.Now(),
+			Occupation:        strPtr(get("occupation")),
+			Employer:          strPtr(get("employer")),
+			Address:           strPtr(get("address")),
+			BranchID:          get("branchid"),
+			Tier:              tier,
+			Status:            entity.MemberStatusActive,
+			JoinedAt:          time.Now(),
 		}
 		if dob := get("dateofbirth"); dob != "" {
 			if d, err := time.Parse("2006-01-02", dob); err == nil {
@@ -208,3 +223,51 @@ func (s *MemberService) ImportCSV(ctx context.Context, reader *csv.Reader) (*CSV
 	return result, nil
 }
 
+var validCommChannels = map[string]bool{
+	entity.CommChannelCall: true, entity.CommChannelMeeting: true,
+	entity.CommChannelEmail: true, entity.CommChannelNote: true, entity.CommChannelOther: true,
+}
+
+type CommunicationLogService struct {
+	repo repository.CommunicationLogRepository
+}
+
+func NewCommunicationLogService(r repository.CommunicationLogRepository) *CommunicationLogService {
+	return &CommunicationLogService{repo: r}
+}
+
+type CreateCommLogInput struct {
+	Channel string
+	Subject string
+	Notes   string
+}
+
+func (s *CommunicationLogService) Create(ctx context.Context, memberID, loggedBy string, in CreateCommLogInput) (*entity.CommunicationLog, error) {
+	if !validCommChannels[in.Channel] {
+		return nil, apperror.New(422, "VALIDATION", "channel must be one of CALL, MEETING, EMAIL, NOTE, OTHER")
+	}
+	if strings.TrimSpace(in.Subject) == "" {
+		return nil, apperror.New(422, "VALIDATION", "subject is required")
+	}
+	l := &entity.CommunicationLog{
+		MemberID: memberID,
+		LoggedBy: loggedBy,
+		Channel:  in.Channel,
+		Subject:  strings.TrimSpace(in.Subject),
+		Notes:    in.Notes,
+	}
+	if err := s.repo.Create(ctx, l); err != nil {
+		return nil, err
+	}
+	return l, nil
+}
+
+func (s *CommunicationLogService) List(ctx context.Context, memberID string, page, pageSize int) ([]entity.CommunicationLog, int, error) {
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 20
+	}
+	return s.repo.ListByMember(ctx, memberID, page, pageSize)
+}

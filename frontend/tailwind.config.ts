@@ -1,7 +1,8 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  darkMode: ["class"],
+  // NOTE: class-based dark mode is enabled via `@custom-variant dark` in
+  // globals.css (Tailwind v4 ignores the legacy `darkMode` key).
   content: [
     "./src/pages/**/*.{ts,tsx}",
     "./src/components/**/*.{ts,tsx}",

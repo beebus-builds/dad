@@ -4,21 +4,14 @@ import Link from "next/link";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, Filter, Plus, Search, Loader2 } from "lucide-react";
+import { AlertTriangle, Filter, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { DataTable, type DataTableColumn } from "@/components/dashboard/data-table";
+import { FilterBar } from "@/components/dashboard/filter-bar";
 import { PermissionGate } from "@/components/auth/permission-gate";
 import { PERMISSIONS } from "@/lib/rbac";
 import { useLocaleFormat } from "@/lib/use-locale-format";
@@ -66,9 +59,72 @@ export default function ComplaintsPage() {
     queryFn: () => complaintService.list(params),
   });
 
+  const { data: stats } = useQuery({
+    queryKey: ["complaints-stats"],
+    queryFn: () => complaintService.stats(),
+  });
+
   const items = data?.data ?? [];
   const total = data?.pagination.total ?? 0;
   const totalPages = data?.pagination.totalPages ?? 1;
+
+  const columns: DataTableColumn<Complaint>[] = [
+    {
+      key: "ticket",
+      header: t("list.headers.ticket"),
+      className: "font-mono text-xs",
+      cell: (c) => c.ticketNumber,
+    },
+    {
+      key: "title",
+      header: t("list.headers.title"),
+      cell: (c) => (
+        <Link href={`/dashboard/complaints/${c.id}`} className="font-medium hover:underline">
+          {c.title}
+        </Link>
+      ),
+    },
+    {
+      key: "category",
+      header: t("list.headers.category"),
+      cell: (c) => (
+        <Badge variant="outline">
+          {tCategory(c.category as "WAGES" | "WORKING_HOURS" | "SAFETY" | "HARASSMENT" | "TERMINATION" | "BENEFITS" | "OTHER")}
+        </Badge>
+      ),
+    },
+    {
+      key: "priority",
+      header: t("list.headers.priority"),
+      cell: (c) => (
+        <Badge variant={PRIORITY_VARIANT[c.priority]}>
+          {c.priority === "URGENT" && <AlertTriangle className="mr-1 h-3 w-3" />}
+          {tPriority(c.priority as "LOW" | "MEDIUM" | "HIGH" | "URGENT")}
+        </Badge>
+      ),
+    },
+    {
+      key: "status",
+      header: t("list.headers.status"),
+      cell: (c) => (
+        <Badge variant={STATUS_VARIANT[c.status]}>
+          {tStatus(c.status as "OPEN" | "IN_REVIEW" | "ESCALATED" | "RESOLVED" | "CLOSED")}
+        </Badge>
+      ),
+    },
+    {
+      key: "submittedBy",
+      header: t("list.headers.submittedBy"),
+      className: "text-sm",
+      cell: (c) => c.submittedBy?.name ?? "—",
+    },
+    {
+      key: "filed",
+      header: t("list.headers.filed"),
+      className: "text-sm text-muted-foreground",
+      cell: (c) => date(c.createdAt),
+    },
+  ];
 
   return (
     <PermissionGate permission={PERMISSIONS.COMPLAINTS_READ}>
@@ -97,127 +153,54 @@ export default function ComplaintsPage() {
                 }}
               >
                 <TabsList>
-                  <TabsTrigger value="all">{t("list.tabs.all")}</TabsTrigger>
-                  <TabsTrigger value="OPEN">{tStatus("OPEN")}</TabsTrigger>
-                  <TabsTrigger value="IN_REVIEW">{tStatus("IN_REVIEW")}</TabsTrigger>
-                  <TabsTrigger value="ESCALATED">{tStatus("ESCALATED")}</TabsTrigger>
-                  <TabsTrigger value="RESOLVED">{tStatus("RESOLVED")}</TabsTrigger>
+                  <TabsTrigger value="all">
+                    {t("list.tabs.all")}
+                    {typeof total === "number" && total > 0 && (
+                      <Badge variant="secondary" className="ml-1.5">{total}</Badge>
+                    )}
+                  </TabsTrigger>
+                  {(["OPEN", "IN_REVIEW", "ESCALATED", "RESOLVED"] as const).map((s) => (
+                    <TabsTrigger key={s} value={s}>
+                      {tStatus(s)}
+                      {!!stats?.[s] && <Badge variant="secondary" className="ml-1.5">{stats[s]}</Badge>}
+                    </TabsTrigger>
+                  ))}
                 </TabsList>
               </Tabs>
-              <div className="flex flex-1 gap-2 sm:max-w-md">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    value={search}
-                    onChange={(e) => {
-                      setSearch(e.target.value);
-                      setPage(1);
-                    }}
-                    placeholder={t("list.search")}
-                    className="pl-9"
-                  />
-                </div>
+              <FilterBar
+                search={search}
+                onSearchChange={(v) => {
+                  setSearch(v);
+                  setPage(1);
+                }}
+                searchPlaceholder={t("list.search")}
+              >
                 <Button variant="outline" size="icon" aria-label={t("list.moreFilters")}>
                   <Filter className="h-4 w-4" />
                 </Button>
-              </div>
+              </FilterBar>
             </div>
 
-            {isLoading ? (
-              <div className="flex items-center justify-center py-12 text-muted-foreground">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("list.loading")}
-              </div>
-            ) : isError ? (
-              <div className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-                {(error as ApiError).message}
-              </div>
-            ) : (
-              <>
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>{t("list.headers.ticket")}</TableHead>
-                        <TableHead>{t("list.headers.title")}</TableHead>
-                        <TableHead>{t("list.headers.category")}</TableHead>
-                        <TableHead>{t("list.headers.priority")}</TableHead>
-                        <TableHead>{t("list.headers.status")}</TableHead>
-                        <TableHead>{t("list.headers.submittedBy")}</TableHead>
-                        <TableHead>{t("list.headers.filed")}</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {items.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={7} className="text-center text-muted-foreground py-12">
-                            {t("list.noResults")}
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        items.map((c) => (
-                          <TableRow key={c.id}>
-                            <TableCell className="font-mono text-xs">{c.ticketNumber}</TableCell>
-                            <TableCell>
-                              <Link
-                                href={`/dashboard/complaints/${c.id}`}
-                                className="font-medium hover:underline"
-                              >
-                                {c.title}
-                              </Link>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline">{tCategory(c.category as "WAGES" | "WORKING_HOURS" | "SAFETY" | "HARASSMENT" | "TERMINATION" | "BENEFITS" | "OTHER")}</Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant={PRIORITY_VARIANT[c.priority]}>
-                                {c.priority === "URGENT" && <AlertTriangle className="mr-1 h-3 w-3" />}
-                                {tPriority(c.priority as "LOW" | "MEDIUM" | "HIGH" | "URGENT")}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant={STATUS_VARIANT[c.status]}>
-                                {tStatus(c.status as "OPEN" | "IN_REVIEW" | "ESCALATED" | "RESOLVED" | "CLOSED")}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-sm">
-                              {c.submittedBy?.name ?? "—"}
-                            </TableCell>
-                            <TableCell className="text-sm text-muted-foreground">
-                              {date(c.createdAt)}
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
-                {totalPages > 1 && (
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <span>
-                      {tCommon("total")}: {total}
-                    </span>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={page <= 1}
-                      >
-                        {tCommon("previous")}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                        disabled={page >= totalPages}
-                      >
-                        {tCommon("next")}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
+            <DataTable
+              columns={columns}
+              data={items}
+              rowKey={(c) => c.id}
+              isLoading={isLoading}
+              isError={isError}
+              errorMessage={(error as ApiError)?.message}
+              loadingLabel={t("list.loading")}
+              emptyTitle={t("list.noResults")}
+              pagination={{
+                page,
+                totalPages,
+                total,
+                pageSize: PAGE_SIZE,
+                onPageChange: setPage,
+                showingLabel: `${tCommon("total")}: ${total}`,
+                previousLabel: tCommon("previous"),
+                nextLabel: tCommon("next"),
+              }}
+            />
           </CardContent>
         </Card>
       </div>

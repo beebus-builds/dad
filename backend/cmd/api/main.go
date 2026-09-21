@@ -18,6 +18,7 @@ import (
 	"github.com/shramjagaran/cms-backend/internal/infrastructure/migrator"
 	"github.com/shramjagaran/cms-backend/internal/infrastructure/postgres"
 	"github.com/shramjagaran/cms-backend/internal/infrastructure/storage"
+	"github.com/shramjagaran/cms-backend/internal/scheduler"
 	"github.com/shramjagaran/cms-backend/internal/usecase"
 	jwtpkg "github.com/shramjagaran/cms-backend/pkg/jwt"
 	"github.com/shramjagaran/cms-backend/pkg/logger"
@@ -56,10 +57,10 @@ func run() error {
 	defer pool.Close()
 	logger.L.Info("db pool ready")
 
-	if err := migrator.RunSchema(ctx, pool); err != nil {
-		logger.L.Fatal("schema migration failed", zap.Error(err))
+	if err := migrator.MigrateAll(ctx, pool); err != nil {
+		logger.L.Fatal("migration failed", zap.Error(err))
 	}
-	logger.L.Info("schema applied")
+	logger.L.Info("migrations applied")
 
 	if err := migrator.SeedAdmin(ctx, pool, migrator.AdminSeed{
 		Email:    cfg.Admin.Email,
@@ -70,11 +71,6 @@ func run() error {
 		logger.L.Fatal("seed admin failed", zap.Error(err))
 	}
 	logger.L.Info("admin seed ok", zap.String("email", cfg.Admin.Email))
-
-	if err := migrator.RunSeed(ctx, pool); err != nil {
-		logger.L.Fatal("seed migration failed", zap.Error(err))
-	}
-	logger.L.Info("seed data applied")
 
 	c, err := cache.New(cfg.Redis)
 	if err != nil {
@@ -101,6 +97,7 @@ func run() error {
 	resetTokenRepo := postgres.NewPasswordResetTokenRepository(pool)
 	verificationCodeRepo := postgres.NewVerificationCodeRepository(pool)
 	complaintRepo := postgres.NewComplaintRepository(pool)
+	complaintNoteRepo := postgres.NewComplaintNoteRepository(pool)
 	documentRepo := postgres.NewDocumentRepository(pool)
 	notificationRepo := postgres.NewNotificationRepository(pool)
 	donationRepo := postgres.NewDonationRepository(pool)
@@ -112,7 +109,10 @@ func run() error {
 	publicEventRegRepo := postgres.NewPublicEventRegistrationRepository(pool)
 	memberAppRepo := postgres.NewMemberApplicationRepository(pool)
 	contactRepo := postgres.NewContactRepository(pool)
-	
+	commLogRepo := postgres.NewCommunicationLogRepository(pool)
+	campaignRepo := postgres.NewCampaignRepository(pool)
+	campaignRecipientRepo := postgres.NewCampaignRecipientRepository(pool)
+
 	authSvc := usecase.NewAuthService(userRepo, nil, resetTokenRepo, verificationCodeRepo, nil)
 	memberSvc := usecase.NewMemberService(memberRepo)
 	eventSvc := usecase.NewEventService(eventRepo)
@@ -121,6 +121,7 @@ func run() error {
 	menuSvc := usecase.NewMenuUsecase(menuRepo)
 	settingsSvc := usecase.NewSettingsService(pool)
 	complaintSvc := usecase.NewComplaintService(complaintRepo)
+	complaintNoteSvc := usecase.NewComplaintNoteService(complaintNoteRepo, complaintRepo)
 	documentSvc := usecase.NewDocumentService(documentRepo)
 	notificationSvc := usecase.NewNotificationService(notificationRepo)
 	donationSvc := usecase.NewDonationService(donationRepo)
@@ -132,50 +133,73 @@ func run() error {
 	publicEventSvc := usecase.NewPublicEventService(eventRepo, publicEventRegRepo)
 	memberAppSvc := usecase.NewMemberApplicationService(memberAppRepo)
 	contactSvc := usecase.NewContactService(contactRepo)
-	
+	commLogSvc := usecase.NewCommunicationLogService(commLogRepo)
+
 	handlers := &handler.Handlers{
-		Auth:          authSvc,
-		Members:       memberSvc,
-		Events:        eventSvc,
-		News:          newsSvc,
-		Pages:         pageSvc,
-		Menus:         menuSvc,
-		Users:         authSvc,
-		Settings:      settingsSvc,
-		Complaints:    complaintSvc,
-		Documents:     documentSvc,
-		Notifications: notificationSvc,
-		Donations:     donationSvc,
-		LegalCases:    legalSvc,
-		Training:      trainingSvc,
-		Incidents:     incidentSvc,
-		AuditLog:      auditSvc,
-		Branches:      branchSvc,
-		PublicEvents:  publicEventSvc,
-		MemberApps:    memberAppSvc,
-		Contact:       contactSvc,
-		DB:            pool,
-		Cache:         c,
+		Auth:              authSvc,
+		Members:           memberSvc,
+		Events:            eventSvc,
+		News:              newsSvc,
+		Pages:             pageSvc,
+		Menus:             menuSvc,
+		Users:             authSvc,
+		Settings:          settingsSvc,
+		Complaints:        complaintSvc,
+		ComplaintNotes:    complaintNoteSvc,
+		Documents:         documentSvc,
+		Notifications:     notificationSvc,
+		Donations:         donationSvc,
+		LegalCases:        legalSvc,
+		Training:          trainingSvc,
+		Incidents:         incidentSvc,
+		AuditLog:          auditSvc,
+		Branches:          branchSvc,
+		PublicEvents:      publicEventSvc,
+		MemberApps:        memberAppSvc,
+		Contact:           contactSvc,
+		CommunicationLogs: commLogSvc,
+		DB:                pool,
+		Cache:             c,
 	}
 
 	jm := jwtpkg.NewManager(cfg.JWT.Secret, cfg.JWT.AccessExpiresIn, cfg.JWT.RefreshExpiresIn, cfg.JWT.Issuer)
 	authSvc.SetJWTManager(jm)
 
-	if cfg.SMTP.Host != "" {
-		mailer := mail.NewSender(cfg.SMTP)
-		authSvc.SetMailer(mailer, cfg.App.FrontendURL, cfg.App.Name)
-		logger.L.Info("mailer configured", zap.String("host", cfg.SMTP.Host))
+	var mailer mail.Mailer
+	if cfg.Mail.Provider == "resend" && cfg.Mail.ResendAPIKey != "" {
+		mailer = mail.NewResendSender(cfg.Mail.ResendAPIKey, cfg.SMTP.From)
+		logger.L.Info("mailer configured", zap.String("provider", "resend"))
+	} else if cfg.SMTP.Host != "" {
+		mailer = mail.NewSender(cfg.SMTP)
+		logger.L.Info("mailer configured", zap.String("provider", "smtp"), zap.String("host", cfg.SMTP.Host))
 	} else {
-		logger.L.Warn("SMTP not configured — password reset emails disabled")
+		logger.L.Warn("no mail provider configured — password reset, renewal reminder, and campaign emails disabled")
+	}
+	if smtpSender, ok := mailer.(*mail.Sender); ok {
+		authSvc.SetMailer(smtpSender, cfg.App.FrontendURL, cfg.App.Name)
 	}
 
-	r := router.New(cfg, handlers, jm, auditRepo)
+	campaignSvc := usecase.NewCampaignService(campaignRepo, campaignRecipientRepo, memberRepo, mailer)
+	handlers.Campaigns = campaignSvc
+
+	schedCtx, schedCancel := context.WithCancel(context.Background())
+	sched := scheduler.New(1*time.Hour,
+		scheduler.NewRenewalReminderJob(memberRepo, notificationSvc, mailer, cfg.App.Name, 14),
+		scheduler.NewComplaintEscalationJob(complaintSvc),
+		campaignSvc.ProcessDueCampaigns,
+	)
+	go sched.Start(schedCtx)
+
+	r := router.New(cfg, handlers, jm, auditRepo, branchRepo)
 
 	srv := &http.Server{
-		Addr:         ":" + cfg.HTTP.Port,
-		Handler:      r,
-		ReadTimeout:  cfg.HTTP.ReadTimeout,
-		WriteTimeout: cfg.HTTP.WriteTimeout,
+		Addr:              ":" + cfg.HTTP.Port,
+		Handler:           r,
+		ReadTimeout:       cfg.HTTP.ReadTimeout,
+		WriteTimeout:      cfg.HTTP.WriteTimeout,
+		IdleTimeout:       cfg.HTTP.IdleTimeout,
+		ReadHeaderTimeout: cfg.HTTP.ReadHeaderTimeout,
+		MaxHeaderBytes:    cfg.HTTP.MaxHeaderBytes,
 	}
 
 	go func() {
@@ -189,6 +213,7 @@ func run() error {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	logger.L.Info("shutting down")
+	schedCancel()
 
 	shutCtx, c2 := context.WithTimeout(context.Background(), 10*time.Second)
 	defer c2()

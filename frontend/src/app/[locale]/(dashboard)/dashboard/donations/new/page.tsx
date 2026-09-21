@@ -2,7 +2,7 @@
 
 import { useRouter } from "@/lib/i18n-navigation";
 import { useTranslations } from "next-intl";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -50,7 +50,7 @@ export default function NewDonationPage() {
     watch,
     formState: { errors },
   } = useForm<DonationInput>({
-    resolver: zodResolver(donationSchema),
+    resolver: zodResolver(donationSchema) as unknown as Resolver<DonationInput>,
     defaultValues: { currency: "NPR", method: "CASH" },
   });
 

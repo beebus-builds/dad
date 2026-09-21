@@ -33,3 +33,12 @@ gzip -f "$BACKUP_FILE"
 
 echo "Backup complete: ${BACKUP_FILE}.gz"
 ls -lh "${BACKUP_FILE}.gz"
+
+echo "Verifying …"
+gzip -t "${BACKUP_FILE}.gz" && echo "OK: archive is valid"
+
+# Retention: keep the 14 most recent backups, prune the rest.
+RETAIN=14
+# shellcheck disable=SC2012
+ls -1t "$BACKUP_DIR"/shramjagaran_*.sql.gz 2>/dev/null | tail -n +$((RETAIN + 1)) | xargs -r rm -f
+echo "Retention: kept latest $RETAIN backups"

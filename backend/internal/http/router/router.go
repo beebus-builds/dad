@@ -10,29 +10,38 @@ import (
 	"github.com/shramjagaran/cms-backend/pkg/jwt"
 )
 
-func New(cfg *config.Config, h *handler.Handlers, jm *jwt.Manager, auditRepo repository.AuditLogRepository) *gin.Engine {
+func New(cfg *config.Config, h *handler.Handlers, jm *jwt.Manager, auditRepo repository.AuditLogRepository, branchRepo repository.BranchRepository) *gin.Engine {
+	scopeResolver := middleware.NewBranchScopeResolver(branchRepo)
 	if cfg.App.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	r := gin.New()
+	r.Use(middleware.RequestID())
 	r.Use(gin.Logger())
 	r.Use(middleware.Recovery())
+	r.Use(middleware.SecurityHeaders())
 	r.Use(middleware.CORS(cfg.CORS.Origins))
 	r.Use(middleware.NewRateLimiter(cfg.RateLimit.Requests).Middleware())
+	if len(cfg.HTTP.TrustedProxies) > 0 {
+		_ = r.SetTrustedProxies(cfg.HTTP.TrustedProxies)
+	}
+
+	authLimiter := middleware.NewRateLimiter(20).Middleware()
 
 	r.GET("/health", h.Health)
+	r.GET("/ready", h.Ready)
 
 	api := r.Group("/api/v1")
 	{
 		auth := api.Group("/auth")
 		{
-			auth.POST("/login", h.Login)
-			auth.POST("/register", h.Register)
-			auth.POST("/refresh", h.Refresh)
-			auth.POST("/forgot-password", h.ForgotPassword)
-			auth.POST("/reset-password", h.ResetPassword)
-			auth.POST("/verify-email", h.VerifyEmail)
-			auth.POST("/resend-otp", h.ResendOTP)
+			auth.POST("/login", authLimiter, h.Login)
+			auth.POST("/register", authLimiter, h.Register)
+			auth.POST("/refresh", authLimiter, h.Refresh)
+			auth.POST("/forgot-password", authLimiter, h.ForgotPassword)
+			auth.POST("/reset-password", authLimiter, h.ResetPassword)
+			auth.POST("/verify-email", authLimiter, h.VerifyEmail)
+			auth.POST("/resend-otp", authLimiter, h.ResendOTP)
 		}
 
 		authed := api.Group("")
@@ -43,9 +52,11 @@ func New(cfg *config.Config, h *handler.Handlers, jm *jwt.Manager, auditRepo rep
 			authed.GET("/notifications", h.ListNotifications)
 			authed.PATCH("/notifications/:id/read", h.MarkRead)
 			authed.POST("/notifications/read-all", h.MarkAllRead)
-			authed.GET("/reports/dashboard", h.ReportsDashboard)
 		authed.PATCH("/auth/profile", h.UpdateProfile)
 		}
+
+		api.GET("/reports/dashboard", middleware.Auth(jm), middleware.RequirePerm(rbac.PermReportsView), h.ReportsDashboard)
+		api.GET("/reports/branches", middleware.Auth(jm), middleware.RequirePerm(rbac.PermReportsView), h.ReportsBranches)
 
 		api.Group("/users").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermUsersManage)).
 			GET("", h.ListUsers).GET("/:id", h.GetUser)
@@ -53,15 +64,60 @@ func New(cfg *config.Config, h *handler.Handlers, jm *jwt.Manager, auditRepo rep
 			POST("", h.CreateUser).PATCH("/:id", h.UpdateUser).DELETE("/:id", h.DeactivateUser)
 		api.Group("/users").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermUsersManage)).
 			DELETE("/:id/hard", h.DeleteUser)
-		
-		authed.GET("/settings", h.GetOrganisationSettings)
-		authed.PUT("/settings", h.UpdateOrganisationSettings)
-		
-		api.Group("/members").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermMembersRead)).
-			GET("", h.ListMembers).GET("/:id", h.GetMember)
-		api.Group("/members").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermMembersWrite)).
-			POST("", h.CreateMember).POST("/import", h.ImportMembers).PATCH("/:id", h.UpdateMember).DELETE("/:id", h.DeleteMember)
-		
+
+		api.GET("/audit-logs", middleware.Auth(jm), middleware.RequirePerm(rbac.PermAuditView), h.ListAuditLogs)
+
+		api.GET("/settings", middleware.Auth(jm), h.GetOrganisationSettings)
+		api.PUT("/settings", middleware.Auth(jm), middleware.RequirePerm(rbac.PermSettingsManage), middleware.Audit(auditRepo), h.UpdateOrganisationSettings)
+
+		api.Group("/members").Use(middleware.Auth(jm), middleware.BranchScope(scopeResolver), middleware.RequirePerm(rbac.PermMembersRead)).
+			GET("", h.ListMembers).GET("/:id", h.GetMember).GET("/:id/timeline", h.GetMemberTimeline).GET("/:id/communication-logs", h.ListCommunicationLogs)
+		api.Group("/members").Use(middleware.Auth(jm), middleware.BranchScope(scopeResolver), middleware.RequirePerm(rbac.PermMembersWrite)).
+			POST("", h.CreateMember).POST("/import", h.ImportMembers).PATCH("/:id", h.UpdateMember).DELETE("/:id", h.DeleteMember).
+			POST("/:id/communication-logs", h.CreateCommunicationLog)
+
+		api.Group("/complaints").Use(middleware.Auth(jm), middleware.BranchScope(scopeResolver), middleware.RequirePerm(rbac.PermComplaintsRead)).
+			GET("", h.ListComplaints).GET("/:id", h.GetComplaint).GET("/stats", h.ComplaintStats).GET("/:id/notes", h.ListComplaintNotes)
+		api.Group("/complaints").Use(middleware.Auth(jm), middleware.BranchScope(scopeResolver), middleware.RequirePerm(rbac.PermComplaintsWrite)).
+			POST("", h.CreateComplaint).PATCH("/:id", h.UpdateComplaint).POST("/:id/notes", h.AddComplaintNote)
+
+		// Frontend's donations-service.ts calls "/payments", not "/donations" — match it here.
+		api.Group("/payments").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermDonationsRead)).
+			GET("", h.ListDonations).GET("/:id", h.GetDonation).GET("/total", h.DonationsTotal)
+		api.Group("/payments").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermDonationsWrite)).
+			POST("", h.CreateDonation)
+
+		api.Group("/legal-cases").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermLegalRead)).
+			GET("", h.ListLegal).GET("/:id", h.GetLegal)
+		api.Group("/legal-cases").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermLegalWrite)).
+			POST("", h.CreateLegal).PATCH("/:id", h.UpdateLegal)
+
+		// Frontend's training-service.ts calls "/training" (singular), not "/trainings".
+		api.Group("/training").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermTrainingRead)).
+			GET("", h.ListTrainings).GET("/:id", h.GetTraining)
+		api.Group("/training").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermTrainingWrite)).
+			POST("", h.CreateTraining).DELETE("/:id", h.DeleteTraining)
+
+		api.Group("/incidents").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermIncidentsRead)).
+			GET("", h.ListIncidents).GET("/:id", h.GetIncident)
+		api.Group("/incidents").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermIncidentsWrite)).
+			POST("", h.CreateIncident)
+
+		api.Group("/documents").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermDocumentsRead)).
+			GET("", h.ListDocuments).GET("/:id", h.GetDocument)
+		api.Group("/documents").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermDocumentsWrite)).
+			POST("", h.CreateDocument).DELETE("/:id", h.DeleteDocument)
+
+		api.Group("/campaigns").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermCampaignsRead)).
+			GET("", h.ListCampaigns).GET("/:id", h.GetCampaign).GET("/:id/stats", h.CampaignStats).GET("/:id/recipients", h.ListCampaignRecipients)
+		api.Group("/campaigns").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermCampaignsWrite)).
+			POST("", h.CreateCampaign).PATCH("/:id", h.UpdateCampaign).POST("/preview-audience", h.PreviewCampaignAudience).
+			POST("/:id/schedule", h.ScheduleCampaign).POST("/:id/send", h.SendCampaign).POST("/:id/cancel", h.CancelCampaign)
+
+		api.Group("/branches").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermBranchesManage)).
+			GET("", h.BranchesList).GET("/:id", h.GetBranch).
+			POST("", h.CreateBranch).PATCH("/:id", h.UpdateBranch).DELETE("/:id", h.DeleteBranch)
+
 		api.Group("/events").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermEventsRead)).
 			GET("", h.ListEvents).GET("/:id", h.GetEvent)
 		api.Group("/events").Use(middleware.Auth(jm), middleware.RequirePerm(rbac.PermEventsWrite)).

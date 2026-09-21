@@ -32,7 +32,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
@@ -67,7 +67,7 @@ export default function MenuManagementPage() {
   });
 
   const form = useForm<MenuFormValues>({
-    resolver: zodResolver(menuSchema),
+    resolver: zodResolver(menuSchema) as unknown as Resolver<MenuFormValues>,
     defaultValues: {
       label: "",
       href: "",

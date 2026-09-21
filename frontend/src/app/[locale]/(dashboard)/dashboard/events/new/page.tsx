@@ -2,7 +2,7 @@
 
 import { useRouter } from "@/lib/i18n-navigation";
 import { useTranslations } from "next-intl";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -59,7 +59,7 @@ export default function NewEventPage() {
     watch,
     formState: { errors },
   } = useForm<EventInput>({
-    resolver: zodResolver(eventSchema),
+    resolver: zodResolver(eventSchema) as unknown as Resolver<EventInput>,
     defaultValues: { category: "MEETING" },
   });
 

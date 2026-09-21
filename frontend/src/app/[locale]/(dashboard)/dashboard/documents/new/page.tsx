@@ -2,7 +2,7 @@
 
 import { useRouter } from "@/lib/i18n-navigation";
 import { useTranslations } from "next-intl";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Loader2, Upload } from "lucide-react";
@@ -54,7 +54,7 @@ export default function NewDocumentPage() {
     watch,
     formState: { errors },
   } = useForm<DocInput>({
-    resolver: zodResolver(docSchema),
+    resolver: zodResolver(docSchema) as unknown as Resolver<DocInput>,
     defaultValues: { category: "POLICY", visibility: "MEMBERS" },
   });
 

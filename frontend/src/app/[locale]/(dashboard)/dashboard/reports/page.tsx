@@ -11,6 +11,8 @@ import { PERMISSIONS } from "@/lib/rbac";
 import { useLocaleFormat } from "@/lib/use-locale-format";
 import { reportsService } from "@/services/reports-service";
 import { ApiError } from "@/lib/api-client";
+import { LineChartWidget } from "@/components/dashboard/charts/line-chart";
+import { BarChartWidget } from "@/components/dashboard/charts/bar-chart";
 
 export default function ReportsPage() {
   const t = useTranslations("reports");
@@ -20,6 +22,11 @@ export default function ReportsPage() {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["reports-dashboard"],
     queryFn: () => reportsService.dashboard(),
+  });
+
+  const { data: branchData } = useQuery({
+    queryKey: ["reports-branches"],
+    queryFn: () => reportsService.branchBreakdown(),
   });
 
   return (
@@ -97,24 +104,34 @@ export default function ReportsPage() {
                 <CardHeader>
                   <CardTitle>{t("monthlyGrowth")}</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  {data.monthlyGrowth.map((m: { month: string; members: number; complaints: number }) => (
-                    <div key={m.month} className="space-y-1">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium">{m.month}</span>
-                        <span className="text-muted-foreground tabular-nums">
-                          +{m.members} {t("members")} · {m.complaints} {t("complaints")}
-                        </span>
-                      </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-muted">
-                        <div
-                          className="h-full bg-gradient-to-r from-govt-blue to-union-red"
-                          style={{ width: `${Math.min(100, m.members * 2)}%` }}
-                          aria-hidden
-                        />
-                      </div>
-                    </div>
-                  ))}
+                <CardContent>
+                  <LineChartWidget
+                    data={data.monthlyGrowth.map((m: { month: string; members: number; complaints: number }) => ({
+                      label: m.month,
+                      members: m.members,
+                      complaints: m.complaints,
+                    }))}
+                    xKey="label"
+                    series={[
+                      { key: "members", label: t("members"), color: "hsl(var(--govt-blue))" },
+                      { key: "complaints", label: t("complaints"), color: "hsl(var(--union-red))" },
+                    ]}
+                  />
+                </CardContent>
+              </Card>
+            ) : null}
+
+            {branchData?.length ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t("provincePerformance")}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <BarChartWidget
+                    data={branchData.map((b) => ({ name: b.branchName, value: b.members }))}
+                    horizontal
+                    height={Math.max(200, branchData.length * 36)}
+                  />
                 </CardContent>
               </Card>
             ) : (

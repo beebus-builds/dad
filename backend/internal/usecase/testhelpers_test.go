@@ -94,6 +94,23 @@ func (r *stubUserRepo) Deactivate(_ context.Context, id string) error {
 	return nil
 }
 
+func (r *stubUserRepo) MarkEmailVerified(_ context.Context, id string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if u, ok := r.users[id]; ok {
+		now := time.Now()
+		u.EmailVerifiedAt = &now
+	}
+	return nil
+}
+
+func (r *stubUserRepo) Delete(_ context.Context, id string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	delete(r.users, id)
+	return nil
+}
+
 type stubAuditRepo struct {
 	mu    sync.Mutex
 	logs  []entity.AuditLog

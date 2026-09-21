@@ -10,7 +10,7 @@ const intlMiddleware = createMiddleware({
 });
 
 const PROTECTED_PREFIXES_REGEX = /^\/(?:(ne)\/)?dashboard/;
-const PUBLIC_AUTH_REGEX = /^\/(?:(ne)\/)?(login|register|forgot-password)$/;
+const PUBLIC_AUTH_REGEX = /^\/(?:(ne|en)\/)?(login|register|forgot-password|reset-password)$/;
 
 export default function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

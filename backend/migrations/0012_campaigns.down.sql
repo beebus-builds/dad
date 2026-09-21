@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS campaign_recipients CASCADE;
+DROP TABLE IF EXISTS campaigns CASCADE;

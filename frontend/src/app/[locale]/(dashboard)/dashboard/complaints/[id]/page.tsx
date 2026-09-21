@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { use } from "react";
+import { use, useState } from "react";
 import { useTranslations } from "next-intl";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   AlertTriangle,
   ArrowLeft,
   Calendar,
+  Clock,
   Loader2,
   MessageSquare,
   Paperclip,
@@ -18,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { PermissionGate } from "@/components/auth/permission-gate";
@@ -60,11 +63,48 @@ export default function ComplaintDetailPage({
   const tCommon = useTranslations("common");
   const { dateTime, date } = useLocaleFormat();
   const { id } = use(params);
+  const queryClient = useQueryClient();
+  const [noteBody, setNoteBody] = useState("");
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["complaint", id],
     queryFn: () => complaintService.detail(id),
     enabled: Boolean(id),
   });
+
+  const { data: notes } = useQuery({
+    queryKey: ["complaint-notes", id],
+    queryFn: () => complaintService.notes(id),
+    enabled: Boolean(id),
+  });
+
+  const addNoteMutation = useMutation({
+    mutationFn: (body: string) => complaintService.addNote(id, body),
+    onSuccess: () => {
+      setNoteBody("");
+      toast.success(t("detail.notePosted"));
+      queryClient.invalidateQueries({ queryKey: ["complaint-notes", id] });
+      queryClient.invalidateQueries({ queryKey: ["complaint", id] });
+    },
+    onError: (err: ApiError) => toast.error(err.message || t("detail.noteFailed")),
+  });
+
+  const resolveMutation = useMutation({
+    mutationFn: () => complaintService.resolve(id),
+    onSuccess: () => {
+      toast.success(t("detail.resolveSuccess"));
+      queryClient.invalidateQueries({ queryKey: ["complaint", id] });
+      queryClient.invalidateQueries({ queryKey: ["complaints"] });
+    },
+    onError: (err: ApiError) => toast.error(err.message || t("detail.resolveFailed")),
+  });
+
+  const handlePostNote = () => {
+    if (noteBody.trim().length < 2) {
+      toast.error(t("detail.noteRequired"));
+      return;
+    }
+    addNoteMutation.mutate(noteBody.trim());
+  };
 
   if (isLoading) {
     return (
@@ -160,6 +200,21 @@ export default function ComplaintDetailPage({
                   what={t("detail.filedComplaint")}
                 />
               </ul>
+
+              {notes && notes.length > 0 && (
+                <>
+                  <Separator />
+                  <h3 className="font-semibold">{t("detail.caseNotes")}</h3>
+                  <ul className="space-y-3 text-sm">
+                    {notes.map((n) => (
+                      <li key={n.id} className="rounded-md border bg-muted/20 p-3">
+                        <p className="whitespace-pre-wrap">{n.body}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{dateTime(n.createdAt)}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
               {c.attachments && c.attachments.length > 0 && (
                 <>
                   <Separator />
@@ -184,21 +239,35 @@ export default function ComplaintDetailPage({
               <Separator />
               <div className="space-y-3">
                 <h3 className="font-semibold">{t("detail.addUpdate")}</h3>
-                <p className="text-xs text-muted-foreground">
-                  {t("detail.updateHint")}
-                </p>
+                <Textarea
+                  value={noteBody}
+                  onChange={(e) => setNoteBody(e.target.value)}
+                  placeholder={t("detail.noteBody")}
+                  rows={3}
+                  disabled={addNoteMutation.isPending}
+                />
                 <div className="flex flex-wrap gap-2">
-                  <Button disabled>
-                    <MessageSquare className="h-4 w-4" /> {t("detail.postUpdate")}
+                  <Button onClick={handlePostNote} disabled={addNoteMutation.isPending}>
+                    {addNoteMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <MessageSquare className="h-4 w-4" />
+                    )}
+                    {t("detail.postUpdate")}
                   </Button>
-                  <Button variant="outline" disabled>
-                    <Paperclip className="h-4 w-4" /> {t("detail.attach")}
-                  </Button>
-                  <PermissionGate permission={PERMISSIONS.COMPLAINTS_RESOLVE} fallback={null}>
-                    <Button variant="success" className="ml-auto" disabled>
-                      {t("detail.markResolved")}
-                    </Button>
-                  </PermissionGate>
+                  {c.status !== "RESOLVED" && c.status !== "CLOSED" && (
+                    <PermissionGate permission={PERMISSIONS.COMPLAINTS_RESOLVE} fallback={null}>
+                      <Button
+                        variant="success"
+                        className="ml-auto"
+                        onClick={() => resolveMutation.mutate()}
+                        disabled={resolveMutation.isPending}
+                      >
+                        {resolveMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                        {t("detail.markResolved")}
+                      </Button>
+                    </PermissionGate>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -247,6 +316,16 @@ export default function ComplaintDetailPage({
                 <Info label={t("detail.priority")} value={tPriority(c.priority as "LOW" | "MEDIUM" | "HIGH" | "URGENT")} />
                 <Info label={t("detail.category")} value={tCategory(c.category as "WAGES" | "WORKING_HOURS" | "SAFETY" | "HARASSMENT" | "TERMINATION" | "BENEFITS" | "OTHER")} />
                 <Info label={t("detail.lastUpdated")} value={dateTime(c.updatedAt)} />
+                {c.dueAt && (
+                  <div>
+                    <div className="text-xs uppercase tracking-wider text-muted-foreground">{t("detail.dueBy")}</div>
+                    <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                      <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                      {dateTime(c.dueAt)}
+                      {c.isOverdue && <Badge variant="destructive">{t("detail.overdue")}</Badge>}
+                    </div>
+                  </div>
+                )}
                 {c.resolvedAt && <Info label={t("detail.resolved")} value={dateTime(c.resolvedAt)} />}
               </CardContent>
             </Card>

@@ -12,10 +12,18 @@ on:
       - "infrastructure/**"
       - ".github/workflows/validate.yml"
 
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   openapi:
     name: openapi spec
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - name: Validate OpenAPI 3.1
@@ -28,6 +36,7 @@ jobs:
   terraform:
     name: terraform fmt + validate
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -37,16 +46,11 @@ jobs:
           terraform_version: 1.6.0
 
       - name: terraform fmt
-        run: |
-          cd infrastructure
-          terraform fmt -check -recursive
+        run: terraform fmt -check -recursive infrastructure
 
-      - name: terraform init
+      - name: terraform validate (each module)
         run: |
-          cd infrastructure
-          terraform init -backend=false
-
-      - name: terraform validate
-        run: |
-          cd infrastructure
-          terraform validate -no-color
+          for dir in infrastructure/neon infrastructure/cloudflare_r2 infrastructure/cloudflare_dns; do
+            echo "=== $dir ==="
+            (cd "$dir" && terraform init -backend=false && terraform validate -no-color)
+          done

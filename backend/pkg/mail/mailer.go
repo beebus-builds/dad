@@ -24,7 +24,7 @@ func (s *Sender) sendMail(to, subject, body, contentType string) error {
 	from := fmt.Sprintf("%s <%s>", s.cfg.FromName, s.cfg.From)
 	msg := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\nContent-Type: %s; charset=UTF-8\r\n\r\n%s\r\n",
 		from, to, subject, contentType, body)
-	addr := fmt.Sprintf("%s:%d", s.cfg.Host, s.cfg.Port)
+	addr := net.JoinHostPort(s.cfg.Host, fmt.Sprint(s.cfg.Port))
 
 	d := net.Dialer{Timeout: 10 * time.Second}
 	conn, err := d.Dial("tcp", addr)

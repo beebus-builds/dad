@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/shramjagaran/cms-backend/internal/domain/entity"
 	"github.com/shramjagaran/cms-backend/pkg/apperror"
@@ -93,13 +94,19 @@ func TestRegister_Success(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected success, got %v", err)
 	}
-	if res.User.Role != entity.RoleMember {
-		t.Errorf("expected default role MEMBER, got %q", res.User.Role)
+	created, err := repo.GetByID(context.Background(), res.UserID)
+	if err != nil {
+		t.Fatalf("expected created user to be fetchable, got %v", err)
 	}
-	if !res.User.IsActive {
-		t.Error("new user should be active")
+	if created.Role != entity.RoleMember {
+		t.Errorf("expected default role MEMBER, got %q", created.Role)
 	}
-	if !strings.HasPrefix(res.User.ID, "") {
+	// New registrations start inactive pending email verification (an OTP is
+	// sent as part of Register; the verify-email endpoint activates them).
+	if created.IsActive {
+		t.Error("new user should be inactive pending email verification")
+	}
+	if !strings.HasPrefix(res.UserID, "") {
 		t.Error("expected non-empty ID")
 	}
 }
@@ -107,7 +114,9 @@ func TestRegister_Success(t *testing.T) {
 func TestRegister_DuplicateEmail(t *testing.T) {
 	repo := newStubUserRepo()
 	audit := &stubAuditRepo{}
-	seedUser(t, repo, "sita@example.com", entity.RoleMember, "Password1", true)
+	existing := seedUser(t, repo, "sita@example.com", entity.RoleMember, "Password1", true)
+	now := time.Now()
+	existing.EmailVerifiedAt = &now
 	svc, _ := newTestAuthService(repo, audit)
 
 	_, err := svc.Register(context.Background(), RegisterInput{

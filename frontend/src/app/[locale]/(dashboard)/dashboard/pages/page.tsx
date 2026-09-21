@@ -32,7 +32,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { RichTextEditor } from "@/components/editor/rich-text-editor";
@@ -69,7 +69,7 @@ export default function PagesDashboardPage() {
   });
 
   const form = useForm<PageFormValues>({
-    resolver: zodResolver(pageSchema),
+    resolver: zodResolver(pageSchema) as unknown as Resolver<PageFormValues>,
     defaultValues: {
       title: "",
       titleNepali: "",

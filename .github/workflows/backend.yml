@@ -70,7 +70,7 @@ jobs:
           ls -la bin
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: api-linux-amd64
           path: backend/bin/api-linux-amd64

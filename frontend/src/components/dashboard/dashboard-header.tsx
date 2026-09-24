@@ -42,82 +42,94 @@ export function DashboardHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur sm:px-6">
+    <header className="border-border/70 bg-background/85 sticky top-0 z-30 flex h-20 items-center gap-3 border-b px-4 backdrop-blur-xl sm:gap-5 sm:px-6 lg:px-8">
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="md:hidden shrink-0" aria-label={t("openNav")}>
+          <Button
+            variant="outline"
+            size="icon"
+            className="shrink-0 md:hidden"
+            aria-label={t("openNav")}
+          >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-64 p-0">
+        <SheetContent side="left" className="w-72 p-0">
           <DashboardSidebar onNavClick={() => setMobileOpen(false)} />
         </SheetContent>
       </Sheet>
-      <form className="flex-1 max-w-xl">
+      <form className="max-w-xl flex-1">
         <label htmlFor="dashboard-search" className="sr-only">
           {tCommon("search")}
         </label>
         <div className="relative">
           <Search
-            className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            className="text-muted-foreground absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2"
             aria-hidden
           />
           <Input
             id="dashboard-search"
             type="search"
             placeholder={t("searchPlaceholder")}
-            className="pl-9"
+            className="bg-muted/70 focus-visible:border-primary/40 focus-visible:bg-card h-11 rounded-xl border-transparent pr-4 pl-11 shadow-none"
           />
         </div>
       </form>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2">
         <ThemeToggle />
-        <Button variant="ghost" size="icon" aria-label={t("notificationsAria")} className="relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={t("notificationsAria")}
+          className="relative rounded-xl"
+        >
           <Bell className="h-5 w-5" />
-          <span className="absolute right-2 top-2 inline-flex h-2 w-2 rounded-full bg-union-red" />
+          <span className="bg-union-red ring-background absolute top-2 right-2 inline-flex h-2 w-2 rounded-full ring-2" />
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="flex items-center gap-3 h-auto px-2 py-1.5"
-                  aria-label={t("userMenu")}
-                >
-              <Avatar className="h-8 w-8">
+            <Button
+              variant="ghost"
+              className="flex h-auto items-center gap-2.5 rounded-xl px-1.5 py-1.5 sm:gap-3"
+              aria-label={t("userMenu")}
+            >
+              <Avatar className="ring-primary/10 h-9 w-9 ring-2">
                 <AvatarImage src={user?.avatarUrl} alt="" />
                 <AvatarFallback>{getInitials(user?.fullName ?? "?")}</AvatarFallback>
               </Avatar>
               <div className="hidden text-left sm:block">
-                <div className="text-sm font-medium">{user?.fullName ?? "Guest"}</div>
-                <div className="text-xs text-muted-foreground">
+                <div className="max-w-32 truncate text-sm font-semibold">
+                  {user?.fullName ?? "Guest"}
+                </div>
+                <div className="text-muted-foreground text-xs">
                   {user ? tRoles(ROLE_KEYS[user.role as keyof typeof ROLE_KEYS]) : ""}
                 </div>
               </div>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>
-              <div className="font-medium">{user?.fullName}</div>
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="mt-1">
-                  {user ? tRoles(ROLE_KEYS[user.role as keyof typeof ROLE_KEYS]) : ""}
+          <DropdownMenuContent align="end" className="w-60 p-1.5">
+            <DropdownMenuLabel className="px-3 py-2">
+              <div className="font-semibold">{user?.fullName}</div>
+              {user && (
+                <Badge variant="secondary" className="mt-1.5">
+                  {tRoles(ROLE_KEYS[user.role as keyof typeof ROLE_KEYS])}
                 </Badge>
-              </div>
+              )}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href="/dashboard/profile">
-                <UserIcon className="h-4 w-4" /> {tCommon("profile")}
+                <UserIcon className="mr-2 h-4 w-4" /> {tCommon("profile")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href="/dashboard/settings">
-                <Settings className="h-4 w-4" /> {tCommon("settings")}
+                <Settings className="mr-2 h-4 w-4" /> {tCommon("settings")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => logout.mutate()} className="text-destructive">
-              <LogOut className="h-4 w-4" /> {tCommon("signOut")}
+              <LogOut className="mr-2 h-4 w-4" /> {tCommon("signOut")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

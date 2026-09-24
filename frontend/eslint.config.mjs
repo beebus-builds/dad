@@ -1,17 +1,9 @@
-import { FlatCompat } from "@eslint/eslintrc";
-import { fileURLToPath } from "node:url";
-import { dirname } from "node:path";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTypescript from "eslint-config-next/typescript";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
-/** @type {import("eslint").Linter.Config[]} */
 const config = [
-  ...compat.extends("next/core-web-vitals"),
+  ...nextVitals,
+  ...nextTypescript,
   {
     rules: {
       "react/no-unescaped-entities": "off",

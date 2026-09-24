@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n-navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PublicPageHeader } from "@/components/public/public-page-header";
 import { Button } from "@/components/ui/button";
+import { Scale } from "lucide-react";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -18,11 +19,15 @@ export default async function LegalPage({ params }: { params: Promise<{ locale: 
   const t = await getTranslations("legal");
   const tNav = await getTranslations("nav");
   return (
-    <div className="container py-16">
+    <div className="container space-y-8 py-12 sm:py-16">
       <div className="mx-auto max-w-3xl">
-        <h1 className="text-4xl font-bold tracking-tight">{t("title")}</h1>
-        <p className="mt-3 text-muted-foreground">{t("subtitle")}</p>
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
+        <PublicPageHeader
+          eyebrow="सहायता"
+          title={t("title")}
+          description={t("subtitle")}
+          icon={Scale}
+        />
+        <div className="mt-8 grid gap-4 md:grid-cols-2">
           {AREA_KEYS.map((k) => (
             <Card key={k}>
               <CardHeader>
@@ -36,7 +41,7 @@ export default async function LegalPage({ params }: { params: Promise<{ locale: 
             </Card>
           ))}
         </div>
-        <div className="mt-10 rounded-xl border bg-muted/30 p-8 text-center">
+        <div className="border-primary/15 bg-primary/[0.04] shadow-soft mt-8 rounded-3xl border p-8 text-center sm:p-10">
           <h2 className="text-2xl font-semibold">{t("call")}</h2>
           <div className="mt-4 flex justify-center gap-3">
             <Button asChild>

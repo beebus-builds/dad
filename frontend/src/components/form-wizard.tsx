@@ -54,7 +54,10 @@ export function FormWizard({
 
   return (
     <div className="space-y-8">
-      <nav aria-label="Form progress" className="space-y-2">
+      <nav
+        aria-label="Form progress"
+        className="border-border/70 bg-card shadow-soft rounded-2xl border p-4"
+      >
         <div className="flex items-center justify-between">
           {steps.map((step, i) => {
             const isActive = i === currentStep;
@@ -68,14 +71,14 @@ export function FormWizard({
                 className={cn(
                   "flex flex-col items-center gap-1 text-center transition-colors",
                   isActive && "text-primary",
-                  isCompleted && "cursor-pointer text-success hover:text-success/80",
+                  isCompleted && "text-success hover:text-success/80 cursor-pointer",
                   !isCompleted && !isActive && "text-muted-foreground/40",
                 )}
               >
                 <span
                   className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all",
-                    isActive && "bg-primary text-primary-foreground ring-2 ring-primary/20",
+                    "flex h-9 w-9 items-center justify-center rounded-xl text-xs font-bold transition-all",
+                    isActive && "bg-primary text-primary-foreground ring-primary/20 ring-2",
                     isCompleted && "bg-success text-success-foreground",
                     !isCompleted && !isActive && "bg-muted text-muted-foreground/40",
                   )}
@@ -87,10 +90,10 @@ export function FormWizard({
             );
           })}
         </div>
-        <div className="relative h-1.5 overflow-hidden rounded-full bg-muted">
+        <div className="bg-muted relative h-2 overflow-hidden rounded-full">
           <div
-            className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
-            style={{ width: `${((currentStep) / (total - 1)) * 100}%` }}
+            className="bg-primary h-full rounded-full transition-all duration-500 ease-out"
+            style={{ width: `${(currentStep / (total - 1)) * 100}%` }}
           />
         </div>
       </nav>

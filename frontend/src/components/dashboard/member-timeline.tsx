@@ -31,7 +31,7 @@ const TYPE_COLOR: Record<TimelineEventType, string> = {
   COMPLAINT: "bg-warning/15 text-warning",
   DONATION: "bg-success/15 text-success",
   EVENT: "bg-primary/15 text-primary",
-  TRAINING: "bg-purple-500/15 text-purple-600",
+  TRAINING: "bg-secondary/10 text-secondary",
   LEGAL_CASE: "bg-destructive/15 text-destructive",
   NOTIFICATION: "bg-muted text-muted-foreground",
   COMMUNICATION_LOG: "bg-govt-blue/15 text-govt-blue",
@@ -50,7 +50,7 @@ export function MemberTimeline({ memberId }: { memberId: string }) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8 text-muted-foreground">
+      <div className="text-muted-foreground flex items-center justify-center py-8">
         <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {tCommon("loading")}
       </div>
     );
@@ -59,7 +59,7 @@ export function MemberTimeline({ memberId }: { memberId: string }) {
   const items = data?.data ?? [];
 
   if (items.length === 0) {
-    return <p className="py-4 text-sm text-muted-foreground">{t("empty")}</p>;
+    return <p className="text-muted-foreground py-4 text-sm">{t("empty")}</p>;
   }
 
   return (
@@ -68,15 +68,19 @@ export function MemberTimeline({ memberId }: { memberId: string }) {
         const Icon = TYPE_ICON[item.type] ?? Bell;
         return (
           <li key={`${item.type}-${item.refId}-${i}`} className="flex gap-3">
-            <div className={`mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${TYPE_COLOR[item.type] ?? "bg-muted text-muted-foreground"}`}>
+            <div
+              className={`mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${TYPE_COLOR[item.type] ?? "bg-muted text-muted-foreground"}`}
+            >
               <Icon className="h-4 w-4" />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-medium leading-tight">{item.title}</p>
-                <span className="shrink-0 text-xs text-muted-foreground">{t(`types.${item.type}`)}</span>
+                <p className="text-sm leading-tight font-medium">{item.title}</p>
+                <span className="text-muted-foreground shrink-0 text-xs">
+                  {t(`types.${item.type}`)}
+                </span>
               </div>
-              <p className="text-xs text-muted-foreground">{dateTime(item.occurredAt)}</p>
+              <p className="text-muted-foreground text-xs">{dateTime(item.occurredAt)}</p>
             </div>
           </li>
         );

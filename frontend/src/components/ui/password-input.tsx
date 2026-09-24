@@ -6,8 +6,19 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { InputProps } from "@/components/ui/input";
 
-const PasswordInput = forwardRef<HTMLInputElement, InputProps & { showPasswordLabel?: string; hidePasswordLabel?: string }>(
-  ({ className, showPasswordLabel = "Show password", hidePasswordLabel = "Hide password", ...props }, ref) => {
+const PasswordInput = forwardRef<
+  HTMLInputElement,
+  InputProps & { showPasswordLabel?: string; hidePasswordLabel?: string }
+>(
+  (
+    {
+      className,
+      showPasswordLabel = "Show password",
+      hidePasswordLabel = "Hide password",
+      ...props
+    },
+    ref,
+  ) => {
     const [visible, setVisible] = useState(false);
 
     return (
@@ -16,7 +27,7 @@ const PasswordInput = forwardRef<HTMLInputElement, InputProps & { showPasswordLa
           ref={ref}
           type={visible ? "text" : "password"}
           className={cn(
-            "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+            "border-input bg-card text-foreground ring-offset-background placeholder:text-muted-foreground/70 hover:border-primary/30 focus-visible:border-primary focus-visible:ring-ring flex h-11 w-full rounded-xl border px-3.5 py-2 pr-12 text-sm shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
             className,
           )}
           {...props}
@@ -25,7 +36,7 @@ const PasswordInput = forwardRef<HTMLInputElement, InputProps & { showPasswordLa
           type="button"
           variant="ghost"
           size="icon"
-          className="absolute right-0 top-0 h-10 w-10 text-muted-foreground hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground absolute top-0.5 right-0.5 h-10 w-10"
           onClick={() => setVisible(!visible)}
           tabIndex={-1}
           aria-label={visible ? hidePasswordLabel : showPasswordLabel}

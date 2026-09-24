@@ -6,20 +6,7 @@ import { Link, usePathname, useRouter } from "@/lib/i18n-navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Search,
-  X,
-  Menu,
-  ChevronDown,
-  Gavel,
-  Users,
-  MessageSquare,
-  ExternalLink,
-  Heart,
-  Newspaper,
-  Shield,
-  ArrowUpRight,
-} from "lucide-react";
+import { Search, X, Menu, ChevronDown, Shield, ArrowUpRight } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   DropdownMenu,
@@ -27,11 +14,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { useQuery } from "@tanstack/react-query";
 import { menuService } from "@/services/menu-service";
-import { publicService } from "@/services/public-service";
+import { cn } from "@/lib/utils";
 
 const FALLBACK_NAV = [
   { id: "fallback-about", label: "हाम्रो बारेमा", href: "/about" },
@@ -67,8 +53,8 @@ export function PublicHeader() {
   const resourceItems = menus.length > 0 ? menus.slice(4) : FALLBACK_RESOURCES;
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
+    const handleScroll = () => setIsScrolled(window.scrollY > 12);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -77,6 +63,13 @@ export function PublicHeader() {
     setMobileMenuOpen(false);
   }, [pathname, locale]);
 
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -84,140 +77,216 @@ export function PublicHeader() {
     }
   };
 
+  const isActive = (href: string) =>
+    pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
+
   return (
-    <header className="relative w-full z-50 bg-white dark:bg-background border-b select-none">
-      {/* UTILITY BAR: quiet, informational — govt-blue, small type, no shouting */}
-      <div className="hidden lg:block bg-govt-blue text-white/90">
-        <div className="container mx-auto px-4 flex items-center justify-between h-9 text-xs">
+    <header
+      className={cn(
+        "border-border/70 bg-background/90 sticky top-0 z-50 w-full border-b backdrop-blur-xl transition-shadow",
+        isScrolled && "shadow-soft",
+      )}
+    >
+      <div className="bg-foreground text-background hidden lg:block">
+        <div className="container flex h-9 items-center justify-between px-4 text-xs">
           <div className="flex items-center gap-5">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-1 hover:text-white transition-colors focus:outline-none">
+                <button className="hover:text-background/80 flex items-center gap-1.5 transition-colors focus:outline-none">
                   श्रम कानुन संकलन <ChevronDown className="h-3 w-3" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56 p-1">
+              <DropdownMenuContent align="start" className="w-56 p-1.5">
                 <DropdownMenuItem asChild>
-                  <Link href="/legal" className="text-sm py-2">श्रम ऐन, २०७४</Link>
+                  <Link href="/legal" className="py-2 text-sm">
+                    श्रम ऐन, २०७४
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/legal" className="text-sm py-2">श्रम नियमावली, २०७५</Link>
+                  <Link href="/legal" className="py-2 text-sm">
+                    श्रम नियमावली, २०७५
+                  </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-1 hover:text-white transition-colors focus:outline-none">
+                <button className="hover:text-background/80 flex items-center gap-1.5 transition-colors focus:outline-none">
                   संस्थागत जानकारी <ChevronDown className="h-3 w-3" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56 p-1">
+              <DropdownMenuContent align="start" className="w-56 p-1.5">
                 <DropdownMenuItem asChild>
-                  <Link href="/about" className="text-sm py-2">केन्द्रीय कार्यसमिति</Link>
+                  <Link href="/about" className="py-2 text-sm">
+                    केन्द्रीय कार्यसमिति
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/branches" className="text-sm py-2">जिल्ला शाखाहरू</Link>
+                  <Link href="/branches" className="py-2 text-sm">
+                    जिल्ला शाखाहरू
+                  </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <span className="hidden xl:inline text-white/50">|</span>
-            <Link href="/legal" className="hidden xl:inline hover:text-white transition-colors">न्यूनतम पारिश्रमिक २०८३</Link>
-            <Link href="/register" className="hidden xl:inline hover:text-white transition-colors">अनलाइन सदस्यता फारम</Link>
-            <Link href="/contact" className="hidden xl:inline hover:text-white transition-colors">उजुरी तथा सहायता डेस्क</Link>
+            <span className="bg-background/20 hidden h-3 w-px xl:inline" />
+            <Link
+              href="/legal"
+              className="hover:text-background/80 hidden transition-colors xl:inline"
+            >
+              न्यूनतम पारिश्रमिक २०८३
+            </Link>
+            <Link
+              href="/register"
+              className="hover:text-background/80 hidden transition-colors xl:inline"
+            >
+              अनलाइन सदस्यता फारम
+            </Link>
+            <Link
+              href="/contact"
+              className="hover:text-background/80 hidden transition-colors xl:inline"
+            >
+              उजुरी तथा सहायता डेस्क
+            </Link>
           </div>
 
-          <div className="flex items-center gap-5">
-            <Link href="/donate" className="flex items-center gap-1 hover:text-white transition-colors">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/donate"
+              className="hover:text-background/80 flex items-center gap-1 transition-colors"
+            >
               सहयोग कोष <ArrowUpRight className="h-3 w-3" />
             </Link>
-            <div className="h-3 w-px bg-white/25" />
-            <Link href="/dashboard" className="flex items-center gap-1.5 hover:text-white transition-colors">
+            <span className="bg-background/20 h-3 w-px" />
+            <Link
+              href="/dashboard"
+              className="hover:text-background/80 flex items-center gap-1.5 font-medium transition-colors"
+            >
               <Shield className="h-3 w-3" /> सदस्य लग-इन
             </Link>
           </div>
         </div>
       </div>
 
-      {/* MAIN ROW: logo + primary nav */}
-      <div className="container mx-auto px-4 flex items-center gap-6 h-20">
-        <Link href="/" className="hover:opacity-90 transition-opacity shrink-0 flex items-center gap-3">
-          <Image
-            src="/image/Logo.jpeg"
-            alt="Shram Jagaran Network Logo"
-            width={56}
-            height={56}
-            className="h-14 w-14 object-contain rounded-sm"
-            priority
-          />
-          <span className="hidden sm:flex flex-col leading-tight">
-            <span className="text-lg font-bold tracking-tight text-foreground font-devanagari">{tCommon("appName")}</span>
-            <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Shram Jagaran Network</span>
+      <div className="container flex h-[4.5rem] items-center gap-5 px-4">
+        <Link
+          href="/"
+          className="group flex shrink-0 items-center gap-3"
+          aria-label={tCommon("appName")}
+        >
+          <span className="border-border/70 bg-card flex h-12 w-12 items-center justify-center rounded-2xl border shadow-sm transition-transform duration-200 group-hover:scale-105">
+            <Image
+              src="/image/Logo.jpeg"
+              alt="Shram Jagaran Network Logo"
+              width={48}
+              height={48}
+              className="h-10 w-10 rounded-xl object-contain"
+              priority
+            />
+          </span>
+          <span className="hidden flex-col leading-tight sm:flex">
+            <span className="font-devanagari text-foreground text-lg font-bold tracking-tight">
+              {tCommon("appName")}
+            </span>
+            <span className="text-muted-foreground text-[10px] font-bold tracking-[0.18em] uppercase">
+              Shram Jagaran Network
+            </span>
           </span>
         </Link>
 
-        {/* Primary nav */}
-        <nav className="hidden lg:flex flex-1 items-center justify-end gap-1 h-full">
-          {mainItems.map((item) => (
-            <Link
-              key={item.id || item.href}
-              href={item.href}
-              className={`h-full flex items-center px-4 text-sm font-semibold transition-colors relative ${
-                pathname === item.href ? "text-primary" : "text-foreground/80 hover:text-primary"
-              }`}
-            >
-              {item.label}
-              {pathname === item.href && (
-                <div className="absolute bottom-0 left-4 right-4 h-0.5 bg-primary" />
-              )}
-            </Link>
-          ))}
+        <nav
+          className="hidden h-full flex-1 items-center justify-end gap-1 lg:flex"
+          aria-label={t("quickLinks")}
+        >
+          {mainItems.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.id || item.href}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "relative flex h-10 items-center rounded-full px-3.5 text-sm font-semibold transition-colors",
+                  active
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                {item.label}
+                {active && (
+                  <span className="bg-primary absolute inset-x-3.5 -bottom-[1.05rem] h-0.5 rounded-full" />
+                )}
+              </Link>
+            );
+          })}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="h-full flex items-center px-4 text-sm font-semibold text-foreground/80 hover:text-primary transition-colors focus:outline-none">
-                {t("resources")} <ChevronDown className="ml-1 h-4 w-4" />
+              <button className="text-muted-foreground hover:bg-muted hover:text-foreground flex h-10 items-center rounded-full px-3.5 text-sm font-semibold transition-colors focus:outline-none">
+                {t("resources")} <ChevronDown className="ml-1.5 h-4 w-4" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[480px] p-4" sideOffset={8}>
-              <div className="grid grid-cols-2 gap-3">
+            <DropdownMenuContent align="end" className="w-[500px] p-4" sideOffset={8}>
+              <div className="grid grid-cols-2 gap-2">
                 {resourceItems.map((item) => (
                   <Link
                     key={item.id || item.href}
                     href={item.href}
-                    className="block rounded-lg border border-border/60 p-3 hover:bg-muted/70 hover:border-primary/30 transition-colors"
+                    className="group border-border/70 bg-card hover:border-primary/30 hover:bg-primary/[0.04] rounded-xl border p-3.5 transition-all hover:-translate-y-0.5"
                   >
-                    <div className="text-sm font-semibold">{item.label}</div>
-                    <div className="text-xs text-muted-foreground mt-1">View resource</div>
+                    <div className="flex items-center justify-between gap-2 text-sm font-semibold">
+                      {item.label}
+                      <ArrowUpRight className="text-muted-foreground group-hover:text-primary h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    </div>
+                    <div className="text-muted-foreground mt-1 text-xs">स्रोत हेर्नुहोस्</div>
                   </Link>
                 ))}
               </div>
               <DropdownMenuSeparator className="my-3" />
-              <div className="flex items-center justify-between px-1 py-1">
-                <span className="text-xs text-muted-foreground">Need support?</span>
-                <Link href="/contact" className="text-xs text-primary font-medium hover:underline">Contact us</Link>
+              <div className="flex items-center justify-between px-1 text-xs">
+                <span className="text-muted-foreground">सहयोग चाहिन्छ?</span>
+                <Link href="/contact" className="text-primary font-semibold hover:underline">
+                  हामीलाई सम्पर्क गर्नुहोस्
+                </Link>
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
 
           <div className="ml-2 flex items-center gap-1 border-l pl-2">
             {searchOpen ? (
-              <form onSubmit={handleSearch} className="flex items-center gap-2 animate-in slide-in-from-right-4">
+              <form
+                onSubmit={handleSearch}
+                className="animate-in slide-in-from-right-4 flex items-center gap-1.5"
+              >
                 <Input
                   type="search"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={tCommon("search")}
-                  className="h-9 w-44 text-sm"
+                  className="h-10 w-48"
                   autoFocus
+                  aria-label={tCommon("search")}
                 />
-                <Button type="button" variant="ghost" size="icon" className="h-9 w-9" onClick={() => setSearchOpen(false)}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9"
+                  onClick={() => setSearchOpen(false)}
+                  aria-label={tCommon("close")}
+                >
                   <X className="h-4 w-4" />
                 </Button>
               </form>
             ) : (
-              <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setSearchOpen(true)}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10"
+                onClick={() => setSearchOpen(true)}
+                aria-label={tCommon("search")}
+              >
                 <Search className="h-4 w-4" />
               </Button>
             )}
@@ -225,75 +294,98 @@ export function PublicHeader() {
           </div>
         </nav>
 
-        {/* MOBILE HEADER LAYOUT */}
-        <div className="lg:hidden flex-1 flex items-center justify-end gap-2">
+        <div className="flex flex-1 items-center justify-end gap-2 lg:hidden">
           <ThemeToggle />
           <Button
             variant="outline"
             size="icon"
             className="h-10 w-10"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? tCommon("close") : tCommon("open")}
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
       </div>
 
-      {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[100] bg-background animate-in slide-in-from-right duration-300 lg:hidden">
-          <div className="flex flex-col h-full">
-            <div className="flex items-center justify-between p-4 border-b">
+        <div className="bg-background animate-in slide-in-from-right fixed inset-0 z-[100] overflow-y-auto duration-300 lg:hidden">
+          <div className="flex min-h-full flex-col">
+            <div className="bg-background/95 sticky top-0 z-10 flex items-center justify-between border-b p-4 backdrop-blur-xl">
               <div className="flex items-center gap-3">
-                <Image
-                  src="/image/Logo.jpeg"
-                  alt="Shram Jagaran Network Logo"
-                  width={48}
-                  height={48}
-                  className="h-12 w-12 object-contain rounded-sm"
-                />
+                <span className="bg-card flex h-11 w-11 items-center justify-center rounded-2xl border">
+                  <Image
+                    src="/image/Logo.jpeg"
+                    alt="Shram Jagaran Network Logo"
+                    width={44}
+                    height={44}
+                    className="h-9 w-9 rounded-xl object-contain"
+                  />
+                </span>
                 <div className="flex flex-col leading-tight">
-                  <span className="font-bold text-foreground font-devanagari">{tCommon("appName")}</span>
-                  <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Shram Jagaran Network</span>
+                  <span className="font-devanagari text-foreground font-bold">
+                    {tCommon("appName")}
+                  </span>
+                  <span className="text-muted-foreground text-[10px] font-bold tracking-[0.18em] uppercase">
+                    Shram Jagaran Network
+                  </span>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setMobileMenuOpen(false)}
+                aria-label={tCommon("close")}
+              >
                 <X className="h-6 w-6" />
               </Button>
             </div>
-            <nav className="flex-1 overflow-y-auto p-6 space-y-8">
-              <div className="space-y-1">
-                <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">मुख्य मेनु</p>
-                {mainItems.map((item) => (
-                  <Link
-                    key={item.id || item.href}
-                    href={item.href}
-                    className={`flex items-center px-4 py-3 rounded-md text-base font-semibold transition-colors ${
-                      pathname === item.href ? "bg-primary text-primary-foreground" : "text-foreground/80 hover:bg-muted"
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+            <nav className="flex-1 space-y-8 p-5 sm:p-7">
+              <div className="space-y-2">
+                <p className="text-primary mb-3 px-3 text-xs font-bold tracking-[0.16em] uppercase">
+                  मुख्य मेनु
+                </p>
+                {mainItems.map((item) => {
+                  const active = isActive(item.href);
+                  return (
+                    <Link
+                      key={item.id || item.href}
+                      href={item.href}
+                      className={cn(
+                        "flex items-center justify-between rounded-xl px-4 py-3.5 text-base font-semibold transition-colors",
+                        active
+                          ? "bg-primary text-primary-foreground shadow-lg"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                      )}
+                    >
+                      {item.label}
+                      <ArrowUpRight className="h-4 w-4 opacity-60" />
+                    </Link>
+                  );
+                })}
               </div>
-              <div className="pt-6 border-t space-y-1">
-                <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">स्रोतहरू</p>
+              <div className="space-y-2 border-t pt-7">
+                <p className="text-primary mb-3 px-3 text-xs font-bold tracking-[0.16em] uppercase">
+                  स्रोतहरू
+                </p>
                 {resourceItems.map((item) => (
                   <Link
                     key={item.id || item.href}
                     href={item.href}
-                    className="flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium text-foreground/70 hover:bg-muted"
+                    className="text-muted-foreground hover:bg-muted hover:text-foreground flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium transition-colors"
                   >
                     {item.label}
+                    <ArrowUpRight className="ml-auto h-4 w-4 opacity-50" />
                   </Link>
                 ))}
               </div>
             </nav>
-            <div className="p-6 border-t grid grid-cols-2 gap-3">
-              <Button variant="outline" asChild className="w-full h-11 font-semibold">
+            <div className="grid grid-cols-2 gap-3 border-t p-5 sm:p-7">
+              <Button variant="outline" asChild className="h-12 font-semibold">
                 <Link href="/donate">दान गर्नुहोस्</Link>
               </Button>
-              <Button variant="union" asChild className="w-full h-11 font-semibold">
+              <Button variant="union" asChild className="h-12 font-semibold">
                 <Link href="/register">दर्ता गर्नुहोस्</Link>
               </Button>
             </div>

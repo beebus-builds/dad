@@ -79,9 +79,9 @@ export function RegisterForm() {
   if (step === "otp") {
     return (
       <div className="space-y-6">
-        <div className="rounded-lg border bg-muted/30 p-4 text-center">
-          <Mail className="mx-auto h-8 w-8 text-primary" />
-          <p className="mt-2 text-sm text-muted-foreground">
+        <div className="bg-muted/40 rounded-2xl border p-4 text-center">
+          <Mail className="text-primary mx-auto h-8 w-8" />
+          <p className="text-muted-foreground mt-2 text-sm">
             {t("otpSubtitle", { email: registeredEmail })}
           </p>
         </div>
@@ -100,7 +100,7 @@ export function RegisterForm() {
           ))}
         </div>
         {verifyMutation.error && (
-          <div className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+          <div className="border-destructive/30 bg-destructive/5 text-destructive flex items-start gap-2.5 rounded-lg border p-3 text-sm">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
             <span>
               {verifyMutation.error instanceof ApiError && verifyMutation.error.code
@@ -115,14 +115,18 @@ export function RegisterForm() {
             <span>{t("emailVerified")}</span>
           </div>
         )}
-        <Button className="w-full" onClick={handleVerify} disabled={otp.join("").length !== 6 || verifyMutation.isPending}>
+        <Button
+          className="w-full"
+          onClick={handleVerify}
+          disabled={otp.join("").length !== 6 || verifyMutation.isPending}
+        >
           {verifyMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {t("verifyEmail")}
         </Button>
         <div className="text-center">
           <button
             type="button"
-            className="text-sm text-muted-foreground underline hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground text-sm underline"
             onClick={handleResend}
             disabled={resendMutation.isPending}
           >
@@ -134,7 +138,7 @@ export function RegisterForm() {
   }
 
   return (
-    <form onSubmit={handleRegister} className="space-y-4" noValidate>
+    <form onSubmit={handleRegister} className="space-y-5" noValidate>
       <Field id="fullName" label={t("fullName")} error={errors.fullName?.message}>
         <Input id="fullName" autoComplete="name" {...register("fullName")} />
       </Field>
@@ -142,18 +146,32 @@ export function RegisterForm() {
         <Input id="email" type="email" autoComplete="email" {...register("email")} />
       </Field>
       <Field id="phone" label={t("phone")} error={errors.phone?.message}>
-        <Input id="phone" type="tel" autoComplete="tel" placeholder="+977 98XXXXXXXX" {...register("phone")} />
+        <Input
+          id="phone"
+          type="tel"
+          autoComplete="tel"
+          placeholder="+977 98XXXXXXXX"
+          {...register("phone")}
+        />
       </Field>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field id="password" label={t("password")} error={errors.password?.message}>
           <PasswordInput id="password" autoComplete="new-password" {...register("password")} />
         </Field>
-        <Field id="confirmPassword" label={t("confirmPassword")} error={errors.confirmPassword?.message}>
-          <PasswordInput id="confirmPassword" autoComplete="new-password" {...register("confirmPassword")} />
+        <Field
+          id="confirmPassword"
+          label={t("confirmPassword")}
+          error={errors.confirmPassword?.message}
+        >
+          <PasswordInput
+            id="confirmPassword"
+            autoComplete="new-password"
+            {...register("confirmPassword")}
+          />
         </Field>
       </div>
       {registerMutation.error && (
-        <div className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+        <div className="border-destructive/30 bg-destructive/5 text-destructive flex items-start gap-2.5 rounded-lg border p-3 text-sm">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>
             {registerMutation.error instanceof ApiError && registerMutation.error.code
@@ -185,7 +203,7 @@ function Field({
     <div className="space-y-2">
       <Label htmlFor={id}>{label}</Label>
       {children}
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p className="text-destructive text-sm">{error}</p>}
     </div>
   );
 }

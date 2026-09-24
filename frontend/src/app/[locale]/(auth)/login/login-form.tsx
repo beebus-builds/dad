@@ -26,7 +26,7 @@ export function LoginForm() {
   });
 
   return (
-    <form onSubmit={handleSubmit((data) => login.mutate(data))} className="space-y-4" noValidate>
+    <form onSubmit={handleSubmit((data) => login.mutate(data))} className="space-y-5" noValidate>
       <div className="space-y-2">
         <Label htmlFor="email">{t("email")}</Label>
         <Input
@@ -39,7 +39,7 @@ export function LoginForm() {
           {...register("email")}
         />
         {errors.email && (
-          <p id="email-error" className="text-sm text-destructive">
+          <p id="email-error" className="text-destructive text-sm">
             {errors.email.message}
           </p>
         )}
@@ -49,7 +49,7 @@ export function LoginForm() {
           <Label htmlFor="password">{t("password")}</Label>
           <Link
             href="/forgot-password"
-            className="text-xs font-medium text-primary hover:underline"
+            className="text-primary text-xs font-medium hover:underline"
           >
             {t("forgotPassword")}
           </Link>
@@ -63,13 +63,13 @@ export function LoginForm() {
           {...register("password")}
         />
         {errors.password && (
-          <p id="password-error" className="text-sm text-destructive">
+          <p id="password-error" className="text-destructive text-sm">
             {errors.password.message}
           </p>
         )}
       </div>
       {login.error && (
-        <div className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+        <div className="border-destructive/30 bg-destructive/5 text-destructive flex items-start gap-2.5 rounded-2xl border p-3.5 text-sm">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>
             {login.error instanceof ApiError && login.error.code

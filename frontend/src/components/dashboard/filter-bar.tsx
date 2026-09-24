@@ -25,15 +25,15 @@ export function FilterBar({
   children?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+    <div className="border-border/70 bg-card/80 shadow-soft flex flex-col gap-2 rounded-2xl border p-2 sm:flex-row sm:items-center">
       {onSearchChange && (
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="text-muted-foreground absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2" />
           <Input
             value={search ?? ""}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
-            className="pl-9"
+            className="bg-muted/60 focus-visible:border-primary/40 focus-visible:bg-card h-10 border-transparent pl-10 shadow-none"
           />
         </div>
       )}
@@ -42,7 +42,7 @@ export function FilterBar({
           key={s.key}
           value={s.value}
           onChange={(e) => s.onChange(e.target.value)}
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          className="bg-muted/60 text-foreground hover:border-primary/20 focus:border-primary/40 focus:ring-ring h-10 rounded-xl border border-transparent px-3 text-sm transition-colors outline-none focus:ring-2 focus:ring-offset-2"
         >
           {s.options.map((o) => (
             <option key={o.value} value={o.value}>

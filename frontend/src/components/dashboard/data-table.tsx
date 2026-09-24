@@ -61,15 +61,15 @@ export function DataTable<T>({
 }) {
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12 text-muted-foreground">
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {loadingLabel}
+      <div className="border-border/70 bg-card text-muted-foreground shadow-soft flex items-center justify-center rounded-2xl border py-16">
+        <Loader2 className="mr-2 h-5 w-5 animate-spin" /> {loadingLabel}
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+      <div className="border-destructive/30 bg-destructive/5 text-destructive shadow-soft rounded-2xl border p-4 text-sm">
         {errorMessage}
       </div>
     );
@@ -81,7 +81,7 @@ export function DataTable<T>({
 
   return (
     <>
-      <div className="rounded-md border">
+      <div className="border-border/70 bg-card shadow-soft overflow-hidden rounded-2xl border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -95,7 +95,10 @@ export function DataTable<T>({
           <TableBody>
             {data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="py-12 text-center text-muted-foreground">
+                <TableCell
+                  colSpan={columns.length}
+                  className="text-muted-foreground py-14 text-center"
+                >
                   {emptyTitle}
                 </TableCell>
               </TableRow>
@@ -119,7 +122,7 @@ export function DataTable<T>({
       </div>
 
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between pt-4 text-sm text-muted-foreground">
+        <div className="text-muted-foreground flex flex-col gap-3 pt-4 text-sm sm:flex-row sm:items-center sm:justify-between">
           <span>{pagination.showingLabel}</span>
           <div className="flex gap-2">
             <Button
@@ -133,7 +136,9 @@ export function DataTable<T>({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => pagination.onPageChange(Math.min(pagination.totalPages, pagination.page + 1))}
+              onClick={() =>
+                pagination.onPageChange(Math.min(pagination.totalPages, pagination.page + 1))
+              }
               disabled={pagination.page >= pagination.totalPages}
             >
               {pagination.nextLabel}

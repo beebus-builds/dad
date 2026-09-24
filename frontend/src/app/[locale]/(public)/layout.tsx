@@ -13,7 +13,7 @@ export default async function PublicLayout({
   const { locale } = await params;
   setRequestLocale(locale);
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-background">
       <PublicHeader />
       <main id="main-content" className="flex-1">
         <PageTransition>{children}</PageTransition>

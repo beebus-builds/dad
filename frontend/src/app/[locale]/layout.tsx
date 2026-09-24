@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { Providers } from "@/app/providers";
-import { locales, localeHtmlLang, defaultLocale, type Locale } from "@/i18n";
+import { locales, localeHtmlLang, type Locale } from "@/i18n";
 import { env } from "@/lib/env";
 import "../globals.css";
 
@@ -48,8 +48,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0f1c" },
+    { media: "(prefers-color-scheme: light)", color: "#f7f9fc" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b1020" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -77,13 +77,15 @@ export default async function LocaleLayout({
   return (
     <html lang={htmlLang} suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${notoDevanagari.variable} font-sans antialiased`}
+        className={`${inter.variable} ${notoDevanagari.variable} bg-background font-sans antialiased`}
       >
         <a
           href="#main-content"
-          className="sr-only-focusable absolute left-2 top-2 z-50 rounded bg-primary px-3 py-2 text-primary-foreground"
+          className="sr-only-focusable bg-primary text-primary-foreground absolute top-2 left-2 z-50 rounded px-3 py-2"
         >
-          {messages.common && typeof messages.common === "object" && "skipToContent" in messages.common
+          {messages.common &&
+          typeof messages.common === "object" &&
+          "skipToContent" in messages.common
             ? (messages.common as Record<string, string>).skipToContent
             : "Skip to main content"}
         </a>

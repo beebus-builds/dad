@@ -13,9 +13,13 @@ const config: Config = {
   theme: {
     container: {
       center: true,
-      padding: "2rem",
+      padding: {
+        DEFAULT: "1.25rem",
+        sm: "2rem",
+        lg: "2.5rem",
+      },
       screens: {
-        "2xl": "1400px",
+        "2xl": "1440px",
       },
     },
     extend: {
@@ -57,6 +61,15 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        surface: {
+          DEFAULT: "hsl(var(--surface))",
+          elevated: "hsl(var(--surface-elevated))",
+        },
+        brand: {
+          DEFAULT: "hsl(var(--brand))",
+          soft: "hsl(var(--brand-soft))",
+          foreground: "hsl(var(--brand-foreground))",
+        },
         union: {
           red: "hsl(var(--union-red))",
           "red-foreground": "hsl(var(--union-red-foreground))",
@@ -80,8 +93,9 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
       },
       boxShadow: {
-        soft: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
-        card: "0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03)",
+        soft: "0 8px 24px -14px hsl(var(--shadow) / 0.24)",
+        card: "0 18px 42px -24px hsl(var(--shadow) / 0.32)",
+        float: "0 24px 64px -28px hsl(var(--shadow) / 0.4)",
       },
       keyframes: {
         "accordion-down": {

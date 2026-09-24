@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n-navigation";
 import { LoginForm } from "./login-form";
@@ -14,15 +13,18 @@ export default async function LoginPage({ params }: { params: Promise<{ locale: 
   setRequestLocale(locale);
   const t = await getTranslations("auth.login");
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <div className="space-y-2 text-center">
-        <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
-        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
+        <div className="bg-primary/10 text-primary mx-auto flex h-12 w-12 items-center justify-center rounded-2xl">
+          <span className="text-lg font-bold">↗</span>
+        </div>
+        <h1 className="text-3xl font-bold tracking-[-0.03em]">{t("title")}</h1>
+        <p className="text-muted-foreground text-sm leading-relaxed">{t("subtitle")}</p>
       </div>
       <LoginForm />
-      <p className="text-center text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-center text-sm">
         {t("noAccount")}{" "}
-        <Link href="/register" className="font-medium text-primary hover:underline">
+        <Link href="/register" className="text-primary font-semibold hover:underline">
           {t("register")}
         </Link>
       </p>

@@ -3,7 +3,7 @@
 import { Link } from "@/lib/i18n-navigation";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { env } from "@/lib/env";
+import { ArrowUpRight, Mail, MapPin, Phone } from "lucide-react";
 
 type FooterSection = { heading: string; items: { href: string; label: string }[] };
 
@@ -43,31 +43,68 @@ export function PublicFooter() {
   ];
 
   return (
-    <footer className="border-t bg-muted/30">
-      <div className="container py-12">
-        <div className="grid gap-8 md:grid-cols-4">
+    <footer className="bg-foreground text-background">
+      <div className="container py-14 sm:py-16">
+        <div className="border-background/10 bg-background/[0.05] mb-12 grid gap-8 rounded-3xl border p-6 sm:p-8 lg:grid-cols-[1.2fr_auto] lg:items-center">
           <div>
-            <div className="flex items-center gap-2.5">
-              <Image
-                src="/image/Logo.jpeg"
-                alt="Shram Jagaran Network Logo"
-                width={36}
-                height={36}
-                className="h-9 w-9 rounded-sm object-contain"
-              />
-              <span className="font-devanagari text-base font-semibold">{tCommon("appName")}</span>
+            <p className="text-background/70 text-sm font-semibold">{tCommon("appName")}</p>
+            <h2 className="mt-2 max-w-2xl text-2xl font-bold tracking-tight sm:text-3xl">
+              {t("tagline")}
+            </h2>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <ButtonLink href="/register" label="दर्ता गर्नुहोस्" />
+            <ButtonLink href="/contact" label="हामीलाई सम्पर्क गर्नुहोस्" muted />
+          </div>
+        </div>
+
+        <div className="grid gap-10 md:grid-cols-[1.4fr_repeat(3,1fr)]">
+          <div>
+            <Link href="/" className="flex items-center gap-3">
+              <span className="bg-background/10 flex h-11 w-11 items-center justify-center rounded-2xl">
+                <Image
+                  src="/image/Logo.jpeg"
+                  alt="Shram Jagaran Network Logo"
+                  width={44}
+                  height={44}
+                  className="h-9 w-9 rounded-xl object-contain"
+                />
+              </span>
+              <span className="font-devanagari text-lg font-bold">{tCommon("appName")}</span>
+            </Link>
+            <p className="text-background/60 mt-5 max-w-xs text-sm leading-relaxed">
+              {t("tagline")}
+            </p>
+            <div className="text-background/60 mt-6 space-y-3 text-sm">
+              <div className="text-background/60 flex items-start gap-2.5">
+                <MapPin className="text-background/70 mt-0.5 h-4 w-4 shrink-0" />
+                <span>{tCon("address")}</span>
+              </div>
+              <a
+                className="hover:text-background flex items-center gap-2.5 transition-colors"
+                href="tel:+9779851147727"
+              >
+                <Phone className="text-background/70 h-4 w-4 shrink-0" />
+                <span>{tCon("phone")}</span>
+              </a>
+              <a
+                className="hover:text-background flex items-center gap-2.5 transition-colors"
+                href="mailto:cstunepal2019@gmail.com"
+              >
+                <Mail className="text-background/70 h-4 w-4 shrink-0" />
+                <span>cstunepal2019@gmail.com</span>
+              </a>
             </div>
-            <p className="mt-4 text-sm text-muted-foreground">{t("tagline")}</p>
           </div>
           {sections.map((section) => (
             <nav key={section.heading} aria-labelledby={`footer-${section.heading}`}>
-              <h2 id={`footer-${section.heading}`} className="text-sm font-semibold">
+              <h2 id={`footer-${section.heading}`} className="text-background text-sm font-bold">
                 {section.heading}
               </h2>
-              <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              <ul className="text-background/60 mt-4 space-y-3 text-sm">
                 {section.items.map((it) => (
                   <li key={it.href}>
-                    <Link href={it.href} className="hover:text-foreground hover:underline">
+                    <Link href={it.href} className="hover:text-background transition-colors">
                       {it.label}
                     </Link>
                   </li>
@@ -76,26 +113,46 @@ export function PublicFooter() {
             </nav>
           ))}
         </div>
-        <div className="mt-6 flex flex-wrap gap-x-6 gap-y-1 border-t pt-4 text-xs text-muted-foreground">
-          <span>{tCon("address")}</span>
-          <span>{tCon("phoneLabel")}: {tCon("phone")}</span>
-          <span>{tCon("emailLabel")}: cstunepal2019@gmail.com</span>
-        </div>
-        <div className="mt-4 flex flex-col gap-3 border-t pt-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+
+        <div className="border-background/10 text-background/50 mt-12 flex flex-col gap-4 border-t pt-6 text-xs sm:flex-row sm:items-center sm:justify-between">
           <p>{t("copyright", { year: new Date().getFullYear(), appName: tCommon("appName") })}</p>
-          <div className="flex gap-4">
-            <Link href="/privacy" className="hover:underline">
+          <div className="flex flex-wrap gap-5">
+            <Link href="/privacy" className="hover:text-background transition-colors">
               {t("privacy")}
             </Link>
-            <Link href="/terms" className="hover:underline">
+            <Link href="/terms" className="hover:text-background transition-colors">
               {t("terms")}
             </Link>
-            <Link href="/accessibility" className="hover:underline">
+            <Link href="/accessibility" className="hover:text-background transition-colors">
               {t("accessibility")}
             </Link>
           </div>
         </div>
       </div>
     </footer>
+  );
+}
+
+function ButtonLink({
+  href,
+  label,
+  muted = false,
+}: {
+  href: string;
+  label: string;
+  muted?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={
+        muted
+          ? "border-background/20 text-background hover:bg-background/10 inline-flex h-11 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-semibold transition-colors"
+          : "bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition-all hover:-translate-y-0.5"
+      }
+    >
+      {label}
+      <ArrowUpRight className="h-4 w-4" />
+    </Link>
   );
 }
